@@ -29,8 +29,14 @@
       '</svg>'
 
     btn.addEventListener('click', function () {
-      const codeEl = block.querySelector('code') || block
-      const text = codeEl.innerText || codeEl.textContent
+      const codeCell = block.querySelector('td.code')
+      const source = codeCell
+        ? (codeCell.querySelector('code') || codeCell)
+        : (block.querySelector('code') || block)
+
+      const clone = source.cloneNode(true)
+      clone.querySelectorAll('br').forEach(function (br) { br.replaceWith('\n') })
+      const text = clone.textContent.trim()
 
       navigator.clipboard.writeText(text).then(function () {
         showToast('Copied to clipboard', 'success')
@@ -39,8 +45,20 @@
       })
     })
 
+    const toolbar = document.createElement('div')
+    toolbar.className = 'code-toolbar'
+
+    const lang = block.getAttribute('data-lang')
+    if (lang) {
+      const label = document.createElement('span')
+      label.className = 'code-lang-label'
+      label.textContent = lang
+      toolbar.appendChild(label)
+    }
+
+    toolbar.appendChild(btn)
     block.style.position = 'relative'
-    block.appendChild(btn)
+    block.appendChild(toolbar)
   }
 
   document.addEventListener('DOMContentLoaded', function () {
