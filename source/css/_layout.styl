@@ -4,42 +4,31 @@
   max-width 1100px
   margin 0 auto
   padding 0 sp-6
-  display flex
+  display grid
+  grid-template-columns 65fr 35fr
   gap sp-6
   padding-top sp-6
   padding-bottom sp-8
 
+  @media (max-width bp-tablet)
+    grid-template-columns 1fr 280px
+
   @media (max-width bp-mobile)
+    grid-template-columns 1fr
     padding 0 sp-4
     padding-top sp-4
     padding-bottom sp-6
 
 .main-content
-  flex 1 1 65%
   min-width 0
 
 .sidebar
-  flex 0 0 calc(35% - sp-6)
   min-width 0
 
   &--hidden
     display none
 
-  @media (max-width bp-tablet)
-    flex 0 0 280px
-
   @media (max-width bp-mobile)
-    flex none
-    width 100%
-
-// Stack sidebar below main on mobile
-@media (max-width bp-mobile)
-  .page-wrapper
-    flex-direction column
-
-// Hide sidebar on mobile when position is right (default)
-@media (max-width bp-mobile)
-  .sidebar
     display none
 
 // ─── Post grid (3×3) ─────────────────────────────────────────────────────────
