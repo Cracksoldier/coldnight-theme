@@ -52,13 +52,17 @@ figure.highlight
 
   .gutter
     user-select none
+    width 1px          // shrink to minimum content width
+    white-space nowrap // prevent line numbers from wrapping
     padding 1rem 0.5rem
     background rgba(0, 0, 0, 0.15)
     color text-muted
     font-size 0.8rem
     font-family unquote(font-mono)
     text-align right
-    min-width 36px
+
+  .code
+    width 100%
 
   .code
     padding 0
