@@ -1,0 +1,113 @@
+<%
+  const lgEnabled = theme.lightgallery && theme.lightgallery.enabled
+  const lgAutoMount = lgEnabled && theme.lightgallery.auto_mount
+  const lgZoom = lgEnabled && theme.lightgallery.zoom
+  const lgThumb = lgEnabled && theme.lightgallery.thumbnail
+%>
+<!DOCTYPE html>
+<html lang="<%= config.language || 'en' %>">
+<head>
+  <%- partial('_partial/head') %>
+</head>
+<body>
+
+<a href="#main-content" class="skip-nav">Skip to main content</a>
+
+<%- partial('_partial/header') %>
+
+<div class="page-wrapper">
+
+  <main class="main-content post-page" id="main-content" role="main">
+
+    <article>
+
+      <header class="post-header">
+        <h1 class="post-title"><%= page.title %></h1>
+
+        <div class="post-meta">
+          <time datetime="<%= page.date.toISOString() %>">
+            <%= date(page.date, 'YYYY-MM-DD') %>
+          </time>
+
+          <% if (config.author) { %>
+            <span><%= config.author %></span>
+          <% } %>
+
+          <% if (theme.reading_time) { %>
+            <span><%= reading_time(page.content) %></span>
+          <% } %>
+
+          <% if (page.categories && page.categories.length) { %>
+            <% page.categories.each(cat => { %>
+              <a href="<%- url_for(cat.path) %>" class="tag-pill"><%= cat.name %></a>
+            <% }) %>
+          <% } %>
+        </div>
+      </header>
+
+      <% if (page.cover_image) { %>
+        <img src="<%= page.cover_image %>" alt="<%= page.title %>" style="width:100%;border-radius:10px;margin-bottom:24px;" loading="lazy">
+      <% } %>
+
+      <div class="post-body prose">
+        <%- page.content %>
+      </div>
+
+      <footer class="post-footer">
+
+        <% if (page.tags && page.tags.length) { %>
+          <div class="post-tags">
+            <% page.tags.each(tag => { %>
+              <a href="<%- url_for(tag.path) %>" class="tag-pill">#<%= tag.name %></a>
+            <% }) %>
+          </div>
+        <% } %>
+
+        <nav class="post-nav" aria-label="Post navigation">
+          <div class="post-nav__item post-nav__item--prev">
+            <% if (page.prev) { %>
+              <span class="post-nav__label">← Previous</span>
+              <a href="<%- url_for(page.prev.path) %>" class="post-nav__title"><%= page.prev.title %></a>
+            <% } %>
+          </div>
+          <div class="post-nav__item post-nav__item--next">
+            <% if (page.next) { %>
+              <span class="post-nav__label">Next →</span>
+              <a href="<%- url_for(page.next.path) %>" class="post-nav__title"><%= page.next.title %></a>
+            <% } %>
+          </div>
+        </nav>
+
+      </footer>
+
+    </article>
+
+  </main>
+
+  <% if (!theme.sidebar || theme.sidebar.position !== 'hidden') { %>
+    <%- partial('_partial/sidebar') %>
+  <% } %>
+
+</div>
+
+<%- partial('_partial/footer') %>
+<%- partial('_partial/toast') %>
+
+<script src="<%- url_for('/js/nav.js') %>" defer></script>
+<script src="<%- url_for('/js/copy-code.js') %>" defer></script>
+
+<% if (lgEnabled) { %>
+  <script src="https://cdn.jsdelivr.net/npm/lightgallery@2/lightgallery.umd.min.js" defer></script>
+  <% if (lgZoom) { %>
+  <script src="https://cdn.jsdelivr.net/npm/lightgallery@2/plugins/zoom/lg-zoom.umd.min.js" defer></script>
+  <% } %>
+  <% if (lgThumb) { %>
+  <script src="https://cdn.jsdelivr.net/npm/lightgallery@2/plugins/thumbnail/lg-thumbnail.umd.min.js" defer></script>
+  <% } %>
+  <% if (lgAutoMount) { %>
+  <script src="<%- url_for('/js/gallery.js') %>" defer></script>
+  <% } %>
+<% } %>
+
+</body>
+</html>

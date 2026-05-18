@@ -1,0 +1,712 @@
+// ─── Navbar / Header ─────────────────────────────────────────────────────────
+
+.navbar
+  position sticky
+  top 0
+  z-index 5
+  height 56px
+  background bg-surface
+  border-bottom 1px solid border-subtle
+  display flex
+  align-items center
+  padding 0 sp-6
+
+  @media (max-width bp-mobile)
+    padding 0 sp-4
+
+.navbar__inner
+  display flex
+  align-items center
+  gap sp-4
+  width 100%
+  max-width 1100px
+  margin 0 auto
+
+.navbar__brand
+  display flex
+  align-items center
+  gap sp-2
+  text-decoration none
+  flex-shrink 0
+
+.navbar__logo
+  width 28px
+  height 28px
+  flex-shrink 0
+
+.navbar__title
+  font-size 15px
+  font-weight 600
+  color text-primary
+  white-space nowrap
+
+  @media (max-width bp-tablet)
+    display none
+
+.navbar__nav
+  display flex
+  align-items center
+  gap 4px
+  margin-left auto
+
+  @media (max-width bp-mobile)
+    display none
+
+  &.nav--open
+    display flex
+
+.navbar__actions
+  display flex
+  align-items center
+  gap sp-2
+  margin-left sp-4
+
+.nav-link
+  font-size 13px
+  font-weight 500
+  color text-secondary
+  padding 5px 10px
+  border-radius radius
+  border 1px solid transparent
+  transition background transition-fast, color transition-fast, border-color transition-fast
+  text-decoration none
+
+  &:hover
+    color text-primary
+    background bg-elevated
+    border-color border-focus
+
+  &.active, &[aria-current="page"]
+    color accent-light
+    background accent-glow
+    border-color transparent
+
+// Mobile nav
+.navbar__hamburger
+  display none
+  margin-left auto
+
+  @media (max-width bp-mobile)
+    display flex
+
+.mobile-nav
+  display none
+  position absolute
+  top 56px
+  left 0
+  right 0
+  background bg-surface
+  border-bottom 1px solid border-subtle
+  z-index 4
+  flex-direction column
+
+  &.nav--open
+    display flex
+
+  .nav-link
+    padding sp-3 sp-4
+    border-radius 0
+    border none
+    border-bottom 1px solid border-subtle
+
+    &:last-child
+      border-bottom none
+
+// ─── Buttons ─────────────────────────────────────────────────────────────────
+
+.btn
+  display inline-flex
+  align-items center
+  gap sp-2
+  padding 7px 14px
+  border-radius radius
+  font-size 13px
+  font-weight 500
+  cursor pointer
+  border 1px solid transparent
+  text-decoration none
+  transition background transition-fast, color transition-fast, box-shadow transition-fast, border-color transition-fast
+  white-space nowrap
+
+  &:disabled, &[disabled]
+    opacity 0.45
+    cursor not-allowed
+    pointer-events none
+
+.btn--sm
+  padding 4px 10px
+  font-size 12px
+
+.btn--primary
+  background accent
+  color #fff
+  border-color accent
+
+  &:hover
+    background accent-hover
+    border-color accent-hover
+    color #fff
+
+.btn--ghost
+  background transparent
+  color text-secondary
+  border-color border-subtle
+
+  &:hover
+    background bg-elevated
+    color text-primary
+    border-color border-focus
+
+.btn--icon
+  background transparent
+  color text-secondary
+  border none
+  padding 6px
+  border-radius radius
+
+  &:hover
+    background bg-elevated
+    color text-primary
+
+.btn--coffee
+  background amber-bg
+  color amber
+  border-color amber-border
+
+  &:hover
+    background amber-bg-h
+    color amber-light
+    border-color amber-border-h
+
+// ─── Post Card ───────────────────────────────────────────────────────────────
+
+.post-card
+  background bg-elevated
+  border 1px solid border-subtle
+  border-radius radius-lg
+  overflow hidden
+  display flex
+  flex-direction column
+  transition border-color transition-fast, box-shadow transition-fast
+
+  &:hover
+    border-color border-focus
+    box-shadow 0 4px 16px rgba(0, 0, 0, 0.4)
+
+.post-card__cover
+  display block
+  aspect-ratio 16 / 9
+  overflow hidden
+
+  img
+    width 100%
+    height 100%
+    object-fit cover
+    border-radius 0
+    transition transform 0.3s ease
+
+  &:hover img
+    transform scale(1.03)
+
+.post-card__body
+  padding 20px
+  display flex
+  flex-direction column
+  flex 1
+
+.post-card__meta
+  display flex
+  align-items center
+  gap sp-3
+  font-size 12px
+  color text-secondary
+  margin-bottom sp-2
+
+.post-card__category
+  display inline-block
+  font-size 11px
+  font-weight 500
+  padding 2px 8px
+  background bg-input
+  color accent-light
+  border 1px solid border-subtle
+  border-radius radius
+
+.post-card__title
+  font-size 1rem
+  font-weight 600
+  color text-primary
+  margin-bottom sp-2
+  line-height 1.4
+  text-decoration none
+  display block
+
+  &:hover
+    color accent-light
+
+.post-card__excerpt
+  font-size 13px
+  color text-secondary
+  line-height 1.6
+  flex 1
+  margin-bottom sp-4
+  display -webkit-box
+  -webkit-line-clamp 3
+  -webkit-box-orient vertical
+  overflow hidden
+
+.post-card__footer
+  display flex
+  align-items center
+  justify-content space-between
+  font-size 12px
+  color text-secondary
+  margin-top auto
+
+.post-card__read-more
+  color accent-light
+  font-size 12px
+  font-weight 500
+  text-decoration none
+
+  &:hover
+    color accent-hover
+
+// ─── Tags / Pills ────────────────────────────────────────────────────────────
+
+.tag-pill
+  display inline-block
+  font-size 11px
+  font-weight 500
+  padding 3px 10px
+  background bg-input
+  color accent-light
+  border 1px solid border-subtle
+  border-radius radius
+  text-decoration none
+  transition background transition-fast, border-color transition-fast
+
+  &:hover
+    background bg-elevated
+    border-color border-focus
+    color accent-hover
+
+// ─── Sidebar ─────────────────────────────────────────────────────────────────
+
+.sidebar-widget
+  background bg-elevated
+  border 1px solid border-subtle
+  border-radius radius
+  padding sp-4
+  margin-bottom sp-4
+
+.sidebar-widget__title
+  font-size 11px
+  font-weight 600
+  text-transform uppercase
+  letter-spacing 0.05em
+  color text-secondary
+  margin-bottom sp-3
+
+.sidebar-widget__list
+  list-style none
+  padding 0
+  margin 0
+
+  li
+    padding sp-2 0
+    border-bottom 1px solid rgba(255, 255, 255, 0.04)
+
+    &:last-child
+      border-bottom none
+
+  a
+    font-size 13px
+    color text-primary
+    text-decoration none
+    display flex
+    justify-content space-between
+    align-items center
+
+    &:hover
+      color accent-light
+
+.sidebar-widget__count
+  font-size 11px
+  padding 1px 6px
+  background accent-glow
+  color accent-light
+  border-radius radius
+
+// About widget
+.widget-about
+  text-align center
+
+.widget-about__avatar
+  width 48px
+  height 48px
+  border-radius 50%
+  margin 0 auto sp-3
+  display block
+  object-fit cover
+
+.widget-about__name
+  font-size 15px
+  font-weight 600
+  color text-primary
+  margin-bottom sp-2
+
+.widget-about__bio
+  font-size 13px
+  color text-secondary
+  line-height 1.5
+
+.widget-about__social
+  display flex
+  justify-content center
+  gap sp-3
+  margin-top sp-3
+
+  a
+    color text-secondary
+    font-size 13px
+
+    &:hover
+      color accent-light
+
+// ─── Callout / Alert blocks ──────────────────────────────────────────────────
+
+.note
+  border-radius radius
+  padding 12px 14px
+  font-size 13px
+  margin 1rem 0
+  display flex
+  gap sp-3
+  align-items flex-start
+
+  .note-icon
+    flex-shrink 0
+    width 16px
+    height 16px
+    margin-top 1px
+
+  p
+    margin 0
+    color text-primary
+
+.note-tip
+  background success-bg
+  border 1px solid rgba(16, 185, 129, 0.4)
+  .note-icon
+    color success
+
+.note-info
+  background info-bg
+  border 1px solid rgba(37, 99, 235, 0.3)
+  .note-icon
+    color accent-light
+
+.note-warning
+  background amber-bg
+  border 1px solid amber-border
+  .note-icon
+    color amber
+
+.note-danger
+  background danger-bg
+  border 1px solid rgba(239, 68, 68, 0.4)
+  .note-icon
+    color danger
+
+// ─── Pagination ──────────────────────────────────────────────────────────────
+
+.pagination
+  display flex
+  align-items center
+  justify-content center
+  gap sp-2
+  margin-top sp-8
+  flex-wrap wrap
+
+  .page-number
+    @extends .btn
+    @extends .btn--ghost
+    min-width 36px
+    justify-content center
+
+    &.current
+      background accent
+      color #fff
+      border-color accent
+
+  .prev, .next
+    @extends .btn
+    @extends .btn--ghost
+
+  .space
+    color text-muted
+    padding 0 sp-2
+
+// ─── Search ──────────────────────────────────────────────────────────────────
+
+.search-wrap
+  position relative
+
+.search-input
+  width 100%
+  background bg-input
+  border 1px solid border-subtle
+  border-radius radius
+  color text-primary
+  padding 8px 12px
+  font-size 13px
+  transition border-color transition-fast, box-shadow transition-fast
+  font-family unquote(font-sans)
+
+  &::placeholder
+    color text-muted
+
+  &:focus
+    outline none
+    border-color border-focus
+    box-shadow 0 0 0 3px accent-glow
+
+.search-results
+  position absolute
+  top calc(100% + 4px)
+  left 0
+  right 0
+  background bg-elevated
+  border 1px solid border-subtle
+  border-radius radius
+  box-shadow 0 8px 24px rgba(0, 0, 0, 0.5)
+  max-height 320px
+  overflow-y auto
+  z-index 20
+  display none
+
+  &.open
+    display block
+
+.search-result-item
+  padding 10px sp-4
+  border-bottom 1px solid rgba(255, 255, 255, 0.04)
+  cursor pointer
+  font-size 13px
+  color text-primary
+
+  &:last-child
+    border-bottom none
+
+  &:hover
+    background bg-input
+
+  mark
+    background accent-glow
+    color accent-light
+    border-radius 2px
+    padding 0 2px
+
+.search-no-results
+  padding sp-4
+  font-size 13px
+  color text-muted
+  text-align center
+
+// ─── Footer ──────────────────────────────────────────────────────────────────
+
+.site-footer
+  background bg-surface
+  border-top 1px solid border-subtle
+  padding sp-6 sp-6
+  font-size 13px
+  color text-muted
+
+.footer-inner
+  max-width 1100px
+  margin 0 auto
+  display flex
+  align-items center
+  justify-content space-between
+  gap sp-4
+  flex-wrap wrap
+
+  @media (max-width bp-mobile)
+    flex-direction column
+    text-align center
+
+.footer-links
+  display flex
+  gap sp-4
+  list-style none
+  padding 0
+  margin 0
+
+  a
+    color accent-light
+    font-size 13px
+    text-decoration none
+
+    &:hover
+      color accent-hover
+
+// ─── 404 ─────────────────────────────────────────────────────────────────────
+
+.error-page
+  text-align center
+  padding sp-8 sp-4
+
+.error-page__code
+  font-size 6rem
+  font-weight 700
+  color accent
+  line-height 1
+  margin-bottom sp-4
+
+.error-page__message
+  font-size 1.25rem
+  color text-secondary
+  margin-bottom sp-8
+
+// ─── Toast ───────────────────────────────────────────────────────────────────
+
+.toast-container
+  position fixed
+  bottom 20px
+  right 20px
+  z-index 9999
+  display flex
+  flex-direction column
+  gap sp-2
+  pointer-events none
+  max-width 360px
+
+.toast
+  background bg-elevated
+  border 1px solid border-subtle
+  border-radius radius
+  padding 12px 14px
+  font-size 13px
+  line-height 1.4
+  box-shadow 0 8px 24px rgba(0, 0, 0, 0.4)
+  animation toast-in 0.2s ease forwards
+  display flex
+  align-items flex-start
+  gap sp-2
+  pointer-events all
+
+.toast--success
+  border-color rgba(16, 185, 129, 0.4)
+  background mix(bg-elevated, success, 90%)
+
+.toast--error
+  border-color rgba(239, 68, 68, 0.4)
+  background mix(bg-elevated, danger, 90%)
+
+.toast--info
+  border-color rgba(37, 99, 235, 0.3)
+
+.toast__close
+  margin-left auto
+  color text-muted
+  cursor pointer
+  background none
+  border none
+  font-size 14px
+  padding 0
+  flex-shrink 0
+
+  &:hover
+    color text-primary
+
+// ─── Backdrop ────────────────────────────────────────────────────────────────
+
+.backdrop
+  position fixed
+  inset 0
+  background rgba(0, 0, 0, 0.5)
+  backdrop-filter blur(2px)
+  z-index 10
+  opacity 0
+  transition opacity transition-normal
+  pointer-events none
+
+  &.open
+    opacity 1
+    pointer-events all
+
+// ─── Gallery tag ─────────────────────────────────────────────────────────────
+
+.lg-gallery
+  display grid
+  gap sp-3
+
+  &[data-cols="2"]
+    grid-template-columns repeat(2, 1fr)
+  &[data-cols="3"]
+    grid-template-columns repeat(3, 1fr)
+  &[data-cols="4"]
+    grid-template-columns repeat(4, 1fr)
+
+  // Default to 3 cols
+  grid-template-columns repeat(3, 1fr)
+
+  @media (max-width bp-mobile)
+    grid-template-columns repeat(2, 1fr)
+
+  a
+    display block
+    overflow hidden
+    border-radius radius
+
+    img
+      width 100%
+      height 100%
+      object-fit cover
+      border-radius radius
+      transition transform 0.3s ease
+
+    &:hover img
+      transform scale(1.05)
+
+// Form elements
+.form-label
+  display block
+  font-size 12px
+  font-weight 500
+  color text-secondary
+  text-transform uppercase
+  letter-spacing 0.05em
+  margin-bottom 4px
+
+.form-input
+  width 100%
+  background bg-input
+  border 1px solid border-subtle
+  border-radius radius
+  color text-primary
+  padding 8px 12px
+  font-size 13px
+  font-family unquote(font-sans)
+  transition border-color transition-fast, box-shadow transition-fast
+
+  &::placeholder
+    color text-muted
+
+  &:focus
+    outline none
+    border-color border-focus
+    box-shadow 0 0 0 3px accent-glow
+
+textarea.form-input
+  resize vertical
+  min-height 80px
+
+select.form-input
+  background-image url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='rgba(64,116,139,1)' d='M6 8L0 0h12z'/%3E%3C/svg%3E")
+  background-repeat no-repeat
+  background-position right 12px center
+  padding-right 32px
+  appearance none
+  -webkit-appearance none

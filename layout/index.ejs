@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="<%= config.language || 'en' %>">
+<head>
+  <%- partial('_partial/head') %>
+</head>
+<body>
+
+<a href="#main-content" class="skip-nav">Skip to main content</a>
+
+<%- partial('_partial/header') %>
+
+<div class="page-wrapper">
+
+  <main class="main-content" id="main-content" role="main">
+
+    <div class="post-grid">
+      <% page.posts.each(post => { %>
+        <%- partial('_partial/post-card', { post }) %>
+      <% }) %>
+    </div>
+
+    <%- partial('_partial/pagination') %>
+
+  </main>
+
+  <% if (!theme.sidebar || theme.sidebar.position !== 'hidden') { %>
+    <%- partial('_partial/sidebar') %>
+  <% } %>
+
+</div>
+
+<%- partial('_partial/footer') %>
+<%- partial('_partial/toast') %>
+
+<script src="<%- url_for('/js/nav.js') %>" defer></script>
+<script src="<%- url_for('/js/copy-code.js') %>" defer></script>
+
+</body>
+</html>

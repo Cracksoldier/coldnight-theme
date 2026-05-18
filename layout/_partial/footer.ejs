@@ -1,0 +1,16 @@
+<footer class="site-footer" role="contentinfo">
+  <div class="footer-inner">
+    <ul class="footer-links">
+      <% if (theme.social && theme.social.github) { %>
+        <li><a href="https://github.com/<%= theme.social.github %>" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+      <% } %>
+      <% if (theme.social && theme.social.twitter) { %>
+        <li><a href="https://twitter.com/<%= theme.social.twitter %>" target="_blank" rel="noopener noreferrer">Twitter</a></li>
+      <% } %>
+      <% if (theme.social && theme.social.rss) { %>
+        <li><a href="<%- url_for('/atom.xml') %>">RSS</a></li>
+      <% } %>
+    </ul>
+    <span>&copy; <%= new Date().getFullYear() %> <%= config.author %>. Powered by <a href="https://hexo.io" target="_blank" rel="noopener noreferrer">Hexo</a>.</span>
+  </div>
+</footer>

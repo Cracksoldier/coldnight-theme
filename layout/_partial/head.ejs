@@ -1,0 +1,44 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+<title><%= page.title ? page.title + ' | ' + config.title : config.title %></title>
+<meta name="description" content="<%= page.description || config.description || '' %>">
+<meta name="author" content="<%= config.author %>">
+
+<!-- Open Graph -->
+<meta property="og:title" content="<%= page.title || config.title %>">
+<meta property="og:description" content="<%= page.description || config.description || '' %>">
+<meta property="og:type" content="<%= page.layout === 'post' ? 'article' : 'website' %>">
+<meta property="og:url" content="<%= page.permalink || config.url %>">
+<% if (page.cover_image) { %>
+<meta property="og:image" content="<%= page.cover_image %>">
+<% } %>
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="<%= page.title || config.title %>">
+<meta name="twitter:description" content="<%= page.description || config.description || '' %>">
+
+<!-- Favicon -->
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="alternate icon" href="/favicon.ico">
+
+<!-- Theme stylesheet -->
+<link rel="stylesheet" href="<%- url_for('/css/style.css') %>">
+
+<!-- LightGallery CSS (loaded on all pages; JS only inits when images present) -->
+<% if (theme.lightgallery && theme.lightgallery.enabled) { %>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2/css/lightgallery.min.css">
+<% if (theme.lightgallery.zoom) { %>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2/css/lg-zoom.min.css">
+<% } %>
+<% if (theme.lightgallery.thumbnail) { %>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2/css/lg-thumbnail.min.css">
+<% } %>
+<% } %>
+
+<!-- RSS -->
+<% if (theme.social && theme.social.rss) { %>
+<link rel="alternate" type="application/rss+xml" title="<%= config.title %>" href="<%- url_for('/atom.xml') %>">
+<% } %>

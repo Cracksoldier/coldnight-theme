@@ -1,0 +1,46 @@
+# coldnight theme configuration
+# All settings here can be overridden in the site's _config.yml under `theme_config:`
+
+navbar:
+  title: "My Blog"
+  links:
+    - name: Home
+      url: /
+    - name: Archive
+      url: /archives
+    - name: About
+      url: /about
+
+sidebar:
+  position: right      # left | right | hidden
+  widgets:
+    - recent_posts
+    - tags
+    - archives
+    - about
+
+sponsor:
+  enabled: false
+  label: "Buy me a coffee"
+  url: ""
+
+social:
+  github: ""
+  twitter: ""
+  rss: true
+
+reading_time: true     # show "N min read" on post cards and post header
+
+code:
+  copy_button: true    # show copy-to-clipboard button on code blocks
+  language_label: true # show language tag top-right of code blocks
+
+cover:
+  default: ""          # fallback image path when no cover_image set in post front-matter
+  aspect_ratio: "16/9"
+
+lightgallery:
+  enabled: true        # include LightGallery CDN assets
+  auto_mount: true     # auto-wrap .post-body images as gallery items
+  zoom: true           # enable zoom plugin
+  thumbnail: true      # enable thumbnail strip plugin

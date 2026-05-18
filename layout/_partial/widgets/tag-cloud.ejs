@@ -1,0 +1,10 @@
+<div class="sidebar-widget">
+  <p class="sidebar-widget__title">Tags</p>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;">
+    <% site.tags.sort('name').each(tag => { %>
+      <a href="<%- url_for(tag.path) %>" class="tag-pill">
+        <%= tag.name %> <span style="opacity:0.6;font-size:10px;">(<%= tag.length %>)</span>
+      </a>
+    <% }) %>
+  </div>
+</div>

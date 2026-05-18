@@ -1,0 +1,22 @@
+<div class="sidebar-widget">
+  <p class="sidebar-widget__title">Archives</p>
+  <ul class="sidebar-widget__list">
+    <%
+      const byYear = {}
+      site.posts.sort('-date').each(post => {
+        const y = post.date.year()
+        if (!byYear[y]) byYear[y] = 0
+        byYear[y]++
+      })
+      const years = Object.keys(byYear).sort((a, b) => b - a)
+    %>
+    <% years.forEach(year => { %>
+      <li>
+        <a href="<%- url_for('/archives/' + year) %>">
+          <span><%= year %></span>
+          <span class="sidebar-widget__count"><%= byYear[year] %></span>
+        </a>
+      </li>
+    <% }) %>
+  </ul>
+</div>

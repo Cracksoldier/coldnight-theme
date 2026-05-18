@@ -1,0 +1,151 @@
+// ─── Page shell ──────────────────────────────────────────────────────────────
+
+.page-wrapper
+  max-width 1100px
+  margin 0 auto
+  padding 0 sp-6
+  display flex
+  gap sp-6
+  padding-top sp-6
+  padding-bottom sp-8
+
+  @media (max-width bp-mobile)
+    padding 0 sp-4
+    padding-top sp-4
+    padding-bottom sp-6
+
+.main-content
+  flex 1 1 65%
+  min-width 0
+
+.sidebar
+  flex 0 0 calc(35% - sp-6)
+  min-width 0
+
+  &--hidden
+    display none
+
+  @media (max-width bp-tablet)
+    flex 0 0 280px
+
+  @media (max-width bp-mobile)
+    flex none
+    width 100%
+
+// Stack sidebar below main on mobile
+@media (max-width bp-mobile)
+  .page-wrapper
+    flex-direction column
+
+// Hide sidebar on mobile when position is right (default)
+@media (max-width bp-mobile)
+  .sidebar
+    display none
+
+// ─── Post grid (3×3) ─────────────────────────────────────────────────────────
+
+.post-grid
+  display grid
+  grid-template-columns repeat(3, 1fr)
+  gap sp-6
+
+  @media (max-width bp-tablet)
+    grid-template-columns repeat(2, 1fr)
+
+  @media (max-width bp-mobile)
+    grid-template-columns 1fr
+
+// ─── Page header (archive/tag/category title) ────────────────────────────────
+
+.page-header
+  margin-bottom sp-6
+
+  h1
+    font-size 1.5rem
+    font-weight 600
+    color text-primary
+
+  .page-header__meta
+    font-size 13px
+    color text-secondary
+    margin-top sp-2
+
+// ─── Post page ───────────────────────────────────────────────────────────────
+
+.post-page
+  max-width 780px
+
+.post-header
+  margin-bottom sp-6
+
+.post-title
+  font-size 1.875rem
+  font-weight 700
+  color text-primary
+  border-bottom 1px solid border-subtle
+  padding-bottom 0.4rem
+  margin-bottom sp-3
+  line-height 1.3
+
+.post-meta
+  display flex
+  flex-wrap wrap
+  gap sp-3
+  font-size 13px
+  color text-secondary
+  align-items center
+
+  a
+    color text-secondary
+
+    &:hover
+      color accent-light
+
+.post-body
+  margin-top sp-6
+
+.post-footer
+  margin-top sp-8
+  padding-top sp-6
+  border-top 1px solid border-subtle
+
+.post-tags
+  display flex
+  flex-wrap wrap
+  gap sp-2
+  margin-bottom sp-6
+
+.post-nav
+  display grid
+  grid-template-columns 1fr 1fr
+  gap sp-4
+  margin-top sp-6
+
+  @media (max-width bp-mobile)
+    grid-template-columns 1fr
+
+.post-nav__item
+  display flex
+  flex-direction column
+  gap 4px
+
+  &--prev
+    align-items flex-start
+
+  &--next
+    align-items flex-end
+    text-align right
+
+.post-nav__label
+  font-size 11px
+  text-transform uppercase
+  letter-spacing 0.05em
+  color text-muted
+  font-weight 500
+
+.post-nav__title
+  font-size 14px
+  color text-primary
+
+  &:hover
+    color accent-light

@@ -1,0 +1,15 @@
+<% if (page.total > 1) { %>
+<nav class="pagination" aria-label="Pagination">
+  <%- paginator({
+    prev_text: '← Prev',
+    next_text: 'Next →',
+    mid_size: 2,
+    end_size: 1,
+    prev_class: 'btn btn--ghost',
+    next_class: 'btn btn--ghost',
+    current_class: 'page-number current',
+    space_class: 'space',
+    link_class: 'page-number'
+  }) %>
+</nav>
+<% } %>

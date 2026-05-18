@@ -1,0 +1,13 @@
+<div class="sidebar-widget">
+  <p class="sidebar-widget__title">Recent Posts</p>
+  <ul class="sidebar-widget__list">
+    <% site.posts.sort('-date').limit(5).each(post => { %>
+      <li>
+        <a href="<%- url_for(post.path) %>">
+          <span><%= post.title %></span>
+          <span class="sidebar-widget__count"><%= post.date.format('MM/DD') %></span>
+        </a>
+      </li>
+    <% }) %>
+  </ul>
+</div>

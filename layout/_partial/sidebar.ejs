@@ -1,0 +1,32 @@
+<% const widgets = theme.sidebar && theme.sidebar.widgets ? theme.sidebar.widgets : [] %>
+
+<aside class="sidebar" role="complementary" aria-label="Sidebar">
+  <% widgets.forEach(widget => { %>
+    <% if (widget === 'recent_posts') { %>
+      <%- partial('widgets/recent-posts') %>
+    <% } else if (widget === 'tags') { %>
+      <%- partial('widgets/tag-cloud') %>
+    <% } else if (widget === 'archives') { %>
+      <%- partial('widgets/archive') %>
+    <% } else if (widget === 'about') { %>
+      <div class="sidebar-widget widget-about">
+        <p class="sidebar-widget__title">About</p>
+        <% if (config.avatar) { %>
+          <img class="widget-about__avatar" src="<%= config.avatar %>" alt="<%= config.author %>">
+        <% } %>
+        <p class="widget-about__name"><%= config.author %></p>
+        <% if (config.description) { %>
+          <p class="widget-about__bio"><%= config.description %></p>
+        <% } %>
+        <div class="widget-about__social">
+          <% if (theme.social && theme.social.github) { %>
+            <a href="https://github.com/<%= theme.social.github %>" target="_blank" rel="noopener noreferrer">GitHub</a>
+          <% } %>
+          <% if (theme.social && theme.social.twitter) { %>
+            <a href="https://twitter.com/<%= theme.social.twitter %>" target="_blank" rel="noopener noreferrer">Twitter</a>
+          <% } %>
+        </div>
+      </div>
+    <% } %>
+  <% }) %>
+</aside>

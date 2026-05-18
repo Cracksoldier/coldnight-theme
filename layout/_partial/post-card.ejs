@@ -1,0 +1,41 @@
+<%
+  // post-card.ejs — accepts `post` local variable
+  const coverImg = post.cover_image || (theme.cover && theme.cover.default) || ''
+  const category = post.categories && post.categories.length ? post.categories.first() : null
+  const readTime = theme.reading_time ? reading_time(post.content) : ''
+%>
+
+<article class="post-card fade-in">
+
+  <% if (coverImg) { %>
+    <a class="post-card__cover" href="<%- url_for(post.path) %>" tabindex="-1" aria-hidden="true">
+      <img src="<%= coverImg %>" alt="" loading="lazy">
+    </a>
+  <% } %>
+
+  <div class="post-card__body">
+
+    <div class="post-card__meta">
+      <% if (category) { %>
+        <a href="<%- url_for(category.path) %>" class="post-card__category"><%= category.name %></a>
+      <% } %>
+      <% if (readTime) { %>
+        <span><%= readTime %></span>
+      <% } %>
+    </div>
+
+    <a href="<%- url_for(post.path) %>" class="post-card__title">
+      <%= post.title %>
+    </a>
+
+    <% if (post.excerpt) { %>
+      <div class="post-card__excerpt"><%- post.excerpt %></div>
+    <% } %>
+
+    <div class="post-card__footer">
+      <time datetime="<%= post.date.toISOString() %>"><%= date(post.date, 'YYYY-MM-DD') %></time>
+      <a href="<%- url_for(post.path) %>" class="post-card__read-more">Read more →</a>
+    </div>
+
+  </div>
+</article>
