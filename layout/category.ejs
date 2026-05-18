@@ -9,29 +9,46 @@
 
 <%- partial('_partial/header') %>
 
-<div class="page-wrapper">
-
-  <main class="main-content" id="main-content" role="main">
+<div class="archive-wrapper">
+  <main id="main-content" role="main">
 
     <header class="page-header">
       <h1>Category: <span style="color:#60a5fa;"><%= page.category %></span></h1>
       <p class="page-header__meta"><%= page.posts.length %> post<%= page.posts.length !== 1 ? 's' : '' %></p>
     </header>
 
-    <div class="post-grid">
-      <% page.posts.each(post => { %>
-        <%- partial('_partial/post-card', { post }) %>
-      <% }) %>
-    </div>
+    <%
+      const postsByYear = {}
+      page.posts.each(post => {
+        const year = post.date.year()
+        if (!postsByYear[year]) postsByYear[year] = []
+        postsByYear[year].push(post)
+      })
+      const years = Object.keys(postsByYear).sort((a, b) => b - a)
+    %>
 
-    <%- partial('_partial/pagination') %>
+    <% years.forEach(year => { %>
+      <section class="archive-year-group">
+        <h2 class="archive-year"><%= year %></h2>
+        <ul class="archive-items">
+          <% postsByYear[year].forEach(post => { %>
+            <li class="archive-item">
+              <time class="archive-item__date" datetime="<%= post.date.format('YYYY-MM-DD') %>">
+                <%= post.date.format('MMM D') %>
+              </time>
+              <a href="<%- url_for(post.path) %>" class="archive-item__title"><%- post.title %></a>
+              <span class="archive-item__meta">
+                <% if (theme.reading_time !== false) { %>
+                  <%= reading_time(post.content) %>
+                <% } %>
+              </span>
+            </li>
+          <% }) %>
+        </ul>
+      </section>
+    <% }) %>
 
   </main>
-
-  <% if (!theme.sidebar || theme.sidebar.position !== 'hidden') { %>
-    <%- partial('_partial/sidebar') %>
-  <% } %>
-
 </div>
 
 <%- partial('_partial/footer') %>
