@@ -656,6 +656,32 @@ button.navbar__hamburger {
   }
 }
 
+// ─── Download block ───────────────────────────────────────────────────────────
+
+.download-block {
+  margin: $sp-4 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $sp-3;
+}
+
+.download-block__ext-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-2;
+  font-size: 11px;
+  font-weight: 500;
+  color: $amber;
+  background: $amber-bg;
+  border: 1px solid $amber-border;
+  border-radius: $radius;
+  padding: 3px $sp-3;
+  white-space: nowrap;
+
+  svg { flex-shrink: 0; }
+}
+
 // ─── Pagination ──────────────────────────────────────────────────────────────
 
 .pagination {

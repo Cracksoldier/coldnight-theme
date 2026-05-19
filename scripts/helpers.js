@@ -96,6 +96,9 @@ const NOTE_ICONS = {
   danger: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
 }
 
+const DOWNLOAD_ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>'
+const EXTERNAL_ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'
+
 // ─── Language label fix ──────────────────────────────────────────────────────
 // Hexo emits `<figure class="highlight bash">` but not `data-lang="bash"`.
 // The CSS ::before rule uses attr(data-lang), so we inject it at build time.
@@ -203,3 +206,29 @@ hexo.extend.tag.register('tabs', function (args, content) {
     `</div>`
   )
 }, { ends: true })
+
+// ─── Download tag ─────────────────────────────────────────────────────────────
+// Usage: {% download url [label] [external] %}
+
+hexo.extend.tag.register('download', function (args) {
+  const url   = args[0] || ''
+  const isExt = args.indexOf('external') !== -1
+  const parts = args.slice(1).filter(function (a) { return a !== 'external' })
+  const label = parts.length
+    ? escHtml(parts.join(' '))
+    : escHtml(url.split('/').pop().split('?')[0] || 'Download')
+  const href  = escHtml(url)
+  const badge = isExt
+    ? '<span class="download-block__ext-badge" title="Hosted on an external server">' +
+        EXTERNAL_ICON + ' External</span>'
+    : ''
+  return (
+    '<div class="download-block">' +
+      '<a class="btn btn--primary download-block__btn" href="' + href + '" download' +
+         ' rel="noopener noreferrer">' +
+        DOWNLOAD_ICON + ' ' + label +
+      '</a>' +
+      badge +
+    '</div>'
+  )
+})
