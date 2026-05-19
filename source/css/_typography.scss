@@ -144,6 +144,12 @@
     &:hover {
       color: $accent-hover;
     }
+
+    &[target="_blank"]::after {
+      content: " ↗";
+      font-size: 0.75em;
+      opacity: 0.6;
+    }
   }
 
   // ─── Footnotes ───────────────────────────────────────────────────────────

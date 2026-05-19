@@ -33,6 +33,7 @@ social:
 reading_time: true     # show "N min read" on post cards and post header
 word_count: true       # show raw word count ("1,240 words") in the post header
 image_captions: true   # wrap standalone images with non-empty alt text in <figure>/<figcaption>
+external_links: true   # add target="_blank" rel="noopener noreferrer" and ↗ icon to external links in post body
 permalink_button: true # copy-to-clipboard link icon in post metadata row
 
 toc:

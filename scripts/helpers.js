@@ -207,6 +207,29 @@ hexo.extend.tag.register('tabs', function (args, content) {
   )
 }, { ends: true })
 
+// ─── External link handler ────────────────────────────────────────────────────
+
+hexo.extend.filter.register('after_post_render', function (data) {
+  if (!hexo.theme.config.external_links) return data
+
+  let siteHostname = ''
+  try { siteHostname = new URL(hexo.config.url).hostname } catch (e) {}
+
+  data.content = data.content.replace(
+    /<a\b([^>]*?)href="(https?:\/\/[^"]*?)"([^>]*?)>/gi,
+    (match, before, href, after) => {
+      if (/\btarget\s*=/i.test(before + after)) return match
+      if (/\bdownload\b/i.test(before + after)) return match
+      try {
+        if (siteHostname && new URL(href).hostname === siteHostname) return match
+      } catch (e) { return match }
+      return `<a${before}href="${href}"${after} target="_blank" rel="noopener noreferrer">`
+    }
+  )
+
+  return data
+})
+
 // ─── Download tag ─────────────────────────────────────────────────────────────
 // Usage: {% download url [label] [external] %}
 
