@@ -372,6 +372,7 @@ button.navbar__hamburger {
   overflow: hidden;
   display: flex;
   flex-direction: row;
+  min-height: 200px;
   margin-bottom: $sp-6;
   transition: border-color $transition-fast, box-shadow $transition-fast;
 
