@@ -115,7 +115,7 @@
 
   document.addEventListener('keydown', function (e) {
     if (e.key !== '/') return
-    var tag = (document.activeElement.tagName || '').toLowerCase()
+    var tag = (document.activeElement && document.activeElement.tagName || '').toLowerCase()
     if (tag === 'input' || tag === 'textarea' || document.activeElement.isContentEditable) return
     var input = document.getElementById('search-input')
     if (!input) return
