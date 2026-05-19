@@ -1229,7 +1229,7 @@ select.form-input {
   > :last-child  { margin-bottom: 0; }
 }
 
-@for $i from 1 through 6 {
+@for $i from 1 through 10 {
   .tabs input[type="radio"]:nth-of-type(#{$i}):checked {
     ~ .tabs__nav .tabs__label:nth-child(#{$i}) {
       color: $accent-light;
