@@ -213,7 +213,7 @@ hexo.extend.tag.register('tabs', function (args, content) {
 hexo.extend.tag.register('download', function (args) {
   const url   = args[0] || ''
   const isExt = args.indexOf('external') !== -1
-  const parts = args.slice(1).filter(function (a) { return a !== 'external' })
+  const parts = args.slice(1).filter(a => a !== 'external')
   const label = parts.length
     ? escHtml(parts.join(' '))
     : escHtml(url.split('/').pop().split('?')[0] || 'Download')
