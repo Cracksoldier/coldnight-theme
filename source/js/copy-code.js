@@ -18,6 +18,25 @@
     setTimeout(() => toast.remove(), 3500)
   }
 
+  function writeToClipboard(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text)
+    }
+    const ta = document.createElement('textarea')
+    ta.value = text
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none'
+    document.body.appendChild(ta)
+    ta.select()
+    try {
+      document.execCommand('copy')
+      document.body.removeChild(ta)
+      return Promise.resolve()
+    } catch (err) {
+      document.body.removeChild(ta)
+      return Promise.reject(err)
+    }
+  }
+
   function addCopyButton(block) {
     const btn = document.createElement('button')
     btn.className = 'btn btn--icon btn--sm code-copy-btn'
@@ -38,7 +57,7 @@
       clone.querySelectorAll('br').forEach(function (br) { br.replaceWith('\n') })
       const text = clone.textContent.trim()
 
-      navigator.clipboard.writeText(text).then(function () {
+      writeToClipboard(text).then(function () {
         showToast('Copied to clipboard', 'success')
       }).catch(function () {
         showToast('Copy failed', 'error')

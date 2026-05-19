@@ -6,19 +6,27 @@
 <meta name="description" content="<%= page.description || config.description || '' %>">
 <meta name="author" content="<%= config.author %>">
 
+<%
+  const ogImage = page.cover_image || (theme.cover && theme.cover.default) || ''
+  const ogImageAbs = ogImage ? config.url.replace(/\/$/, '') + url_for(ogImage) : ''
+%>
+
 <!-- Open Graph -->
 <meta property="og:title" content="<%= page.title || config.title %>">
 <meta property="og:description" content="<%= page.description || config.description || '' %>">
 <meta property="og:type" content="<%= page.layout === 'post' ? 'article' : 'website' %>">
 <meta property="og:url" content="<%= page.permalink || config.url %>">
-<% if (page.cover_image) { %>
-<meta property="og:image" content="<%= page.cover_image %>">
+<% if (ogImageAbs) { %>
+<meta property="og:image" content="<%= ogImageAbs %>">
 <% } %>
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="<%= page.title || config.title %>">
 <meta name="twitter:description" content="<%= page.description || config.description || '' %>">
+<% if (ogImageAbs) { %>
+<meta name="twitter:image" content="<%= ogImageAbs %>">
+<% } %>
 
 <!-- Favicon -->
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -27,8 +35,8 @@
 <!-- Theme stylesheet -->
 <link rel="stylesheet" href="<%- url_for('/css/style.css') %>">
 
-<!-- LightGallery CSS (loaded on all pages; JS only inits when images present) -->
-<% if (theme.lightgallery && theme.lightgallery.enabled) { %>
+<!-- LightGallery CSS — post pages only -->
+<% if (page.layout === 'post' && theme.lightgallery && theme.lightgallery.enabled) { %>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2/css/lightgallery.min.css">
 <% if (theme.lightgallery.zoom) { %>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2/css/lg-zoom.min.css">

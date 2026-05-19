@@ -11,7 +11,6 @@ html
 
 body
   font-family unquote(font-sans)
-  font-size 16px
   line-height 1.7
   color text-primary
   background-color bg-base
@@ -96,6 +95,11 @@ ul, ol
   animation fade-in 0.25s ease forwards
   opacity 0
 
-for i in 0 1 2 3 4
+for i in 0 1 2 3 4 5 6 7 8 9 10 11
   .fade-in:nth-child({i + 1})
     animation-delay (i * 50ms)
+
+@media (prefers-reduced-motion: reduce)
+  .fade-in
+    animation none
+    opacity 1

@@ -17,9 +17,14 @@
     <!-- Desktop nav -->
     <nav class="navbar__nav" aria-label="Main navigation" id="main-nav">
       <% navLinks.forEach(link => { %>
+        <%
+          const linkHref   = url_for(link.url).replace(/\/$/, '') || '/'
+          const currentUrl = url_for('/' + page.path).replace(/\/index\.html$/, '').replace(/\/$/, '') || '/'
+          const isActive   = currentUrl === linkHref
+        %>
         <a href="<%- url_for(link.url) %>"
-           class="nav-link<%= page.path === link.url.replace(/^\//, '') || (link.url === '/' && page.path === '') ? ' active' : '' %>"
-           <%= page.path === link.url.replace(/^\//, '') ? 'aria-current="page"' : '' %>>
+           class="nav-link<%= isActive ? ' active' : '' %>"
+           <%= isActive ? 'aria-current="page"' : '' %>>
           <%= link.name %>
         </a>
       <% }) %>
@@ -62,9 +67,14 @@
 <!-- Mobile nav drawer -->
 <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
   <% navLinks.forEach(link => { %>
+    <%
+      const linkHref   = url_for(link.url).replace(/\/$/, '') || '/'
+      const currentUrl = url_for('/' + page.path).replace(/\/index\.html$/, '').replace(/\/$/, '') || '/'
+      const isActive   = currentUrl === linkHref
+    %>
     <a href="<%- url_for(link.url) %>"
-       class="nav-link<%= page.path === link.url.replace(/^\//, '') ? ' active' : '' %>"
-       <%= page.path === link.url.replace(/^\//, '') ? 'aria-current="page"' : '' %>>
+       class="nav-link<%= isActive ? ' active' : '' %>"
+       <%= isActive ? 'aria-current="page"' : '' %>>
       <%= link.name %>
     </a>
   <% }) %>

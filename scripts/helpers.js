@@ -1,6 +1,8 @@
 'use strict'
 
-const stripHtml = (html) => html.replace(/<[^>]+>/g, '')
+const stripHtml = (html) => html
+  .replace(/<(pre|figure)\b[^>]*>[\s\S]*?<\/\1>/gi, '')
+  .replace(/<[^>]+>/g, '')
 
 // ─── Reading time helper ──────────────────────────────────────────────────────
 // Usage in EJS: <%= reading_time(post.content) %>
