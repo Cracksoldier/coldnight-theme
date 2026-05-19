@@ -113,6 +113,17 @@
   init('search-input', 'search-wrap', 'search-results')
   init('search-input-mobile', 'search-wrap-mobile', 'search-results-mobile')
 
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== '/') return
+    var tag = (document.activeElement.tagName || '').toLowerCase()
+    if (tag === 'input' || tag === 'textarea' || document.activeElement.isContentEditable) return
+    var input = document.getElementById('search-input')
+    if (!input) return
+    e.preventDefault()
+    input.focus()
+    input.select()
+  })
+
   function snippet(content, q) {
     if (!content) return ''
     var terms = q.trim().split(/\s+/).filter(Boolean)
