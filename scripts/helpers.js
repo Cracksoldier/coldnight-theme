@@ -65,6 +65,18 @@ hexo.extend.filter.register('after_render:html', function (html) {
   )
 })
 
+// ─── Grid per_page sync ───────────────────────────────────────────────────────
+// Overrides index_generator.per_page so the user only needs to set grid.columns
+// and grid.rows in the theme config.
+
+hexo.extend.filter.register('before_generate', function () {
+  const grid = hexo.theme.config.grid
+  if (grid && grid.columns && grid.rows) {
+    hexo.config.index_generator = hexo.config.index_generator || {}
+    hexo.config.index_generator.per_page = grid.columns * grid.rows
+  }
+})
+
 hexo.extend.tag.register('note', function (args, content) {
   const type = (args[0] || 'info').toLowerCase()
   const icon = NOTE_ICONS[type] || NOTE_ICONS.info

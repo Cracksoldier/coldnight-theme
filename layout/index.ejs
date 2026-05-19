@@ -13,7 +13,13 @@
 
   <main class="main-content" id="main-content" role="main">
 
-    <div class="post-grid">
+    <%
+      const gridCols   = (theme.grid && theme.grid.columns) || 3
+      const tabletCols = Math.max(1, Math.ceil(gridCols / 2))
+      const isList     = gridCols === 1
+    %>
+    <div class="post-grid<%= isList ? ' post-grid--list' : '' %>"
+         style="--post-grid-cols: <%= gridCols %>; --post-grid-cols-md: <%= tabletCols %>;">
       <% page.posts.each(post => { %>
         <%- partial('_partial/post-card', { post }) %>
       <% }) %>

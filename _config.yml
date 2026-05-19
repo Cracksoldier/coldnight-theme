@@ -35,6 +35,10 @@ code:
   copy_button: true    # show copy-to-clipboard button on code blocks
   language_label: true # show language tag top-right of code blocks
 
+grid:
+  columns: 1           # index page columns (1 = list view, 2–6 = grid)
+  rows: 3              # rows per page; per_page is auto-set to columns × rows
+
 cover:
   default: ""          # fallback image path when no cover_image set in post front-matter
   aspect_ratio: "16/9"

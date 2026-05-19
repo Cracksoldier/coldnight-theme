@@ -275,6 +275,33 @@ button.navbar__hamburger
   &:hover
     color accent-hover
 
+// ─── List view (columns: 1) ──────────────────────────────────────────────────
+
+.post-grid--list
+  gap sp-3
+
+  .post-card
+    flex-direction row
+    align-items stretch
+
+  .post-card__cover
+    width 180px
+    min-width 180px
+    aspect-ratio 1 / 1
+    flex-shrink 0
+
+  .post-card__body
+    padding sp-4
+
+  @media (max-width bp-mobile)
+    .post-card
+      flex-direction column
+
+    .post-card__cover
+      width 100%
+      min-width unset
+      aspect-ratio 16 / 9
+
 // ─── Tags / Pills ────────────────────────────────────────────────────────────
 
 .tag-pill

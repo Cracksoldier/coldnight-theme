@@ -32,15 +32,15 @@
   @media (max-width bp-mobile)
     display none
 
-// ─── Post grid (3×3) ─────────────────────────────────────────────────────────
+// ─── Post grid ───────────────────────────────────────────────────────────────
 
 .post-grid
   display grid
-  grid-template-columns repeat(3, 1fr)
+  grid-template-columns repeat(var(--post-grid-cols, 3), 1fr)
   gap sp-6
 
   @media (max-width bp-tablet)
-    grid-template-columns repeat(2, 1fr)
+    grid-template-columns repeat(var(--post-grid-cols-md, 2), 1fr)
 
   @media (max-width bp-mobile)
     grid-template-columns 1fr
