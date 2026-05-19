@@ -18,6 +18,18 @@
     </header>
 
     <%
+      const _cats = [], _tags = [], _catSeen = new Set(), _tagSeen = new Set()
+      page.posts.each(p => {
+        if (p.categories && p.categories.length) {
+          const c = p.categories.first().name
+          if (!_catSeen.has(c)) { _catSeen.add(c); _cats.push(c) }
+        }
+        if (p.tags) p.tags.each(t => {
+          if (!_tagSeen.has(t.name)) { _tagSeen.add(t.name); _tags.push(t.name) }
+        })
+      })
+      _cats.sort(); _tags.sort()
+
       const postsByYear = {}
       page.posts.each(post => {
         const year = post.date.year()
@@ -27,12 +39,26 @@
       const years = Object.keys(postsByYear).sort((a, b) => b - a)
     %>
 
+    <% if (_cats.length || _tags.length) { %>
+    <div class="archive-filters" role="group" aria-label="Filter posts">
+      <button class="archive-filter-chip archive-filter-chip--active" data-filter-type="all">All</button>
+      <% _cats.forEach(c => { %>
+        <button class="archive-filter-chip" data-filter-type="category" data-filter-value="<%= c %>"><%= c %></button>
+      <% }) %>
+      <% _tags.forEach(t => { %>
+        <button class="archive-filter-chip" data-filter-type="tag" data-filter-value="<%= t %>">#<%= t %></button>
+      <% }) %>
+    </div>
+    <% } %>
+
     <% years.forEach(year => { %>
       <section class="archive-year-group">
         <h2 class="archive-year"><%= year %></h2>
         <ul class="archive-items">
           <% postsByYear[year].forEach(post => { %>
-            <li class="archive-item">
+            <li class="archive-item"
+                data-category="<%= post.categories && post.categories.length ? post.categories.first().name : '' %>"
+                data-tags="<%= post.tags && post.tags.length ? post.tags.toArray().map(t => t.name).join('|') : '' %>">
               <time class="archive-item__date" datetime="<%= post.date.format('YYYY-MM-DD') %>">
                 <%= post.date.format('MMM D') %>
               </time>
@@ -57,6 +83,7 @@
 <%- partial('_partial/toast') %>
 
 <script src="<%- url_for('/js/nav.js') %>" defer></script>
+<script src="<%- url_for('/js/archive-filter.js') %>" defer></script>
 
 </body>
 </html>
