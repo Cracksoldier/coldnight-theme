@@ -50,11 +50,14 @@
       <% if (theme.search && theme.search.enabled) { %>
       <div class="search-wrap navbar__search" id="search-wrap">
         <input type="search"
+               role="combobox"
                class="search-input"
                id="search-input"
                placeholder="Search…"
                aria-label="Search posts"
                aria-expanded="false"
+               aria-autocomplete="list"
+               aria-haspopup="listbox"
                aria-controls="search-results"
                autocomplete="off"
                spellcheck="false">
@@ -80,15 +83,18 @@
 </header>
 
 <!-- Mobile nav drawer -->
-<nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
+<nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation" aria-hidden="true">
   <% if (theme.search && theme.search.enabled) { %>
   <div class="search-wrap mobile-nav__search" id="search-wrap-mobile">
     <input type="search"
+           role="combobox"
            class="search-input"
            id="search-input-mobile"
            placeholder="Search…"
            aria-label="Search posts"
            aria-expanded="false"
+           aria-autocomplete="list"
+           aria-haspopup="listbox"
            aria-controls="search-results-mobile"
            autocomplete="off"
            spellcheck="false">

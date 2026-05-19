@@ -1,4 +1,6 @@
 ;(function () {
+  'use strict'
+
   const btn = document.getElementById('back-to-top')
   if (!btn) return
 

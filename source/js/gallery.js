@@ -9,6 +9,7 @@
   }
 
   function mountAutoGallery() {
+    if (typeof lightGallery === 'undefined') return
     const body = document.querySelector('.post-body')
     if (!body) return
 
@@ -39,6 +40,7 @@
   }
 
   function mountExplicitGalleries() {
+    if (typeof lightGallery === 'undefined') return
     document.querySelectorAll('.lg-gallery').forEach(function (gallery) {
       lightGallery(gallery, {
         plugins: buildPlugins(),

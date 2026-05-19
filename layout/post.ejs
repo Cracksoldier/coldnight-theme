@@ -98,10 +98,10 @@
       </header>
 
       <% if (page.cover_image) { %>
-        <img src="<%= page.cover_image %>" alt="" class="post-cover" loading="lazy">
+        <img src="<%= page.cover_image %>" alt="<%= page.title %>" class="post-cover" loading="lazy">
       <% } %>
 
-      <% if (seriesPosts.length > 1) { %>
+      <% if (seriesPosts.length > 1 && seriesIndex > 0) { %>
       <nav class="series-nav" aria-label="<%= page.series %> series">
         <div class="series-nav__header">
           <span class="series-nav__badge">Series</span>

@@ -6,6 +6,10 @@ const stripHtml = (html) => html
   .replace(/<(pre|figure)\b[^>]*>[\s\S]*?<\/\1>/gi, '')
   .replace(/<[^>]+>/g, '')
 
+const escHtml = s => String(s)
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
 // ─── Reading time helper ──────────────────────────────────────────────────────
 // Usage in EJS: <%= reading_time(post.content) %>
 
@@ -43,7 +47,7 @@ hexo.extend.helper.register('render_toc', function (content) {
   items.forEach(function (item) {
     html +=
       '<li class="toc-item toc-item--h' + item.level + '">' +
-      '<a href="#' + item.id + '" class="toc-link">' + item.text + '</a>' +
+      '<a href="#' + escHtml(item.id) + '" class="toc-link">' + escHtml(item.text) + '</a>' +
       '</li>\n'
   })
   html += '</ol>'
@@ -63,12 +67,12 @@ hexo.extend.tag.register('gallery', function (args, content) {
   let items = ''
   let match
   while ((match = mdImageRe.exec(content)) !== null) {
-    const alt = match[1] || ''
-    const src = match[2] || ''
-    const dataSubHtml = alt ? ' data-sub-html="<p>' + alt + '</p>"' : ''
+    const altE = escHtml(match[1] || '')
+    const srcE = escHtml(match[2] || '')
+    const dataSubHtml = altE ? ' data-sub-html="<p>' + altE + '</p>"' : ''
     items +=
-      '<a href="' + src + '"' + dataSubHtml + '>' +
-        '<img src="' + src + '" alt="' + alt + '" loading="lazy">' +
+      '<a href="' + srcE + '"' + dataSubHtml + '>' +
+        '<img src="' + srcE + '" alt="' + altE + '" loading="lazy">' +
       '</a>\n'
   }
 
@@ -131,7 +135,12 @@ hexo.extend.filter.register('before_generate', function () {
 hexo.extend.tag.register('note', function (args, content) {
   const type = (args[0] || 'info').toLowerCase()
   const icon = NOTE_ICONS[type] || NOTE_ICONS.info
-  const rendered = hexo.render.renderSync({ text: content, engine: 'markdown' })
+  let rendered
+  try {
+    rendered = hexo.render.renderSync({ text: content, engine: 'markdown' })
+  } catch (e) {
+    rendered = '<pre>' + escHtml(content) + '</pre>'
+  }
 
   return (
     '<div class="note note-' + type + '" role="note">' +
@@ -177,7 +186,12 @@ hexo.extend.tag.register('tabs', function (args, content) {
   ).join('\n')
 
   const panels = tabs.map(tab => {
-    const rendered = hexo.render.renderSync({ text: tab.body, engine: 'markdown' })
+    let rendered
+    try {
+      rendered = hexo.render.renderSync({ text: tab.body, engine: 'markdown' })
+    } catch (e) {
+      rendered = '<pre>' + escHtml(tab.body) + '</pre>'
+    }
     return `<div class="tabs__panel">${rendered}</div>`
   }).join('\n')
 

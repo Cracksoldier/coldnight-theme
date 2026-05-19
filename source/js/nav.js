@@ -7,11 +7,13 @@
 
   function openNav() {
     toggle.setAttribute('aria-expanded', 'true')
+    mobileNav.setAttribute('aria-hidden', 'false')
     mobileNav.classList.add('nav--open')
   }
 
   function closeNav() {
     toggle.setAttribute('aria-expanded', 'false')
+    mobileNav.setAttribute('aria-hidden', 'true')
     mobileNav.classList.remove('nav--open')
   }
 

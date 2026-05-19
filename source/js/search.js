@@ -63,7 +63,7 @@
       results.innerHTML = matched.map(function (post) {
         var title = mark(esc(post.title || 'Untitled'), q)
         var snip  = mark(esc(snippet(post.content, q)), q)
-        return '<a href="' + post.url + '" class="search-result-item">' +
+        return '<a href="' + esc(post.url) + '" class="search-result-item">' +
           '<div>' + title + '</div>' +
           (snip ? '<div class="search-result-item__snip">' + snip + '</div>' : '') +
           '</a>'
