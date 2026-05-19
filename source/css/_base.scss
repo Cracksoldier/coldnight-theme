@@ -1,0 +1,133 @@
+@use 'variables' as *;
+
+// ─── Reset & Base ────────────────────────────────────────────────────────────
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: #{$font-sans};
+  line-height: 1.7;
+  color: $text-primary;
+  background-color: $bg-base;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+a {
+  color: $accent-light;
+  text-decoration: none;
+  transition: color $transition-fast;
+
+  &:hover {
+    color: $accent-hover;
+  }
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+ul, ol {
+  padding-left: $sp-6;
+}
+
+// ─── Skip Navigation ─────────────────────────────────────────────────────────
+
+.skip-nav {
+  position: absolute;
+  top: -100%;
+  left: $sp-4;
+  z-index: 100;
+  padding: 8px 16px;
+  background: $accent;
+  color: #fff;
+  border-radius: $radius;
+  font-size: 13px;
+  font-weight: 500;
+  transition: top 0.1s ease;
+
+  &:focus {
+    top: $sp-4;
+  }
+}
+
+// ─── Scrollbar ───────────────────────────────────────────────────────────────
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: $bg-base;
+}
+
+::-webkit-scrollbar-thumb {
+  background: $border-subtle;
+  border-radius: 3px;
+
+  &:hover {
+    background: $text-muted;
+  }
+}
+
+// ─── Animations ──────────────────────────────────────────────────────────────
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fade-in 0.25s ease forwards;
+  opacity: 0;
+}
+
+@for $i from 0 through 11 {
+  .fade-in:nth-child(#{$i + 1}) {
+    animation-delay: #{$i * 50}ms;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-in {
+    animation: none;
+    opacity: 1;
+  }
+}

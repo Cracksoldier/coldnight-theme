@@ -1,0 +1,260 @@
+@use 'variables' as *;
+
+// ─── Page shell ──────────────────────────────────────────────────────────────
+
+.page-wrapper {
+  flex: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 $sp-6;
+  display: grid;
+  grid-template-columns: 65fr 35fr;
+  gap: $sp-6;
+  padding-top: $sp-6;
+  padding-bottom: $sp-8;
+
+  @media (max-width: $bp-tablet) {
+    grid-template-columns: 1fr 280px;
+  }
+
+  @media (max-width: $bp-mobile) {
+    grid-template-columns: 1fr;
+    padding: 0 $sp-4;
+    padding-top: $sp-4;
+    padding-bottom: $sp-6;
+  }
+}
+
+.main-content {
+  min-width: 0;
+}
+
+.sidebar {
+  min-width: 0;
+
+  &--hidden {
+    display: none;
+  }
+
+  @media (max-width: $bp-mobile) {
+    display: none;
+  }
+}
+
+// ─── Post grid ───────────────────────────────────────────────────────────────
+
+.post-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--post-grid-cols, 3), 1fr);
+  gap: $sp-6;
+
+  @media (max-width: $bp-tablet) {
+    grid-template-columns: repeat(var(--post-grid-cols-md, 2), 1fr);
+  }
+
+  @media (max-width: $bp-mobile) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ─── Page header (archive/tag/category title) ────────────────────────────────
+
+.page-header {
+  margin-bottom: $sp-6;
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: $text-primary;
+  }
+
+  .page-header__meta {
+    font-size: 13px;
+    color: $text-secondary;
+    margin-top: $sp-2;
+  }
+}
+
+// ─── Archive list ────────────────────────────────────────────────────────────
+
+.archive-wrapper {
+  flex: 1;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: $sp-6 $sp-6 $sp-8;
+
+  @media (max-width: $bp-mobile) {
+    padding: $sp-4 $sp-4 $sp-6;
+  }
+}
+
+.archive-year-group {
+  margin-bottom: $sp-8;
+}
+
+.archive-year {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: $text-muted;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: $sp-2;
+  padding-bottom: $sp-2;
+  border-bottom: 1px solid $border-subtle;
+}
+
+.archive-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.archive-item {
+  display: grid;
+  grid-template-columns: 3.5rem 1fr auto;
+  align-items: baseline;
+  gap: 0 $sp-4;
+  padding: $sp-2 0;
+  border-bottom: 1px solid rgba($border-subtle, 0.5);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  @media (max-width: $bp-mobile) {
+    grid-template-columns: 3.5rem 1fr;
+    row-gap: 2px;
+  }
+}
+
+.archive-item__date {
+  font-size: 12px;
+  color: $text-muted;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.archive-item__title {
+  font-size: 15px;
+  font-weight: 500;
+  color: $text-primary;
+
+  &:hover {
+    color: $accent-light;
+  }
+}
+
+.archive-item__meta {
+  font-size: 12px;
+  color: $text-muted;
+  white-space: nowrap;
+
+  @media (max-width: $bp-mobile) {
+    grid-column: 2;
+  }
+}
+
+// ─── Post page ───────────────────────────────────────────────────────────────
+
+.post-page {
+  max-width: 780px;
+}
+
+.post-header {
+  margin-bottom: $sp-6;
+}
+
+.post-cover {
+  display: block;
+  width: 100%;
+  border-radius: $radius-lg;
+  margin-bottom: $sp-6;
+}
+
+.post-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: $text-primary;
+  border-bottom: 1px solid $border-subtle;
+  padding-bottom: 0.4rem;
+  margin-bottom: $sp-3;
+  line-height: 1.3;
+}
+
+.post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $sp-3;
+  font-size: 13px;
+  color: $text-secondary;
+  align-items: center;
+
+  a {
+    color: $text-secondary;
+
+    &:hover {
+      color: $accent-light;
+    }
+  }
+}
+
+.post-body {
+  margin-top: $sp-6;
+}
+
+.post-footer {
+  margin-top: $sp-8;
+  padding-top: $sp-6;
+  border-top: 1px solid $border-subtle;
+}
+
+.post-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $sp-2;
+  margin-bottom: $sp-6;
+}
+
+.post-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $sp-4;
+  margin-top: $sp-6;
+
+  @media (max-width: $bp-mobile) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.post-nav__item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &--prev {
+    align-items: flex-start;
+  }
+
+  &--next {
+    align-items: flex-end;
+    text-align: right;
+  }
+}
+
+.post-nav__label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $text-muted;
+  font-weight: 500;
+}
+
+.post-nav__title {
+  font-size: 14px;
+  color: $text-primary;
+
+  &:hover {
+    color: $accent-light;
+  }
+}

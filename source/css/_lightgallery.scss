@@ -1,0 +1,46 @@
+// ─── LightGallery v2 — coldnight overrides ───────────────────────────────────
+// These CSS custom properties remap LightGallery's defaults to coldnight tokens.
+
+:root {
+  --lg-backdrop-background-color: #050d1a;   // bg-base
+  --lg-toolbar-background-color: #0a1628;    // bg-surface
+  --lg-counter-color: #94a3b8;               // text-secondary
+  --lg-icon-color: #94a3b8;                  // text-secondary
+  --lg-icon-hover-color: #60a5fa;            // accent-light
+  --lg-thumb-active-border: 3px solid #2563eb;
+  --lg-close-btn-hover-bg: rgba(37, 99, 235, 0.15);
+  --lg-controls-bg: rgba(10, 22, 40, 0.75);  // bg-surface translucent
+  --lg-controls-border-radius: 6px;
+}
+
+// Ensure backdrop sits above navbar
+.lg-backdrop {
+  z-index: 1050;
+}
+
+.lg-outer {
+  z-index: 1051;
+}
+
+// Caption styling
+.lg-sub-html {
+  background: rgba(5, 13, 26, 0.85);
+  color: #e2e8f0;    // text-primary
+  font-size: 13px;
+  padding: 8px 16px;
+}
+
+// Thumbnail strip
+.lg-thumb-outer {
+  background: #0a1628;   // bg-surface
+}
+
+// Progress bar
+.lg-progress-bar {
+  background: #2563eb;   // accent
+}
+
+// Auto-gallery container (used by gallery.js for inline image groups)
+.lg-auto-container {
+  display: none;
+}
