@@ -47,6 +47,21 @@
         </a>
       <% } %>
 
+      <% if (theme.search && theme.search.enabled) { %>
+      <div class="search-wrap navbar__search" id="search-wrap">
+        <input type="search"
+               class="search-input"
+               id="search-input"
+               placeholder="Search…"
+               aria-label="Search posts"
+               aria-expanded="false"
+               aria-controls="search-results"
+               autocomplete="off"
+               spellcheck="false">
+        <div class="search-results" id="search-results" role="listbox" aria-label="Search results"></div>
+      </div>
+      <% } %>
+
       <!-- Mobile hamburger -->
       <button class="btn btn--icon navbar__hamburger"
               id="nav-toggle"

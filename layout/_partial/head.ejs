@@ -1,29 +1,46 @@
+<%
+  const ogImage    = page.cover_image || (theme.cover && theme.cover.default) || ''
+  const ogImageAbs = ogImage ? config.url.replace(/\/$/, '') + url_for(ogImage) : ''
+  const rawExcerpt = page.excerpt ? page.excerpt.replace(/<[^>]+>/g, '').trim() : ''
+  const metaDesc   = page.description || rawExcerpt || config.description || ''
+  const metaKeywords = (page.tags && page.tags.length
+    ? page.tags.map(function(t){ return t.name }).join(', ')
+    : '') || config.keywords || ''
+%>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
 <title><%= page.title ? page.title + ' | ' + config.title : config.title %></title>
-<meta name="description" content="<%= page.description || config.description || '' %>">
+<meta name="description" content="<%= metaDesc %>">
 <meta name="author" content="<%= config.author %>">
-
-<%
-  const ogImage = page.cover_image || (theme.cover && theme.cover.default) || ''
-  const ogImageAbs = ogImage ? config.url.replace(/\/$/, '') + url_for(ogImage) : ''
-%>
+<% if (metaKeywords) { %>
+<meta name="keywords" content="<%= metaKeywords %>">
+<% } %>
 
 <!-- Open Graph -->
 <meta property="og:title" content="<%= page.title || config.title %>">
-<meta property="og:description" content="<%= page.description || config.description || '' %>">
+<meta property="og:description" content="<%= metaDesc %>">
 <meta property="og:type" content="<%= page.layout === 'post' ? 'article' : 'website' %>">
 <meta property="og:url" content="<%= page.permalink || config.url %>">
+<meta property="og:site_name" content="<%= config.title %>">
 <% if (ogImageAbs) { %>
 <meta property="og:image" content="<%= ogImageAbs %>">
 <% } %>
+<% if (page.layout === 'post') { %>
+<meta property="article:published_time" content="<%= page.date.toISOString() %>">
+<meta property="article:author" content="<%= config.author %>">
+<% } %>
+
+<link rel="canonical" href="<%= page.permalink || config.url %>">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="<%= page.title || config.title %>">
-<meta name="twitter:description" content="<%= page.description || config.description || '' %>">
+<meta name="twitter:description" content="<%= metaDesc %>">
+<% if (theme.social && theme.social.twitter) { %>
+<meta name="twitter:site" content="@<%= theme.social.twitter %>">
+<% } %>
 <% if (ogImageAbs) { %>
 <meta name="twitter:image" content="<%= ogImageAbs %>">
 <% } %>

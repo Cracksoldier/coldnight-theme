@@ -21,3 +21,6 @@
   </svg>
 </button>
 <script src="<%- url_for('/js/back-to-top.js') %>" defer></script>
+<% if (theme.search && theme.search.enabled) { %>
+<script src="<%- url_for('/js/search.js') %>" defer></script>
+<% } %>

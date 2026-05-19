@@ -38,6 +38,9 @@ toc:
 
 progress_bar: true   # reading progress bar on post pages
 
+search:
+  enabled: true   # search box in navbar
+
 code:
   copy_button: true    # show copy-to-clipboard button on code blocks
   language_label: true # show language tag top-right of code blocks

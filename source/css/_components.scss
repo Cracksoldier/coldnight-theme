@@ -644,6 +644,24 @@ button.navbar__hamburger {
   text-align: center;
 }
 
+// Navbar-specific search sizing
+.navbar__search {
+  width: 200px;
+
+  @media (max-width: $bp-mobile) {
+    display: none;
+  }
+}
+
+.search-result-item__snip {
+  font-size: 11px;
+  color: $text-muted;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 // ─── Footer ──────────────────────────────────────────────────────────────────
 
 .site-footer {
