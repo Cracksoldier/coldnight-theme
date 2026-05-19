@@ -1266,3 +1266,102 @@ select.form-input {
     }
   }
 }
+
+// ─── Heading anchors ──────────────────────────────────────────────────────────
+
+.post-body h2,
+.post-body h3 {
+  .heading-anchor {
+    margin-left: $sp-2;
+    opacity: 0;
+    color: $text-muted;
+    font-weight: 400;
+    font-size: 0.85em;
+    text-decoration: none;
+    transition: opacity $transition-fast, color $transition-fast;
+    user-select: none;
+  }
+
+  &:hover .heading-anchor,
+  .heading-anchor:focus {
+    opacity: 1;
+  }
+
+  .heading-anchor:hover {
+    color: $accent-light;
+  }
+}
+
+// ─── Keyboard shortcuts modal ─────────────────────────────────────────────────
+
+.shortcuts-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  width: min(420px, 90vw);
+  background: $bg-elevated;
+  border: 1px solid $border-subtle;
+  border-radius: $radius-lg;
+  padding: $sp-6;
+  color: $text-primary;
+  z-index: 200;
+
+  &::backdrop {
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+  }
+
+  &__close {
+    position: absolute;
+    top: $sp-3;
+    right: $sp-4;
+    background: none;
+    border: none;
+    color: $text-muted;
+    font-size: 1.2rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+
+    &:hover { color: $text-primary; }
+    &:focus-visible { outline: 2px solid $accent; outline-offset: 2px; }
+  }
+
+  &__title {
+    font-size: 14px;
+    font-weight: 600;
+    color: $text-secondary;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: $sp-4;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: $sp-3;
+
+    > div { display: flex; align-items: center; gap: $sp-3; }
+
+    dt { min-width: 60px; }
+
+    dd {
+      margin: 0;
+      color: $text-secondary;
+      font-size: 14px;
+    }
+
+    kbd {
+      display: inline-block;
+      padding: 2px 6px;
+      background: $bg-base;
+      border: 1px solid $border-subtle;
+      border-radius: 4px;
+      font-family: #{$font-mono};
+      font-size: 12px;
+      color: $text-primary;
+    }
+  }
+}

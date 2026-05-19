@@ -98,5 +98,15 @@
         })
       })
     }
+
+    document.querySelectorAll('.post-body h2[id], .post-body h3[id]').forEach(function (h) {
+      var a = document.createElement('a')
+      a.className = 'heading-anchor'
+      a.href = '#' + h.id
+      a.setAttribute('aria-hidden', 'true')
+      a.setAttribute('tabindex', '-1')
+      a.textContent = '#'
+      h.appendChild(a)
+    })
   })
 })()

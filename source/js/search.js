@@ -124,6 +124,35 @@
     input.select()
   })
 
+  var _shortcutsDialog = null
+
+  function getShortcutsDialog() {
+    if (_shortcutsDialog) return _shortcutsDialog
+    var d = document.createElement('dialog')
+    d.className = 'shortcuts-modal'
+    d.innerHTML =
+      '<button class="shortcuts-modal__close" aria-label="Close">&times;</button>' +
+      '<h2 class="shortcuts-modal__title">Keyboard shortcuts</h2>' +
+      '<dl class="shortcuts-modal__list">' +
+        '<div><dt><kbd>/</kbd></dt><dd>Focus search</dd></div>' +
+        '<div><dt><kbd>Esc</kbd></dt><dd>Close search / dismiss</dd></div>' +
+        '<div><dt><kbd>?</kbd></dt><dd>Show this help</dd></div>' +
+      '</dl>'
+    document.body.appendChild(d)
+    d.querySelector('.shortcuts-modal__close').addEventListener('click', function () { d.close() })
+    d.addEventListener('click', function (e) { if (e.target === d) d.close() })
+    _shortcutsDialog = d
+    return d
+  }
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== '?') return
+    var tag = (document.activeElement && document.activeElement.tagName || '').toLowerCase()
+    if (tag === 'input' || tag === 'textarea' || document.activeElement.isContentEditable) return
+    e.preventDefault()
+    getShortcutsDialog().showModal()
+  })
+
   function snippet(content, q) {
     if (!content) return ''
     var terms = q.trim().split(/\s+/).filter(Boolean)
