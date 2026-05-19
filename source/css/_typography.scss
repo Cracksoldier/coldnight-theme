@@ -152,6 +152,10 @@
     }
   }
 
+  .lg-gallery a[target="_blank"]::after {
+    content: none;
+  }
+
   // ─── Footnotes ───────────────────────────────────────────────────────────
 
   .footnote-ref a {
