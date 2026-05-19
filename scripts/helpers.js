@@ -71,9 +71,9 @@ hexo.extend.filter.register('after_render:html', function (html) {
 
 hexo.extend.filter.register('before_generate', function () {
   const grid = hexo.theme.config.grid
-  if (grid && grid.columns && grid.rows) {
+  if (grid && grid.columns && grid.columns > 1) {
     hexo.config.index_generator = hexo.config.index_generator || {}
-    hexo.config.index_generator.per_page = grid.columns * grid.rows
+    hexo.config.index_generator.per_page = grid.columns * (grid.rows || 3)
   }
 })
 
