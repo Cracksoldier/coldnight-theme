@@ -1,0 +1,16 @@
+<%
+  const tocHtml = render_toc(page.content)
+%>
+<% if (tocHtml) { %>
+<div class="sidebar-widget widget-toc">
+  <button class="widget-toc__toggle" aria-expanded="true" aria-controls="toc-list">
+    <span class="sidebar-widget__title">Contents</span>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+      <polyline points="18 15 12 9 6 15"/>
+    </svg>
+  </button>
+  <nav id="toc-list" aria-label="Table of contents">
+    <%- tocHtml %>
+  </nav>
+</div>
+<% } %>

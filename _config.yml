@@ -14,6 +14,7 @@ navbar:
 sidebar:
   position: right      # left | right | hidden
   widgets:
+    - toc
     - recent_posts
     - tags
     - archives
@@ -30,6 +31,12 @@ social:
   rss: true
 
 reading_time: true     # show "N min read" on post cards and post header
+
+toc:
+  enabled: true
+  max_depth: 3   # 2 = h2 only, 3 = h2 + h3
+
+progress_bar: true   # reading progress bar on post pages
 
 code:
   copy_button: true    # show copy-to-clipboard button on code blocks

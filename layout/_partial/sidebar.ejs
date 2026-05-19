@@ -10,6 +10,10 @@
       <%- partial('widgets/archive') %>
     <% } else if (widget === 'about') { %>
       <%- partial('widgets/about') %>
+    <% } else if (widget === 'toc') { %>
+      <% if (page.layout === 'post' && theme.toc && theme.toc.enabled) { %>
+        <%- partial('widgets/toc') %>
+      <% } %>
     <% } %>
   <% }) %>
 </aside>

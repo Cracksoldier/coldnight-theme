@@ -771,3 +771,58 @@ select.form-input
   padding-right 32px
   appearance none
   -webkit-appearance none
+
+// ─── Reading progress bar ─────────────────────────────────────────────────────
+
+.reading-progress
+  position fixed
+  top 0
+  left 0
+  height 3px
+  width 0
+  background accent
+  z-index 6
+  transition width 80ms linear
+  pointer-events none
+
+// ─── Table of Contents widget ─────────────────────────────────────────────────
+
+.widget-toc__toggle
+  display flex
+  align-items center
+  justify-content space-between
+  width 100%
+  background none
+  border none
+  color text-primary
+  padding 0
+  cursor pointer
+  margin-bottom sp-3
+
+.toc-list
+  list-style none
+  padding 0
+  margin 0
+
+.toc-item
+  margin-bottom 2px
+
+.toc-item--h3
+  padding-left sp-4
+
+.toc-link
+  color text-secondary
+  text-decoration none
+  font-size 13px
+  display block
+  padding sp-1 sp-2
+  border-left 2px solid transparent
+  border-radius 0 radius radius 0
+  transition color 150ms, border-color 150ms
+
+  &:hover
+    color text-primary
+
+  &.active
+    color accent
+    border-left-color accent

@@ -14,6 +14,34 @@ hexo.extend.helper.register('reading_time', function (content) {
   return minutes + ' min read'
 })
 
+// ─── TOC helper ───────────────────────────────────────────────────────────────
+// Usage in EJS: <%- render_toc(page.content) %>
+
+hexo.extend.helper.register('render_toc', function (content) {
+  if (!content) return ''
+  const maxDepth = (this.theme && this.theme.toc && this.theme.toc.max_depth) || 3
+  const headingRe = /<h([23])[^>]*id="([^"]+)"[^>]*>([\s\S]*?)<\/h\1>/gi
+  const items = []
+  let match
+  while ((match = headingRe.exec(content)) !== null) {
+    const level = parseInt(match[1], 10)
+    if (level <= maxDepth) {
+      items.push({ level, id: match[2], text: match[3].replace(/<[^>]+>/g, '').trim() })
+    }
+  }
+  if (!items.length) return ''
+
+  let html = '<ol class="toc-list">\n'
+  items.forEach(function (item) {
+    html +=
+      '<li class="toc-item toc-item--h' + item.level + '">' +
+      '<a href="#' + item.id + '" class="toc-link">' + item.text + '</a>' +
+      '</li>\n'
+  })
+  html += '</ol>'
+  return html
+})
+
 // ─── Gallery tag plugin ───────────────────────────────────────────────────────
 // Usage: {% gallery [cols] %}
 // ![alt text](image-url)
