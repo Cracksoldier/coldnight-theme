@@ -650,6 +650,42 @@ button.navbar__hamburger
   &:hover
     color text-primary
 
+// ─── Back to top ─────────────────────────────────────────────────────────────
+
+.back-to-top
+  position fixed
+  bottom sp-6
+  right sp-6
+  width 40px
+  height 40px
+  border-radius 50%
+  background bg-elevated
+  border 1px solid border-subtle
+  color text-secondary
+  display flex
+  align-items center
+  justify-content center
+  cursor pointer
+  opacity 0
+  visibility hidden
+  transition opacity transition-normal, visibility transition-normal, background transition-fast, color transition-fast, border-color transition-fast
+  z-index 50
+
+  &:hover
+    background bg-input
+    color text-primary
+    border-color border-focus
+
+  &.back-to-top--visible
+    opacity 1
+    visibility visible
+
+  @media (max-width bp-mobile)
+    bottom sp-4
+    right sp-4
+    width 36px
+    height 36px
+
 // ─── Backdrop ────────────────────────────────────────────────────────────────
 
 .backdrop
