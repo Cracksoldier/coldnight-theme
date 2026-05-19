@@ -199,6 +199,16 @@
   }
 }
 
+.post-permalink-btn {
+  margin-left: auto;
+  color: $text-muted;
+
+  &:hover {
+    color: $accent-light;
+    border-color: $border-focus;
+  }
+}
+
 .post-body {
   margin-top: $sp-6;
 }

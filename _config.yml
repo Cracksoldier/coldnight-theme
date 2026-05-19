@@ -31,6 +31,7 @@ social:
   rss: true
 
 reading_time: true     # show "N min read" on post cards and post header
+permalink_button: true # copy-to-clipboard link icon in post metadata row
 
 toc:
   enabled: true
@@ -39,6 +40,7 @@ toc:
 progress_bar: true   # reading progress bar on post pages
 
 related_posts: true  # "You might also like" section at the bottom of post pages
+series: true         # series navigation strip for multi-part posts (requires series: in front-matter)
 
 search:
   enabled: true   # search box in navbar

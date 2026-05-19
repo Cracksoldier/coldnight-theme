@@ -87,5 +87,16 @@
 
     const pres = document.querySelectorAll('.post-body pre:not(figure.highlight pre)')
     pres.forEach(addCopyButton)
+
+    const permaBtn = document.querySelector('.post-permalink-btn')
+    if (permaBtn) {
+      permaBtn.addEventListener('click', function () {
+        writeToClipboard(permaBtn.dataset.permalink).then(function () {
+          showToast('Link copied', 'success')
+        }).catch(function () {
+          showToast('Copy failed', 'error')
+        })
+      })
+    }
   })
 })()

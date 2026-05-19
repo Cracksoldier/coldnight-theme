@@ -21,6 +21,18 @@
   })
   _relatedCandidates.sort((a, b) => b.score - a.score)
   const relatedPosts = _relatedCandidates.slice(0, 3).map(x => x.post)
+
+  // Series nav — group posts sharing the same `series:` front-matter value
+  const _seriesName = page.series || null
+  let seriesPosts = []
+  let seriesIndex = 0
+  if (_seriesName && theme.series !== false) {
+    const _seriesCandidates = []
+    site.posts.each(p => { if (p.series === _seriesName) _seriesCandidates.push(p) })
+    _seriesCandidates.sort((a, b) => a.date - b.date)
+    seriesIndex = _seriesCandidates.findIndex(p => p.path === page.path) + 1
+    seriesPosts = _seriesCandidates
+  }
 %>
 <!DOCTYPE html>
 <html lang="<%= config.language || 'en' %>">
@@ -65,11 +77,45 @@
               <a href="<%- url_for(cat.path) %>" class="tag-pill"><%= cat.name %></a>
             <% }) %>
           <% } %>
+
+          <% if (theme.permalink_button !== false) { %>
+            <button class="btn btn--icon btn--sm post-permalink-btn"
+                    data-permalink="<%= page.permalink %>"
+                    aria-label="Copy link to post"
+                    title="Copy permalink">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/>
+                <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
+              </svg>
+            </button>
+          <% } %>
         </div>
       </header>
 
       <% if (page.cover_image) { %>
         <img src="<%= page.cover_image %>" alt="" class="post-cover" loading="lazy">
+      <% } %>
+
+      <% if (seriesPosts.length > 1) { %>
+      <nav class="series-nav" aria-label="<%= page.series %> series">
+        <div class="series-nav__header">
+          <span class="series-nav__badge">Series</span>
+          <span class="series-nav__name"><%= page.series %></span>
+          <span class="series-nav__progress">Part <%= seriesIndex %> of <%= seriesPosts.length %></span>
+        </div>
+        <ol class="series-nav__list">
+          <% seriesPosts.forEach(p => { %>
+            <li class="series-nav__item<%= p.path === page.path ? ' series-nav__item--active' : '' %>">
+              <% if (p.path === page.path) { %>
+                <span><%= p.title %></span>
+              <% } else { %>
+                <a href="<%- url_for(p.path) %>"><%= p.title %></a>
+              <% } %>
+            </li>
+          <% }) %>
+        </ol>
+      </nav>
       <% } %>
 
       <div class="post-body prose">

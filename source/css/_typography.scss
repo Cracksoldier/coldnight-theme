@@ -145,4 +145,50 @@
       color: $accent-hover;
     }
   }
+
+  // ─── Footnotes ───────────────────────────────────────────────────────────
+
+  .footnote-ref a {
+    color: $accent-light;
+    font-size: 0.75em;
+    vertical-align: super;
+    line-height: 1;
+    text-decoration: none;
+    font-weight: 600;
+
+    &:hover {
+      color: $accent-hover;
+      text-decoration: underline;
+    }
+  }
+
+  .footnotes {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid $border-subtle;
+    font-size: 0.85rem;
+    color: $text-secondary;
+
+    hr { display: none; }
+
+    ol {
+      padding-left: 1.25rem;
+      margin: 0;
+    }
+
+    li {
+      margin: 0.35rem 0;
+      line-height: 1.6;
+      color: $text-secondary;
+    }
+
+    .footnote-backref {
+      color: $text-muted;
+      text-decoration: none;
+      margin-left: 4px;
+      font-size: 0.9em;
+
+      &:hover { color: $accent-light; }
+    }
+  }
 }
