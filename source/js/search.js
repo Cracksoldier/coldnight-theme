@@ -150,7 +150,8 @@
     var tag = (document.activeElement && document.activeElement.tagName || '').toLowerCase()
     if (tag === 'input' || tag === 'textarea' || document.activeElement.isContentEditable) return
     e.preventDefault()
-    getShortcutsDialog().showModal()
+    var dlg = getShortcutsDialog()
+    if (!dlg.open) dlg.showModal()
   })
 
   function snippet(content, q) {
