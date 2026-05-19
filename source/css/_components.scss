@@ -139,6 +139,11 @@ button.navbar__hamburger {
   }
 }
 
+.mobile-nav__search {
+  padding: $sp-3 $sp-4;
+  border-bottom: 1px solid $border-subtle;
+}
+
 // ─── Buttons ─────────────────────────────────────────────────────────────────
 
 .btn {

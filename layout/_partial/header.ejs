@@ -81,6 +81,20 @@
 
 <!-- Mobile nav drawer -->
 <nav class="mobile-nav" id="mobile-nav" aria-label="Mobile navigation">
+  <% if (theme.search && theme.search.enabled) { %>
+  <div class="search-wrap mobile-nav__search" id="search-wrap-mobile">
+    <input type="search"
+           class="search-input"
+           id="search-input-mobile"
+           placeholder="Search…"
+           aria-label="Search posts"
+           aria-expanded="false"
+           aria-controls="search-results-mobile"
+           autocomplete="off"
+           spellcheck="false">
+    <div class="search-results" id="search-results-mobile" role="listbox" aria-label="Search results"></div>
+  </div>
+  <% } %>
   <% navLinks.forEach(link => { %>
     <%
       const linkHref   = url_for(link.url).replace(/\/$/, '') || '/'

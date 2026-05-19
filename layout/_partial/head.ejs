@@ -1,8 +1,14 @@
 <%
   const ogImage    = page.cover_image || (theme.cover && theme.cover.default) || ''
   const ogImageAbs = ogImage ? config.url.replace(/\/$/, '') + url_for(ogImage) : ''
-  const rawExcerpt = page.excerpt ? page.excerpt.replace(/<[^>]+>/g, '').trim() : ''
-  const metaDesc   = page.description || rawExcerpt || config.description || ''
+  const rawExcerpt = page.excerpt
+    ? page.excerpt
+        .replace(/<[^>]+>/g, '')
+        .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+    : ''
+  const metaDesc   = (page.description || rawExcerpt || config.description || '').slice(0, 160)
   const metaKeywords = (page.tags && page.tags.length
     ? page.tags.map(function(t){ return t.name }).join(', ')
     : '') || config.keywords || ''
