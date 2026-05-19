@@ -3,6 +3,24 @@
   const lgAutoMount = lgEnabled && theme.lightgallery.auto_mount
   const lgZoom = lgEnabled && theme.lightgallery.zoom
   const lgThumb = lgEnabled && theme.lightgallery.thumbnail
+
+  // Related posts — score by shared tags (2 pts each) + same category (1 pt)
+  const _relatedTagSet = new Set()
+  if (page.tags) page.tags.each(t => _relatedTagSet.add(t.name))
+  const _relatedCat = page.categories && page.categories.length
+    ? page.categories.first().name : null
+
+  const _relatedCandidates = []
+  site.posts.each(p => {
+    if (p.path === page.path) return
+    let score = 0
+    if (p.tags) p.tags.each(t => { if (_relatedTagSet.has(t.name)) score += 2 })
+    if (_relatedCat && p.categories && p.categories.length &&
+        p.categories.first().name === _relatedCat) score += 1
+    if (score > 0) _relatedCandidates.push({ post: p, score })
+  })
+  _relatedCandidates.sort((a, b) => b.score - a.score)
+  const relatedPosts = _relatedCandidates.slice(0, 3).map(x => x.post)
 %>
 <!DOCTYPE html>
 <html lang="<%= config.language || 'en' %>">
@@ -86,6 +104,17 @@
       </footer>
 
     </article>
+
+    <% if (theme.related_posts && relatedPosts.length) { %>
+    <section class="related-posts" aria-labelledby="related-heading">
+      <h2 class="related-posts__heading" id="related-heading">You might also like</h2>
+      <div class="post-grid" style="--post-grid-cols: 3; --post-grid-cols-md: 2;">
+        <% relatedPosts.forEach(post => { %>
+          <%- partial('_partial/post-card', { post }) %>
+        <% }) %>
+      </div>
+    </section>
+    <% } %>
 
   </main>
 

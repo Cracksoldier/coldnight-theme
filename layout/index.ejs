@@ -17,10 +17,20 @@
       const gridCols   = (theme.grid && theme.grid.columns) || 3
       const tabletCols = Math.max(1, Math.ceil(gridCols / 2))
       const isList     = gridCols === 1
+
+      // Pinned/featured post — hero on page 1 only
+      const pinnedPost = site.posts.sort('-date').toArray().find(p => p.pinned)
+      const showHero   = !!pinnedPost && (page.current === 1 || !page.current)
     %>
+
+    <% if (showHero) { %>
+      <%- partial('_partial/pinned-post', { post: pinnedPost }) %>
+    <% } %>
+
     <div class="post-grid<%= isList ? ' post-grid--list' : '' %>"
          style="--post-grid-cols: <%= gridCols %>; --post-grid-cols-md: <%= tabletCols %>;">
       <% page.posts.each(post => { %>
+        <% if (showHero && post.path === pinnedPost.path) return %>
         <%- partial('_partial/post-card', { post }) %>
       <% }) %>
     </div>

@@ -1,0 +1,35 @@
+<%
+  const coverImg = post.cover_image || (theme.cover && theme.cover.default) || ''
+  const category = post.categories && post.categories.length ? post.categories.first() : null
+  const readTime = theme.reading_time ? reading_time(post.content) : ''
+%>
+<article class="pinned-post fade-in">
+
+  <% if (coverImg) { %>
+  <a href="<%- url_for(post.path) %>" class="pinned-post__cover" tabindex="-1" aria-hidden="true">
+    <img src="<%= coverImg %>" alt="" loading="lazy">
+  </a>
+  <% } %>
+
+  <div class="pinned-post__body">
+    <div class="pinned-post__meta">
+      <span class="pinned-badge">Featured</span>
+      <% if (category) { %>
+        <a href="<%- url_for(category.path) %>" class="post-card__category"><%= category.name %></a>
+      <% } %>
+      <% if (readTime) { %><span><%= readTime %></span><% } %>
+    </div>
+
+    <a href="<%- url_for(post.path) %>" class="pinned-post__title"><%= post.title %></a>
+
+    <% if (post.excerpt) { %>
+      <div class="pinned-post__excerpt"><%- post.excerpt %></div>
+    <% } %>
+
+    <div class="pinned-post__footer">
+      <time datetime="<%= post.date.toISOString() %>"><%= date(post.date, 'YYYY-MM-DD') %></time>
+      <a href="<%- url_for(post.path) %>" class="post-card__read-more">Read more →</a>
+    </div>
+  </div>
+
+</article>

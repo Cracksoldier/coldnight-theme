@@ -258,3 +258,20 @@
     color: $accent-light;
   }
 }
+
+// ─── Related posts ───────────────────────────────────────────────────────────
+
+.related-posts {
+  margin-top: $sp-8;
+  padding-top: $sp-6;
+  border-top: 1px solid $border-subtle;
+}
+
+.related-posts__heading {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $text-muted;
+  margin-bottom: $sp-4;
+}

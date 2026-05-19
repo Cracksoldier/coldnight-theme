@@ -38,6 +38,8 @@ toc:
 
 progress_bar: true   # reading progress bar on post pages
 
+related_posts: true  # "You might also like" section at the bottom of post pages
+
 search:
   enabled: true   # search box in navbar
 

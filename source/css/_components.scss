@@ -363,6 +363,113 @@ button.navbar__hamburger {
   }
 }
 
+// ─── Pinned / Featured post ───────────────────────────────────────────────────
+
+.pinned-post {
+  background: $bg-elevated;
+  border: 1px solid $border-focus;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  margin-bottom: $sp-6;
+  transition: border-color $transition-fast, box-shadow $transition-fast;
+
+  &:hover {
+    box-shadow: 0 4px 24px rgba(37, 99, 235, 0.2);
+  }
+
+  @media (max-width: $bp-mobile) {
+    flex-direction: column;
+  }
+}
+
+.pinned-post__cover {
+  width: 45%;
+  flex-shrink: 0;
+  display: block;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+  }
+
+  &:hover img {
+    transform: scale(1.03);
+  }
+
+  @media (max-width: $bp-mobile) {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+  }
+}
+
+.pinned-post__body {
+  padding: $sp-6;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.pinned-post__meta {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  font-size: 12px;
+  color: $text-secondary;
+  margin-bottom: $sp-3;
+}
+
+.pinned-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  background: $accent-glow;
+  color: $accent-light;
+  border: 1px solid $accent;
+  border-radius: $radius;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.pinned-post__title {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: $text-primary;
+  text-decoration: none;
+  line-height: 1.3;
+  margin-bottom: $sp-3;
+  display: block;
+
+  &:hover {
+    color: $accent-light;
+  }
+}
+
+.pinned-post__excerpt {
+  font-size: 14px;
+  color: $text-secondary;
+  line-height: 1.6;
+  flex: 1;
+  margin-bottom: $sp-4;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.pinned-post__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: $text-secondary;
+}
+
 // ─── Tags / Pills ────────────────────────────────────────────────────────────
 
 .tag-pill {
