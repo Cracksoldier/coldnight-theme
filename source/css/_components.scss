@@ -1180,3 +1180,63 @@ select.form-input {
 
   &::marker { color: $text-muted; }
 }
+
+// ─── Tabs ────────────────────────────────────────────────────────────────────
+
+.tabs {
+  margin: 1.5rem 0;
+  border: 1px solid $border-subtle;
+  border-radius: $radius;
+  overflow: hidden;
+}
+
+.tabs input[type="radio"] { display: none; }
+
+.tabs__nav {
+  display: flex;
+  background: $bg-elevated;
+  border-bottom: 1px solid $border-subtle;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.tabs__label {
+  padding: $sp-2 $sp-4;
+  font-size: 13px;
+  font-weight: 500;
+  color: $text-secondary;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color $transition-fast, border-color $transition-fast;
+  user-select: none;
+
+  &:hover { color: $text-primary; }
+}
+
+.tabs__panels {
+  padding: $sp-4;
+  background: $bg-surface;
+}
+
+.tabs__panel {
+  display: none;
+
+  > :first-child { margin-top: 0; }
+  > :last-child  { margin-bottom: 0; }
+}
+
+@for $i from 1 through 6 {
+  .tabs input[type="radio"]:nth-of-type(#{$i}):checked {
+    ~ .tabs__nav .tabs__label:nth-child(#{$i}) {
+      color: $accent-light;
+      border-bottom-color: $accent;
+    }
+    ~ .tabs__panels .tabs__panel:nth-child(#{$i}) {
+      display: block;
+    }
+  }
+}

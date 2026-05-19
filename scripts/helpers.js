@@ -1,5 +1,7 @@
 'use strict'
 
+let _tabCounter = 0
+
 const stripHtml = (html) => html
   .replace(/<(pre|figure)\b[^>]*>[\s\S]*?<\/\1>/gi, '')
   .replace(/<[^>]+>/g, '')
@@ -12,6 +14,12 @@ hexo.extend.helper.register('reading_time', function (content) {
   const words = stripHtml(content).trim().split(/\s+/).filter(Boolean).length
   const minutes = Math.max(1, Math.round(words / 200))
   return minutes + ' min read'
+})
+
+hexo.extend.helper.register('word_count', function (content) {
+  if (!content) return ''
+  const count = stripHtml(content).trim().split(/\s+/).filter(Boolean).length
+  return count.toLocaleString() + ' words'
 })
 
 // ─── TOC helper ───────────────────────────────────────────────────────────────
@@ -89,10 +97,21 @@ const NOTE_ICONS = {
 // The CSS ::before rule uses attr(data-lang), so we inject it at build time.
 
 hexo.extend.filter.register('after_render:html', function (html) {
-  return html.replace(
+  html = html.replace(
     /<figure class="highlight ([a-zA-Z0-9_+\-]+)">/g,
     (match, lang) => `<figure class="highlight ${lang}" data-lang="${lang}">`
   )
+
+  if (hexo.theme.config.image_captions !== false) {
+    html = html.replace(/<p>(<img\b[^>]*>)<\/p>/g, (match, imgTag) => {
+      const altMatch = imgTag.match(/\balt="([^"]*)"/)
+      const alt = altMatch ? altMatch[1].trim() : ''
+      if (!alt) return match
+      return `<figure>${imgTag}<figcaption>${alt}</figcaption></figure>`
+    })
+  }
+
+  return html
 })
 
 // ─── Grid per_page sync ───────────────────────────────────────────────────────
@@ -100,6 +119,8 @@ hexo.extend.filter.register('after_render:html', function (html) {
 // and grid.rows in the theme config.
 
 hexo.extend.filter.register('before_generate', function () {
+  _tabCounter = 0
+
   const grid = hexo.theme.config.grid
   if (grid && grid.columns && grid.columns > 1) {
     hexo.config.index_generator = hexo.config.index_generator || {}
@@ -117,5 +138,54 @@ hexo.extend.tag.register('note', function (args, content) {
       '<span class="note-icon">' + icon + '</span>' +
       '<div>' + rendered + '</div>' +
     '</div>'
+  )
+}, { ends: true })
+
+// ─── Tabs tag ─────────────────────────────────────────────────────────────────
+// Usage:
+// {% tabs %}
+// <!-- tab JavaScript -->
+// ```js
+// console.log('hello')
+// ```
+// <!-- endtab -->
+// <!-- tab Python -->
+// ```py
+// print('hello')
+// ```
+// <!-- endtab -->
+// {% endtabs %}
+
+hexo.extend.tag.register('tabs', function (args, content) {
+  const uid = 'tabs-' + (++_tabCounter)
+  const TAB_RE = /<!--\s*tab\s+(.*?)\s*-->([\s\S]*?)(?=<!--\s*(?:tab\b|endtab)\s*-->|$)/g
+  const tabs = []
+  let match
+  while ((match = TAB_RE.exec(content)) !== null) {
+    const name = match[1].trim()
+    const body = match[2].trim()
+    if (name) tabs.push({ name, body })
+  }
+  if (!tabs.length) return ''
+
+  const inputs = tabs.map((_, i) =>
+    `<input type="radio" name="${uid}" id="${uid}-${i}"${i === 0 ? ' checked' : ''} hidden>`
+  ).join('\n')
+
+  const labels = tabs.map((tab, i) =>
+    `<label for="${uid}-${i}" class="tabs__label">${tab.name}</label>`
+  ).join('\n')
+
+  const panels = tabs.map(tab => {
+    const rendered = hexo.render.renderSync({ text: tab.body, engine: 'markdown' })
+    return `<div class="tabs__panel">${rendered}</div>`
+  }).join('\n')
+
+  return (
+    `<div class="tabs">\n` +
+    `${inputs}\n` +
+    `<nav class="tabs__nav">\n${labels}\n</nav>\n` +
+    `<div class="tabs__panels">\n${panels}\n</div>\n` +
+    `</div>`
   )
 }, { ends: true })

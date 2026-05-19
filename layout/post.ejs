@@ -72,6 +72,10 @@
             <span><%= reading_time(page.content) %></span>
           <% } %>
 
+          <% if (theme.word_count) { %>
+            <span><%= word_count(page.content) %></span>
+          <% } %>
+
           <% if (page.categories && page.categories.length) { %>
             <% page.categories.each(cat => { %>
               <a href="<%- url_for(cat.path) %>" class="tag-pill"><%= cat.name %></a>
