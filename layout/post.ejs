@@ -100,7 +100,7 @@
 
 <script src="<%- url_for('/js/nav.js') %>" defer></script>
 <script src="<%- url_for('/js/copy-code.js') %>" defer></script>
-<% if (theme.toc && theme.toc.enabled) { %>
+<% if (theme.toc && theme.toc.enabled && (!theme.sidebar || theme.sidebar.position !== 'hidden')) { %>
 <script src="<%- url_for('/js/toc.js') %>" defer></script>
 <% } %>
 <% if (theme.progress_bar) { %>

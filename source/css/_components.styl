@@ -799,6 +799,12 @@ select.form-input
   cursor pointer
   margin-bottom sp-3
 
+  svg
+    transition transform 150ms ease
+
+  &[aria-expanded="false"] svg
+    transform rotate(180deg)
+
 .toc-list
   list-style none
   padding 0

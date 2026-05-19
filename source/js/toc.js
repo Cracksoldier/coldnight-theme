@@ -16,10 +16,13 @@
     })
   }
 
+  var lastActiveId = null
+
   var observer = new IntersectionObserver(function (entries) {
     entries.forEach(function (entry) {
-      if (entry.isIntersecting) setActive(entry.target.id)
+      if (entry.isIntersecting) lastActiveId = entry.target.id
     })
+    if (lastActiveId) setActive(lastActiveId)
   }, { rootMargin: '0px 0px -65% 0px', threshold: 0 })
 
   headings.forEach(function (h) { observer.observe(h) })
