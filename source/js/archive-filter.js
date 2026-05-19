@@ -6,8 +6,12 @@
 
   chips.forEach(function (chip) {
     chip.addEventListener('click', function () {
-      chips.forEach(function (c) { c.classList.remove('archive-filter-chip--active') })
+      chips.forEach(function (c) {
+        c.classList.remove('archive-filter-chip--active')
+        c.setAttribute('aria-pressed', 'false')
+      })
       chip.classList.add('archive-filter-chip--active')
+      chip.setAttribute('aria-pressed', 'true')
 
       var type  = chip.dataset.filterType
       var value = chip.dataset.filterValue

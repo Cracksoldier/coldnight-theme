@@ -41,12 +41,12 @@
 
     <% if (_cats.length || _tags.length) { %>
     <div class="archive-filters" role="group" aria-label="Filter posts">
-      <button class="archive-filter-chip archive-filter-chip--active" data-filter-type="all">All</button>
+      <button class="archive-filter-chip archive-filter-chip--active" data-filter-type="all" aria-pressed="true">All</button>
       <% _cats.forEach(c => { %>
-        <button class="archive-filter-chip" data-filter-type="category" data-filter-value="<%= c %>"><%= c %></button>
+        <button class="archive-filter-chip" data-filter-type="category" data-filter-value="<%= c %>" aria-pressed="false"><%= c %></button>
       <% }) %>
       <% _tags.forEach(t => { %>
-        <button class="archive-filter-chip" data-filter-type="tag" data-filter-value="<%= t %>">#<%= t %></button>
+        <button class="archive-filter-chip" data-filter-type="tag" data-filter-value="<%= t %>" aria-pressed="false">#<%= t %></button>
       <% }) %>
     </div>
     <% } %>
