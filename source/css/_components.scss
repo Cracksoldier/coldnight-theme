@@ -694,6 +694,7 @@ button.navbar__hamburger {
   border-radius: $radius;
   margin: $sp-4 0;
   background: $bg-elevated;
+  overflow: hidden;
 }
 
 .spoiler__summary {

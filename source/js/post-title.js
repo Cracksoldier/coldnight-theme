@@ -8,6 +8,8 @@
   if (!inner) return
 
   var brand = inner.querySelector('.navbar__brand')
+  if (!brand) return
+
   var span = document.createElement('span')
   span.className = 'navbar__post-title'
   span.textContent = h1.textContent
