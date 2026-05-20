@@ -176,11 +176,15 @@
 
 <%- partial('_partial/footer') %>
 <%- partial('_partial/toast') %>
+<% if (theme.toc && theme.toc.enabled) { %>
+<%- partial('_partial/toc-drawer') %>
+<% } %>
 
 <script src="<%- url_for('/js/nav.js') %>" defer></script>
 <script src="<%- url_for('/js/copy-code.js') %>" defer></script>
-<% if (theme.toc && theme.toc.enabled && (!theme.sidebar || theme.sidebar.position !== 'hidden')) { %>
+<% if (theme.toc && theme.toc.enabled) { %>
 <script src="<%- url_for('/js/toc.js') %>" defer></script>
+<script src="<%- url_for('/js/toc-drawer.js') %>" defer></script>
 <% } %>
 <% if (theme.progress_bar) { %>
 <script src="<%- url_for('/js/reading-progress.js') %>" defer></script>

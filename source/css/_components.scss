@@ -1196,6 +1196,124 @@ select.form-input {
   }
 }
 
+// ─── Mobile TOC floating button + drawer ─────────────────────────────────────
+
+.toc-fab {
+  display: none;
+
+  @media (max-width: $bp-mobile) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    bottom: 80px;
+    right: $sp-4;
+    z-index: 30;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: $accent;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+    transition: background $transition-fast, transform $transition-fast;
+
+    &:hover  { background: $accent-hover; }
+    &:active { transform: scale(0.95); }
+
+    &:focus-visible {
+      outline: 2px solid $accent-light;
+      outline-offset: 3px;
+    }
+  }
+}
+
+.toc-drawer {
+  &[hidden] { display: none; }
+}
+
+.toc-drawer__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 40;
+  animation: toc-fade-in $transition-normal both;
+}
+
+.toc-drawer__panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 41;
+  background: $bg-surface;
+  border-top: 1px solid $border-subtle;
+  border-radius: $radius-lg $radius-lg 0 0;
+  max-height: 65vh;
+  display: flex;
+  flex-direction: column;
+  animation: toc-slide-up $transition-normal both;
+}
+
+.toc-drawer__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $sp-3 $sp-4;
+  border-bottom: 1px solid $border-subtle;
+  flex-shrink: 0;
+}
+
+.toc-drawer__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: $text-primary;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.toc-drawer__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid $border-subtle;
+  border-radius: $radius;
+  background: transparent;
+  color: $text-secondary;
+  cursor: pointer;
+  transition: color $transition-fast, border-color $transition-fast;
+
+  &:hover { color: $text-primary; border-color: $text-muted; }
+
+  &:focus-visible {
+    outline: 2px solid $accent;
+    outline-offset: 2px;
+  }
+}
+
+.toc-drawer__body {
+  overflow-y: auto;
+  padding: $sp-3 $sp-4 $sp-6;
+  overscroll-behavior: contain;
+
+  .toc-list { padding: 0; }
+  .toc-item { margin-bottom: $sp-2; }
+  .toc-link { font-size: 14px; display: block; padding: 2px 0; }
+}
+
+@keyframes toc-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes toc-slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
 // ─── Series nav ──────────────────────────────────────────────────────────────
 
 .series-nav {
@@ -1331,6 +1449,76 @@ select.form-input {
       display: block;
     }
   }
+}
+
+// ─── Timeline ────────────────────────────────────────────────────────────────
+
+.timeline {
+  position: relative;
+  margin: 1.5rem 0;
+  padding-left: $sp-6;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 7px;
+    top: 6px;
+    bottom: 6px;
+    width: 2px;
+    background: $border-subtle;
+  }
+}
+
+.timeline__entry {
+  position: relative;
+  margin-bottom: $sp-6;
+
+  &:last-child { margin-bottom: 0; }
+}
+
+.timeline__marker {
+  position: absolute;
+  left: calc(-#{$sp-6} + 2px);
+  top: 5px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: $accent;
+  border: 2px solid $bg-base;
+}
+
+.timeline__content {
+  background: $bg-elevated;
+  border: 1px solid $border-subtle;
+  border-radius: $radius;
+  padding: $sp-4;
+}
+
+.timeline__header {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: $sp-3;
+  margin-bottom: $sp-3;
+}
+
+.timeline__date {
+  font-size: 12px;
+  color: $text-muted;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.timeline__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.timeline__body {
+  > :first-child { margin-top: 0; }
+  > :last-child  { margin-bottom: 0; }
 }
 
 // ─── Heading anchors ──────────────────────────────────────────────────────────

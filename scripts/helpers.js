@@ -234,6 +234,45 @@ hexo.extend.tag.register('tabs', function (args, content) {
   )
 }, { ends: true })
 
+// ─── Timeline tag ─────────────────────────────────────────────────────────────
+// Usage:
+// {% timeline %}
+// <!-- entry 2026-01-15 :: My First Job -->
+// Description with **Markdown** support.
+// <!-- endentry -->
+// {% endtimeline %}
+
+hexo.extend.tag.register('timeline', function (args, content) {
+  const ENTRY_RE = /<!--\s*entry\s+(.*?)\s*-->([\s\S]*?)(?=<!--\s*(?:entry\b|endentry)\s*-->|$)/g
+  let items = ''
+  let match
+  while ((match = ENTRY_RE.exec(content)) !== null) {
+    const parts = match[1].split('::')
+    const date  = escHtml((parts[0] || '').trim())
+    const title = escHtml((parts.slice(1).join('::') || '').trim())
+    const body  = match[2].trim()
+    let rendered
+    try {
+      rendered = hexo.render.renderSync({ text: body, engine: 'markdown' })
+    } catch (e) {
+      rendered = '<pre>' + escHtml(body) + '</pre>'
+    }
+    items +=
+      '<div class="timeline__entry">' +
+        '<div class="timeline__marker"></div>' +
+        '<div class="timeline__content">' +
+          '<div class="timeline__header">' +
+            (date  ? '<time class="timeline__date">'  + date  + '</time>' : '') +
+            (title ? '<span class="timeline__title">' + title + '</span>' : '') +
+          '</div>' +
+          '<div class="timeline__body">' + rendered + '</div>' +
+        '</div>' +
+      '</div>\n'
+  }
+  if (!items) return ''
+  return '<div class="timeline">\n' + items + '</div>\n'
+}, { ends: true })
+
 // ─── KaTeX math rendering ─────────────────────────────────────────────────────
 // before_post_render: protect $...$ and $$...$$ from marked by converting to
 // placeholder tags. after_post_render: render placeholders with katex node API.
