@@ -771,7 +771,7 @@ button.navbar__hamburger {
 }
 
 .search-input:focus + .search-results.open {
-  border-top-color: $border-focus;
+  border-color: $border-focus;
 }
 
 .search-result-item {
