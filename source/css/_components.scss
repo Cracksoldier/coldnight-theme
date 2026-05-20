@@ -765,7 +765,7 @@ button.navbar__hamburger {
   &.open {
     display: block;
     margin-top: -1px;
-    border-top-left-radius: 0;
+    border-top-left-radius: $radius;
     border-top-right-radius: 0;
   }
 }
