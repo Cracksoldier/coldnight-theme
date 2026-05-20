@@ -41,6 +41,7 @@ toc:
   max_depth: 3   # 2 = h2 only, 3 = h2 + h3
 
 progress_bar: true   # reading progress bar on post pages
+sticky_title: true   # fade post title into navbar when h1 scrolls out of view
 
 related_posts: true  # "You might also like" section at the bottom of post pages
 series: true         # series navigation strip for multi-part posts (requires series: in front-matter)

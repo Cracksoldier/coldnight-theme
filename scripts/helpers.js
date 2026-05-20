@@ -276,6 +276,25 @@ hexo.extend.tag.register('timeline', function (args, content) {
   return '<div class="timeline">\n' + items + '</div>\n'
 }, { ends: true })
 
+// ─── Spoiler tag ──────────────────────────────────────────────────────────────
+// Usage: {% spoiler [label] %} content {% endspoiler %}
+
+hexo.extend.tag.register('spoiler', function (args, content) {
+  const label = args.length ? escHtml(args.join(' ')) : 'Show spoiler'
+  let rendered
+  try {
+    rendered = hexo.render.renderSync({ text: content, engine: 'markdown' })
+  } catch (e) {
+    rendered = '<pre>' + escHtml(content) + '</pre>'
+  }
+  return (
+    '<details class="spoiler">' +
+      '<summary class="spoiler__summary">' + label + '</summary>' +
+      '<div class="spoiler__body">' + rendered + '</div>' +
+    '</details>'
+  )
+}, { ends: true })
+
 // ─── KaTeX math rendering ─────────────────────────────────────────────────────
 // before_post_render: protect $...$ and $$...$$ from marked by converting to
 // placeholder tags. after_post_render: render placeholders with katex node API.

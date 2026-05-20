@@ -184,20 +184,22 @@ figure.highlight {
   font-weight: bold;
 }
 
-// Diff highlighting — full-line colored backgrounds
+// Diff highlighting — full-line colored backgrounds + left border stripe
 .hljs-addition {
   display: block;
   background: rgba(16, 185, 129, 0.15);
+  border-left: 3px solid rgba(16, 185, 129, 0.7);
   margin: 0 -1rem;
-  padding: 0 1rem;
+  padding: 0 1rem 0 calc(1rem - 3px);
   color: #7ee8a2;
 }
 
 .hljs-deletion {
   display: block;
   background: rgba(239, 68, 68, 0.12);
+  border-left: 3px solid rgba(239, 68, 68, 0.6);
   margin: 0 -1rem;
-  padding: 0 1rem;
+  padding: 0 1rem 0 calc(1rem - 3px);
   color: #ffa198;
 }
 

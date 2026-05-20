@@ -53,6 +53,37 @@
   }
 }
 
+.navbar__post-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: $text-secondary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0;
+  transform: translateY(4px);
+  pointer-events: none;
+  transition: opacity $transition-normal, transform $transition-normal;
+
+  @media (max-width: $bp-mobile) {
+    display: none;
+  }
+}
+
+// When the post-title span is injected, its flex:1 takes over gap management —
+// override nav's margin-left:auto so both coexist correctly in the flex row.
+.navbar__inner.has-post-title .navbar__nav {
+  margin-left: 0;
+}
+
+.navbar__inner.navbar--title-visible .navbar__post-title {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
 .navbar__nav {
   display: flex;
   align-items: center;
@@ -654,6 +685,55 @@ button.navbar__hamburger {
   .note-icon {
     color: $danger;
   }
+}
+
+// ─── Spoiler (details / summary) ─────────────────────────────────────────────
+
+.spoiler {
+  border: 1px solid $border-subtle;
+  border-radius: $radius;
+  margin: $sp-4 0;
+  background: $bg-elevated;
+}
+
+.spoiler__summary {
+  cursor: pointer;
+  padding: $sp-3 $sp-4;
+  font-size: 13px;
+  font-weight: 500;
+  color: $text-secondary;
+  user-select: none;
+  list-style: none;
+
+  &::-webkit-details-marker { display: none; }
+
+  &::before {
+    content: '▶';
+    font-size: 10px;
+    margin-right: $sp-2;
+    display: inline-block;
+    transition: transform $transition-fast;
+  }
+
+  &:hover { color: $text-primary; }
+
+  &:focus-visible {
+    outline: 2px solid $accent;
+    outline-offset: -2px;
+    border-radius: $radius;
+  }
+}
+
+details.spoiler[open] .spoiler__summary::before {
+  transform: rotate(90deg);
+}
+
+.spoiler__body {
+  padding: $sp-3 $sp-4;
+  border-top: 1px solid $border-subtle;
+
+  > :first-child { margin-top: 0; }
+  > :last-child  { margin-bottom: 0; }
 }
 
 // ─── Download block ───────────────────────────────────────────────────────────

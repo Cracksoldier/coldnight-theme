@@ -186,6 +186,9 @@
 <script src="<%- url_for('/js/toc.js') %>" defer></script>
 <script src="<%- url_for('/js/toc-drawer.js') %>" defer></script>
 <% } %>
+<% if (theme.sticky_title) { %>
+<script src="<%- url_for('/js/post-title.js') %>" defer></script>
+<% } %>
 <% if (theme.progress_bar) { %>
 <script src="<%- url_for('/js/reading-progress.js') %>" defer></script>
 <% } %>
