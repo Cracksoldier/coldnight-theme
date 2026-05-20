@@ -9,7 +9,7 @@
 
   <% if (coverImg) { %>
     <a class="post-card__cover" href="<%- url_for(post.path) %>" tabindex="-1" aria-hidden="true">
-      <img src="<%= coverImg %>" alt="" loading="lazy">
+      <img src="<%- url_for(coverImg) %>" alt="" loading="lazy">
     </a>
   <% } %>
 

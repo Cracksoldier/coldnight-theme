@@ -98,7 +98,7 @@
       </header>
 
       <% if (page.cover_image) { %>
-        <img src="<%= page.cover_image %>" alt="<%= page.title %>" class="post-cover" loading="lazy">
+        <img src="<%- url_for(page.cover_image) %>" alt="<%= page.title %>" class="post-cover" loading="lazy">
       <% } %>
 
       <% if (seriesPosts.length > 1 && seriesIndex > 0) { %>
@@ -158,7 +158,7 @@
     <% if (theme.related_posts && relatedPosts.length) { %>
     <section class="related-posts" aria-labelledby="related-heading">
       <h3 class="related-posts__heading" id="related-heading">You might also like</h3>
-      <div class="post-grid" style="--post-grid-cols: 2; --post-grid-cols-md: 2;">
+      <div class="post-grid" style="--post-grid-cols: <%= Math.min(relatedPosts.length, 2) %>; --post-grid-cols-md: <%= Math.min(relatedPosts.length, 2) %>;">
         <% relatedPosts.forEach(post => { %>
           <%- partial('_partial/post-card', { post }) %>
         <% }) %>

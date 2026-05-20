@@ -10,7 +10,7 @@
     : ''
   const metaDesc   = (page.description || rawExcerpt || config.description || '').slice(0, 160)
   const metaKeywords = (page.tags && page.tags.length
-    ? page.tags.map(function(t){ return t.name }).join(', ')
+    ? page.tags.toArray().map(function(t){ return t.name }).join(', ')
     : '') || config.keywords || ''
 %>
 <meta charset="UTF-8">

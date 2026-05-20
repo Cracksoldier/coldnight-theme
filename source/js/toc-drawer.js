@@ -26,7 +26,19 @@
   closeBtn.addEventListener('click', closeDrawer)
 
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && !drawer.hidden) closeDrawer()
+    if (drawer.hidden) return
+    if (e.key === 'Escape') { closeDrawer(); return }
+    if (e.key === 'Tab') {
+      var focusables = Array.prototype.slice.call(drawer.querySelectorAll('button, a[href]'))
+      if (!focusables.length) return
+      var first = focusables[0]
+      var last  = focusables[focusables.length - 1]
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus() }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus() }
+      }
+    }
   })
 
   drawer.querySelectorAll('.toc-link').forEach(function (a) {

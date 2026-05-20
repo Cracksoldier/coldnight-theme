@@ -73,6 +73,10 @@
     color: $text-secondary;
     margin-top: $sp-2;
   }
+
+  &__accent {
+    color: $accent-light;
+  }
 }
 
 // ─── Archive list ────────────────────────────────────────────────────────────

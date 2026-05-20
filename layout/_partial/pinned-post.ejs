@@ -7,7 +7,7 @@
 
   <% if (coverImg) { %>
   <a href="<%- url_for(post.path) %>" class="pinned-post__cover" tabindex="-1" aria-hidden="true">
-    <img src="<%= coverImg %>" alt="" loading="lazy">
+    <img src="<%- url_for(coverImg) %>" alt="" loading="lazy">
   </a>
   <% } %>
 

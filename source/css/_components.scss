@@ -150,7 +150,7 @@ button.navbar__hamburger {
 
 .mobile-nav {
   display: none;
-  position: absolute;
+  position: fixed;
   top: 56px;
   left: 0;
   right: 0;
@@ -531,6 +531,19 @@ button.navbar__hamburger {
     border-color: $border-focus;
     color: $accent-hover;
   }
+}
+
+// ─── Tag cloud widget ────────────────────────────────────────────────────────
+
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag-cloud__count {
+  opacity: 0.6;
+  font-size: 10px;
 }
 
 // ─── Sidebar ─────────────────────────────────────────────────────────────────
@@ -1073,23 +1086,6 @@ details.spoiler[open] .spoiler__summary::before {
   }
 }
 
-// ─── Backdrop ────────────────────────────────────────────────────────────────
-
-.backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(2px);
-  z-index: 10;
-  opacity: 0;
-  transition: opacity $transition-normal;
-  pointer-events: none;
-
-  &.open {
-    opacity: 1;
-    pointer-events: all;
-  }
-}
 
 // ─── Gallery tag ─────────────────────────────────────────────────────────────
 
