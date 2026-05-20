@@ -201,7 +201,7 @@
 <% if (theme.mermaid && theme.mermaid.enabled) { %>
 <script type="module">
   import mermaid from '<%- url_for('/vendor/mermaid/mermaid.esm.min.mjs') %>';
-  mermaid.initialize({ startOnLoad: true, theme: '<%= theme.mermaid.theme || "dark" %>' });
+  mermaid.initialize({ startOnLoad: true, theme: '<%= /^[a-z]+$/.test(theme.mermaid.theme) ? theme.mermaid.theme : "dark" %>' });
 </script>
 <% } %>
 

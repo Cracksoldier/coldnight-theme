@@ -120,6 +120,11 @@ hexo.extend.filter.register('after_render:html', function (html) {
     html = html.replace(/<figure\b[^>]*>[\s\S]*?<\/figure>/g, (figure) => {
       const codeMatch = figure.match(/<code[^>]*class="[^"]*\bmermaid\b[^"]*"[^>]*>([\s\S]*?)<\/code>/)
       if (!codeMatch) return figure
+      // <br> must become \n (hljs encodes line breaks as <br>, mermaid needs \n).
+      // Other entities are decoded so the mermaid parser receives plain text.
+      // NOTE: decoding &lt; → < puts a literal < into the div's innerHTML; a
+      // diagram label containing < would corrupt surrounding HTML. Edge case in
+      // practice since mermaid syntax rarely uses < in node text.
       const src = codeMatch[1]
         .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
         .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ')
@@ -258,7 +263,7 @@ hexo.extend.filter.register('after_post_render', function (data) {
   const katex = require('katex')
   const render = (expr, displayMode) => {
     try {
-      return katex.renderToString(expr, { displayMode, throwOnError: false, output: 'html' })
+      return katex.renderToString(expr, { displayMode, throwOnError: false })
     } catch (e) {
       return `<span class="katex-error" title="${escHtml(expr)}">${escHtml(expr)}</span>`
     }
