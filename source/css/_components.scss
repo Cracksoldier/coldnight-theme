@@ -1207,7 +1207,7 @@ select.form-input {
     justify-content: center;
     position: fixed;
     bottom: 80px;
-    right: $sp-4;
+    right: $sp-6;
     z-index: 30;
     width: 44px;
     height: 44px;
@@ -1301,7 +1301,7 @@ select.form-input {
 
   .toc-list { padding: 0; }
   .toc-item { margin-bottom: $sp-2; }
-  .toc-link { font-size: 14px; display: block; padding: 2px 0; }
+  .toc-link { font-size: 14px; display: block; padding: 2px $sp-2; }
 }
 
 @keyframes toc-fade-in {

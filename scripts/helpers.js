@@ -257,14 +257,17 @@ hexo.extend.tag.register('timeline', function (args, content) {
     } catch (e) {
       rendered = '<pre>' + escHtml(body) + '</pre>'
     }
+    const header = (date || title)
+      ? '<div class="timeline__header">' +
+          (date  ? '<time class="timeline__date">'  + date  + '</time>' : '') +
+          (title ? '<span class="timeline__title">' + title + '</span>' : '') +
+        '</div>'
+      : ''
     items +=
       '<div class="timeline__entry">' +
         '<div class="timeline__marker"></div>' +
         '<div class="timeline__content">' +
-          '<div class="timeline__header">' +
-            (date  ? '<time class="timeline__date">'  + date  + '</time>' : '') +
-            (title ? '<span class="timeline__title">' + title + '</span>' : '') +
-          '</div>' +
+          header +
           '<div class="timeline__body">' + rendered + '</div>' +
         '</div>' +
       '</div>\n'
