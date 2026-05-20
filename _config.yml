@@ -69,3 +69,6 @@ lightgallery:
 mermaid:
   enabled: true        # render mermaid fenced code blocks as SVG diagrams
   theme: dark          # mermaid theme: default | dark | neutral | forest
+
+math:
+  enabled: true        # render $...$ and $$...$$ as KaTeX math

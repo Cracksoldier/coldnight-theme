@@ -74,6 +74,11 @@
 <% } %>
 <% } %>
 
+<!-- KaTeX CSS — post pages only -->
+<% if (page.layout === 'post' && theme.math && theme.math.enabled) { %>
+<link rel="stylesheet" href="<%- url_for('/vendor/katex/katex.min.css') %>">
+<% } %>
+
 <!-- RSS -->
 <% if (theme.social && theme.social.rss) { %>
 <link rel="alternate" type="application/rss+xml" title="<%= config.title %>" href="<%- url_for('/atom.xml') %>">

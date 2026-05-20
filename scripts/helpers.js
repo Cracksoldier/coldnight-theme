@@ -12,6 +12,10 @@ const escHtml = s => String(s)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;')
   .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
+const unescHtml = s => s
+  .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+  .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+
 // ─── Reading time helper ──────────────────────────────────────────────────────
 // Usage in EJS: <%= reading_time(post.content) %>
 
@@ -224,6 +228,52 @@ hexo.extend.tag.register('tabs', function (args, content) {
     `</div>`
   )
 }, { ends: true })
+
+// ─── KaTeX math rendering ─────────────────────────────────────────────────────
+// before_post_render: protect $...$ and $$...$$ from marked by converting to
+// placeholder tags. after_post_render: render placeholders with katex node API.
+
+hexo.extend.filter.register('before_post_render', function (data) {
+  if (!hexo.theme.config.math || !hexo.theme.config.math.enabled) return data
+  if (!data.content.includes('$')) return data
+
+  // Single pass: code blocks (pre-rendered by Hexo/marked), inline code, then math.
+  // Leftmost-wins — protected regions are skipped unchanged.
+  const MATH_RE = /(<hexoPostRenderCodeBlock>[\s\S]*?<\/hexoPostRenderCodeBlock>|`[^`\n]+`|\$\$([\s\S]+?)\$\$|\$([^$\n\r]{1,500}?)\$)/g
+  data.content = data.content.replace(MATH_RE, (match, _full, display, inline) => {
+    if (display !== undefined)
+      return `<div class="katex-d" data-e="${escHtml(display.trim())}"></div>`
+    if (inline !== undefined)
+      return `<span class="katex-i" data-e="${escHtml(inline.trim())}"></span>`
+    return match  // code span or fenced block — leave unchanged
+  })
+
+  return data
+})
+
+hexo.extend.filter.register('after_post_render', function (data) {
+  if (!hexo.theme.config.math || !hexo.theme.config.math.enabled) return data
+  if (!data.content.includes('katex-d') && !data.content.includes('katex-i')) return data
+
+  const katex = require('katex')
+  const render = (expr, displayMode) => {
+    try {
+      return katex.renderToString(expr, { displayMode, throwOnError: false, output: 'html' })
+    } catch (e) {
+      return `<span class="katex-error" title="${escHtml(expr)}">${escHtml(expr)}</span>`
+    }
+  }
+
+  data.content = data.content.replace(
+    /(<figure\b[^>]*>[\s\S]*?<\/figure>|<div class="katex-d" data-e="([^"]*)"[^>]*><\/div>|<span class="katex-i" data-e="([^"]*)"[^>]*><\/span>)/g,
+    (match, _full, dispEnc, inlEnc) => {
+      if (dispEnc !== undefined) return render(unescHtml(dispEnc), true)
+      if (inlEnc !== undefined) return render(unescHtml(inlEnc), false)
+      return match
+    }
+  )
+  return data
+})
 
 // ─── External link handler ────────────────────────────────────────────────────
 
