@@ -764,13 +764,14 @@ button.navbar__hamburger {
 
   &.open {
     display: block;
+    margin-top: -1px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
   }
 }
 
 .search-input:focus + .search-results.open {
-  border-top: none;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
+  border-top-color: $border-focus;
 }
 
 .search-result-item {
