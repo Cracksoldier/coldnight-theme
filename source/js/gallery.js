@@ -17,7 +17,7 @@
     if (!imgs.length) return
 
     const dynamicEl = imgs.map(function (img) {
-      return { src: img.src, subHtml: img.alt ? '<p>' + img.alt + '</p>' : '' }
+      return { src: img.src, thumb: img.src, subHtml: img.alt ? '<p>' + img.alt + '</p>' : '' }
     })
 
     const container = document.createElement('div')
