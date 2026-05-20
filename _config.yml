@@ -67,5 +67,5 @@ lightgallery:
   thumbnail: true      # enable thumbnail strip plugin
 
 mermaid:
-  enabled: false       # render mermaid fenced code blocks as SVG diagrams
+  enabled: true        # render mermaid fenced code blocks as SVG diagrams
   theme: dark          # mermaid theme: default | dark | neutral | forest
