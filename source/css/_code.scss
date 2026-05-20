@@ -209,3 +209,16 @@ figure.highlight .marked {
   margin: 0 -1rem;
   padding: 0 1rem 0 calc(1rem - 3px);
 }
+
+// ─── Mermaid diagrams ─────────────────────────────────────────────────────────
+
+.mermaid {
+  margin: 1.5rem 0;
+  text-align: center;
+
+  svg {
+    max-width: 100%;
+    height: auto;
+  }
+}
+

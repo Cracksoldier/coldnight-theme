@@ -65,3 +65,7 @@ lightgallery:
   auto_mount: true     # auto-wrap .post-body images as gallery items
   zoom: true           # enable zoom plugin
   thumbnail: true      # enable thumbnail strip plugin
+
+mermaid:
+  enabled: false       # render mermaid fenced code blocks as SVG diagrams
+  theme: dark          # mermaid theme: default | dark | neutral | forest

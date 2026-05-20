@@ -112,6 +112,20 @@ hexo.extend.filter.register('after_render:html', function (html) {
     (match, lang) => `<figure class="highlight ${lang}" data-lang="${lang}">`
   )
 
+  if (hexo.theme.config.mermaid && hexo.theme.config.mermaid.enabled) {
+    html = html.replace(/<figure\b[^>]*>[\s\S]*?<\/figure>/g, (figure) => {
+      const codeMatch = figure.match(/<code[^>]*class="[^"]*\bmermaid\b[^"]*"[^>]*>([\s\S]*?)<\/code>/)
+      if (!codeMatch) return figure
+      const src = codeMatch[1]
+        .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, ' ')
+        .replace(/&#123;/g, '{').replace(/&#125;/g, '}')
+        .replace(/<br>/g, '\n')
+        .trim()
+      return `<div class="mermaid">${src}</div>`
+    })
+  }
+
   if (hexo.theme.config.image_captions !== false) {
     html = html.replace(/<p>(<img\b[^>]*>)<\/p>/g, (match, imgTag) => {
       const altMatch = imgTag.match(/\balt="([^"]*)"/)

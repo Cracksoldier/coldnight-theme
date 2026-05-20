@@ -198,6 +198,12 @@
   <script src="<%- url_for('/js/gallery.js') %>" defer></script>
   <% } %>
 <% } %>
+<% if (theme.mermaid && theme.mermaid.enabled) { %>
+<script type="module">
+  import mermaid from '<%- url_for('/vendor/mermaid/mermaid.esm.min.mjs') %>';
+  mermaid.initialize({ startOnLoad: true, theme: '<%= theme.mermaid.theme || "dark" %>' });
+</script>
+<% } %>
 
 </body>
 </html>
