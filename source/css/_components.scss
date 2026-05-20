@@ -730,7 +730,7 @@ button.navbar__hamburger {
   color: $text-primary;
   padding: 8px 12px;
   font-size: 13px;
-  transition: border-color $transition-fast, box-shadow $transition-fast;
+  transition: border-color $transition-fast;
   font-family: #{$font-sans};
 
   &::placeholder {
@@ -740,15 +740,19 @@ button.navbar__hamburger {
   &:focus {
     outline: none;
     border-color: $border-focus;
-    box-shadow: 0 0 0 3px $accent-glow;
+  }
+
+  &:focus:has(+ .search-results.open) {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
   }
 }
 
 .search-results {
   position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
+  top: 100%;
   right: 0;
+  min-width: 320px;
   background: $bg-elevated;
   border: 1px solid $border-subtle;
   border-radius: $radius;
@@ -763,26 +767,34 @@ button.navbar__hamburger {
   }
 }
 
+.search-input:focus + .search-results.open {
+  border-top: none;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
 .search-result-item {
-  padding: 10px $sp-4;
+  display: block;
+  padding: 12px $sp-4;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   cursor: pointer;
   font-size: 13px;
   color: $text-primary;
+  text-decoration: none;
 
   &:last-child {
     border-bottom: none;
   }
 
   &:hover {
-    background: $bg-input;
+    background: $accent-glow;
+    color: $text-primary;
   }
 
   mark {
-    background: $accent-glow;
+    background: none;
     color: $accent-light;
-    border-radius: 2px;
-    padding: 0 2px;
+    font-weight: 600;
   }
 }
 
@@ -799,6 +811,12 @@ button.navbar__hamburger {
 
   @media (max-width: $bp-mobile) {
     display: none;
+  }
+}
+
+@media (max-width: $bp-mobile) {
+  .search-results {
+    max-height: 240px;
   }
 }
 
