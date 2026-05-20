@@ -1,5 +1,7 @@
 'use strict'
 
+const themeVersion = require('../package.json').version
+
 let _tabCounter = 0
 
 const stripHtml = (html) => html
@@ -127,6 +129,7 @@ hexo.extend.filter.register('after_render:html', function (html) {
 
 hexo.extend.filter.register('before_generate', function () {
   _tabCounter = 0
+  hexo.theme.config.version = themeVersion
 
   const grid = hexo.theme.config.grid
   if (grid && grid.columns && grid.columns > 1) {
