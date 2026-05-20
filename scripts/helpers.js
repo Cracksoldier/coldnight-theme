@@ -71,10 +71,11 @@ hexo.extend.tag.register('gallery', function (args, content) {
   while ((match = mdImageRe.exec(content)) !== null) {
     const altE = escHtml(match[1] || '')
     const srcE = escHtml(match[2] || '')
-    const dataSubHtml = altE ? ' data-sub-html="<p>' + altE + '</p>"' : ''
+    const dataSubHtml = altE ? ' data-sub-html="' + altE + '"' : ''
     items +=
       '<a href="' + srcE + '"' + dataSubHtml + '>' +
         '<img src="' + srcE + '" alt="' + altE + '" loading="lazy">' +
+        (altE ? '<span class="lg-gallery-caption">' + altE + '</span>' : '') +
       '</a>\n'
   }
 
