@@ -65,12 +65,12 @@
 
 <!-- LightGallery CSS — post pages only -->
 <% if (page.layout === 'post' && theme.lightgallery && theme.lightgallery.enabled) { %>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2/css/lightgallery.min.css">
+<link rel="stylesheet" href="<%- url_for('/vendor/lightgallery/lightgallery.css') %>">
 <% if (theme.lightgallery.zoom) { %>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2/css/lg-zoom.min.css">
+<link rel="stylesheet" href="<%- url_for('/vendor/lightgallery/lg-zoom.css') %>">
 <% } %>
 <% if (theme.lightgallery.thumbnail) { %>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2/css/lg-thumbnail.min.css">
+<link rel="stylesheet" href="<%- url_for('/vendor/lightgallery/lg-thumbnail.css') %>">
 <% } %>
 <% } %>
 

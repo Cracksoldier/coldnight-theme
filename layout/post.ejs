@@ -187,12 +187,12 @@
 <% } %>
 
 <% if (lgEnabled) { %>
-  <script src="https://cdn.jsdelivr.net/npm/lightgallery@2/lightgallery.umd.min.js" defer></script>
+  <script src="<%- url_for('/vendor/lightgallery/lightgallery.umd.js') %>" defer></script>
   <% if (lgZoom) { %>
-  <script src="https://cdn.jsdelivr.net/npm/lightgallery@2/plugins/zoom/lg-zoom.umd.min.js" defer></script>
+  <script src="<%- url_for('/vendor/lightgallery/lg-zoom.umd.js') %>" defer></script>
   <% } %>
   <% if (lgThumb) { %>
-  <script src="https://cdn.jsdelivr.net/npm/lightgallery@2/plugins/thumbnail/lg-thumbnail.umd.min.js" defer></script>
+  <script src="<%- url_for('/vendor/lightgallery/lg-thumbnail.umd.js') %>" defer></script>
   <% } %>
   <% if (lgAutoMount) { %>
   <script src="<%- url_for('/js/gallery.js') %>" defer></script>
