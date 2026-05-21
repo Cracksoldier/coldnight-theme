@@ -124,7 +124,82 @@
       a.setAttribute('aria-hidden', 'true')
       a.setAttribute('tabindex', '-1')
       a.textContent = '#'
+      a.addEventListener('click', function (e) {
+        e.preventDefault()
+        var url = window.location.origin + window.location.pathname + '#' + h.id
+        writeToClipboard(url).then(function () {
+          showToast('Link copied', 'success')
+        }).catch(function () {
+          showToast('Copy failed', 'error')
+        })
+      })
       h.appendChild(a)
     })
+
+    // Footnote tooltips
+    var fnRefs = document.querySelectorAll('.footnote-ref a')
+    if (fnRefs.length) {
+      var fnTooltip = document.createElement('div')
+      fnTooltip.className = 'fn-tooltip'
+      fnTooltip.setAttribute('role', 'tooltip')
+      document.body.appendChild(fnTooltip)
+
+      var fnHideTimer
+
+      function showFnTooltip(ref) {
+        clearTimeout(fnHideTimer)
+        var targetId = ref.getAttribute('href')
+        var li = targetId ? document.getElementById(targetId.slice(1)) : null
+        if (!li) return
+        var clone = li.cloneNode(true)
+        var backref = clone.querySelector('.footnote-backref')
+        if (backref) backref.remove()
+        fnTooltip.innerHTML = clone.innerHTML.trim()
+
+        fnTooltip.style.visibility = 'hidden'
+        fnTooltip.classList.add('fn-tooltip--visible')
+        var rect = ref.getBoundingClientRect()
+        var ttWidth = fnTooltip.offsetWidth
+        var ttHeight = fnTooltip.offsetHeight
+        var left = Math.max(8, Math.min(
+          rect.left + rect.width / 2 - ttWidth / 2,
+          window.innerWidth - ttWidth - 8
+        ))
+        var top = rect.top - ttHeight - 8
+        if (top < 8) top = rect.bottom + 8
+        fnTooltip.style.left = left + 'px'
+        fnTooltip.style.top  = top  + 'px'
+        fnTooltip.style.visibility = ''
+      }
+
+      function hideFnTooltip() {
+        fnTooltip.classList.remove('fn-tooltip--visible')
+      }
+
+      fnRefs.forEach(function (ref) {
+        ref.addEventListener('mouseenter', function () { showFnTooltip(ref) })
+        ref.addEventListener('mouseleave', function () {
+          fnHideTimer = setTimeout(hideFnTooltip, 200)
+        })
+        ref.addEventListener('click', function (e) {
+          e.preventDefault()
+          if (fnTooltip.classList.contains('fn-tooltip--visible')) {
+            hideFnTooltip()
+          } else {
+            showFnTooltip(ref)
+          }
+        })
+      })
+
+      document.addEventListener('click', function (e) {
+        if (!e.target.closest('.footnote-ref') && !e.target.closest('.fn-tooltip')) {
+          hideFnTooltip()
+        }
+      })
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') hideFnTooltip()
+      })
+    }
   })
 })()

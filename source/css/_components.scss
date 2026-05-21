@@ -1645,6 +1645,33 @@ select.form-input {
   }
 }
 
+// ─── Footnote tooltips ────────────────────────────────────────────────────────
+
+.fn-tooltip {
+  position: fixed;
+  z-index: 50;
+  max-width: 280px;
+  padding: $sp-2 $sp-3;
+  background: $bg-elevated;
+  border: 1px solid $border-subtle;
+  border-radius: $radius;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: $text-secondary;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity $transition-fast;
+
+  &.fn-tooltip--visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  p { margin: 0; }
+  a { color: $accent-light; }
+}
+
 // ─── Keyboard shortcuts modal ─────────────────────────────────────────────────
 
 .shortcuts-modal {
