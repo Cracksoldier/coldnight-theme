@@ -6,13 +6,14 @@
     var el = document.activeElement
     if (!el) return
     var tag = el.tagName.toLowerCase()
-    if (tag === 'input' || tag === 'textarea' || tag === 'select' || tag === 'button') return
+    if (tag === 'input' || tag === 'textarea' || tag === 'select' ||
+        tag === 'button' || tag === 'summary') return
     if (el.isContentEditable) return
 
     var selector = e.key === 'ArrowLeft'
       ? '.post-nav__item--prev a'
       : '.post-nav__item--next a'
     var link = document.querySelector(selector)
-    if (link) link.click()
+    if (link) { e.preventDefault(); link.click() }
   })
 })()

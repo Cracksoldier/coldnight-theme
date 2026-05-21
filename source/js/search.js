@@ -137,8 +137,10 @@
         '<div><dt><kbd>/</kbd></dt><dd>Focus search</dd></div>' +
         '<div><dt><kbd>Esc</kbd></dt><dd>Close search / dismiss</dd></div>' +
         '<div><dt><kbd>?</kbd></dt><dd>Show this help</dd></div>' +
-        '<div><dt><kbd>←</kbd></dt><dd>Previous post</dd></div>' +
-        '<div><dt><kbd>→</kbd></dt><dd>Next post</dd></div>' +
+        (document.querySelector('.post-nav__item--prev, .post-nav__item--next')
+          ? '<div><dt><kbd>←</kbd></dt><dd>Previous post</dd></div>' +
+            '<div><dt><kbd>→</kbd></dt><dd>Next post</dd></div>'
+          : '') +
       '</dl>'
     document.body.appendChild(d)
     d.querySelector('.shortcuts-modal__close').addEventListener('click', function () { d.close() })
