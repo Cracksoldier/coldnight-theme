@@ -475,7 +475,7 @@ button.navbar__hamburger {
   font-size: 0.78rem;
   color: $accent-light;
   text-decoration: none;
-  word-break: break-all;
+  overflow-wrap: break-word;
   margin-top: $sp-1;
 
   &:hover { text-decoration: underline; }
