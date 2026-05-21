@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="<%= config.language || 'en' %>">
+<head>
+  <%- partial('_partial/head') %>
+</head>
+<body>
+
+<a href="#main-content" class="skip-nav">Skip to main content</a>
+
+<%- partial('_partial/header') %>
+
+<div class="archive-wrapper">
+  <main id="main-content" role="main">
+
+    <header class="page-header">
+      <h1>Showroom</h1>
+      <p class="page-header__meta"><%= page.total %> projects</p>
+    </header>
+
+    <div class="showroom-grid">
+      <% page.projects.forEach(function(p) { %>
+        <a class="project-card" href="<%- url_for(p.path) %>">
+          <img class="project-card__img" src="<%- url_for(p.cover_image) %>" alt="<%= p.title %>" loading="lazy">
+          <div class="project-card__overlay">
+            <h2 class="project-card__title"><%= p.title %></h2>
+            <% if (p.subtitle) { %>
+              <p class="project-card__subtitle"><%= p.subtitle %></p>
+            <% } %>
+          </div>
+        </a>
+      <% }) %>
+    </div>
+
+    <% if (page.total_pages > 1) { %>
+      <nav class="pagination" aria-label="Showroom pages">
+        <% if (page.prev_link) { %>
+          <a class="pagination__btn" href="<%- url_for(page.prev_link) %>" aria-label="Previous page">&#8592; Prev</a>
+        <% } %>
+        <span class="pagination__info">Page <%= page.current %> of <%= page.total_pages %></span>
+        <% if (page.next_link) { %>
+          <a class="pagination__btn" href="<%- url_for(page.next_link) %>" aria-label="Next page">Next &#8594;</a>
+        <% } %>
+      </nav>
+    <% } %>
+
+  </main>
+</div>
+
+<%- partial('_partial/footer') %>
+<%- partial('_partial/toast') %>
+
+<script src="<%- url_for('/js/nav.js') %>" defer></script>
+
+</body>
+</html>

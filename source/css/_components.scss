@@ -481,6 +481,132 @@ button.navbar__hamburger {
   &:hover { text-decoration: underline; }
 }
 
+// ─── Showroom grid ────────────────────────────────────────────────────────────
+
+.showroom-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $sp-4;
+
+  @media (max-width: $bp-tablet) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: $bp-mobile) { grid-template-columns: 1fr; }
+}
+
+.project-card {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: $radius-lg;
+  display: block;
+  text-decoration: none;
+  background: $bg-elevated;
+
+  &:hover .project-card__img { transform: scale(1.04); }
+  &:hover .project-card__subtitle { opacity: 1; transform: translateY(0); }
+  &:focus-visible { outline: 2px solid $border-focus; outline-offset: 2px; }
+}
+
+.project-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s ease;
+}
+
+.project-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0.2) 55%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: $sp-3;
+  gap: $sp-1;
+}
+
+.project-card__title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+  line-height: 1.3;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+.project-card__subtitle {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+  line-height: 1.4;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+// ─── Project page ─────────────────────────────────────────────────────────────
+
+.project-cover {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: $radius-lg;
+  margin-bottom: $sp-6;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.project-subtitle {
+  font-size: 1.05rem;
+  color: $text-secondary;
+  margin: 0 0 $sp-6;
+}
+
+.project-back {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-1;
+  font-size: 0.85rem;
+  color: $accent-light;
+  text-decoration: none;
+  margin-bottom: $sp-4;
+
+  &:hover { text-decoration: underline; }
+}
+
+// ─── Showroom pagination ──────────────────────────────────────────────────────
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $sp-4;
+  margin-top: $sp-6;
+  padding-top: $sp-4;
+  border-top: 1px solid $border-subtle;
+}
+
+.pagination__btn {
+  font-size: 0.85rem;
+  color: $accent-light;
+  text-decoration: none;
+  padding: $sp-1 $sp-3;
+  border: 1px solid $border-subtle;
+  border-radius: $radius;
+  transition: border-color $transition-fast;
+
+  &:hover { border-color: $border-focus; }
+}
+
+.pagination__info {
+  font-size: 0.85rem;
+  color: $text-muted;
+}
+
 // ─── Pinned / Featured post ───────────────────────────────────────────────────
 
 .pinned-post {

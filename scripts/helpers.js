@@ -447,3 +447,41 @@ hexo.extend.tag.register('video', function (args) {
     `</figure>`
   )
 })
+
+// ─── Showroom generator ───────────────────────────────────────────────────────
+
+hexo.extend.generator.register('showroom', function (locals) {
+  const PER_PAGE = 9
+
+  const projects = locals.pages.toArray()
+    .filter(p => p.layout === 'project' && p.path.startsWith('showroom/'))
+    .sort((a, b) => b.date - a.date)
+
+  if (!projects.length) return []
+
+  const totalPages = Math.ceil(projects.length / PER_PAGE)
+  const routes = []
+
+  for (let i = 0; i < totalPages; i++) {
+    const current = i + 1
+    const slice = projects.slice(i * PER_PAGE, (i + 1) * PER_PAGE)
+    const path = current === 1 ? 'showroom/index.html' : `showroom/page/${current}/index.html`
+
+    routes.push({
+      path,
+      layout: ['showroom'],
+      data: {
+        projects: slice,
+        total: projects.length,
+        current,
+        total_pages: totalPages,
+        prev_link: current > 1
+          ? (current === 2 ? 'showroom/' : `showroom/page/${current - 1}/`)
+          : null,
+        next_link: current < totalPages ? `showroom/page/${current + 1}/` : null
+      }
+    })
+  }
+
+  return routes
+})

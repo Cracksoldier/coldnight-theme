@@ -10,6 +10,8 @@ navbar:
       url: /archives
     - name: Links
       url: /links
+    - name: Showroom
+      url: /showroom
     - name: About
       url: /about
 
