@@ -64,6 +64,11 @@
             <%= date(page.date, 'YYYY-MM-DD') %>
           </time>
 
+          <% if (page.updated && page.updated.format('YYYY-MM-DD') !== page.date.format('YYYY-MM-DD')) { %>
+          <time class="post-updated" datetime="<%= page.updated.toISOString() %>"
+                title="Last updated">↻ Updated <%= date(page.updated, 'YYYY-MM-DD') %></time>
+          <% } %>
+
           <% if (config.author) { %>
             <span><%= config.author %></span>
           <% } %>
@@ -134,6 +139,22 @@
               <a href="<%- url_for(tag.path) %>" class="tag-pill">#<%= tag.name %></a>
             <% }) %>
           </div>
+        <% } %>
+
+        <% if (theme.social && theme.social.share) { %>
+        <div class="post-share">
+          <span class="post-share__label">Share</span>
+          <div class="post-share__btns">
+            <a class="btn btn--ghost btn--sm"
+               href="https://twitter.com/intent/tweet?text=<%= encodeURIComponent(page.title) %>&url=<%= encodeURIComponent(page.permalink) %>"
+               target="_blank" rel="noopener noreferrer">X / Twitter</a>
+            <a class="btn btn--ghost btn--sm"
+               href="https://www.linkedin.com/sharing/share-offsite/?url=<%= encodeURIComponent(page.permalink) %>"
+               target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            <button class="btn btn--ghost btn--sm post-share-copy"
+                    data-url="<%= page.permalink %>">Copy link</button>
+          </div>
+        </div>
         <% } %>
 
         <nav class="post-nav" aria-label="Post navigation">

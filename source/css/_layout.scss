@@ -250,6 +250,12 @@
   }
 }
 
+.post-updated {
+  color: $text-muted;
+  font-size: 12px;
+  font-style: italic;
+}
+
 .post-body {
   margin-top: $sp-6;
 }
@@ -265,6 +271,31 @@
   flex-wrap: wrap;
   gap: $sp-2;
   margin-bottom: $sp-6;
+}
+
+// ─── Post share ───────────────────────────────────────────────────────────────
+
+.post-share {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  margin-bottom: $sp-6;
+  flex-wrap: wrap;
+}
+
+.post-share__label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: $text-muted;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.post-share__btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $sp-2;
 }
 
 .post-nav {

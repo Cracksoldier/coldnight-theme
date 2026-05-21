@@ -99,6 +99,16 @@
       })
     }
 
+    document.querySelectorAll('.post-share-copy').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        writeToClipboard(btn.dataset.url).then(function () {
+          showToast('Link copied', 'success')
+        }).catch(function () {
+          showToast('Copy failed', 'error')
+        })
+      })
+    })
+
     document.querySelectorAll('.post-body h2[id], .post-body h3[id]').forEach(function (h) {
       var a = document.createElement('a')
       a.className = 'heading-anchor'
