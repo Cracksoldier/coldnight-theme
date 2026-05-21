@@ -34,7 +34,7 @@
           <% postsByYear[year].forEach(post => { %>
             <li class="archive-item">
               <time class="archive-item__date" datetime="<%= post.date.format('YYYY-MM-DD') %>">
-                <%= post.date.format('MMM D') %>
+                <%= post.date.format('DD.MM.') %>
               </time>
               <a href="<%- url_for(post.path) %>" class="archive-item__title"><%= post.title %></a>
               <span class="archive-item__meta">

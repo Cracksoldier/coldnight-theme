@@ -60,7 +60,7 @@
                 data-category="<%= post.categories && post.categories.length ? post.categories.first().name : '' %>"
                 data-tags="<%= post.tags && post.tags.length ? post.tags.toArray().map(t => t.name).join('|') : '' %>">
               <time class="archive-item__date" datetime="<%= post.date.format('YYYY-MM-DD') %>">
-                <%= post.date.format('MMM D') %>
+                <%= post.date.format('DD.MM.') %>
               </time>
               <a href="<%- url_for(post.path) %>" class="archive-item__title"><%= post.title %></a>
               <span class="archive-item__meta">

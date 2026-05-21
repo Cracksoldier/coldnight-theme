@@ -33,7 +33,7 @@
     <% } %>
 
     <div class="post-card__footer">
-      <time datetime="<%= post.date.toISOString() %>"><%= date(post.date, 'YYYY-MM-DD') %></time>
+      <time datetime="<%= post.date.toISOString() %>"><%= date(post.date, 'DD.MM.YYYY') %></time>
       <a href="<%- url_for(post.path) %>" class="post-card__read-more" aria-hidden="true" tabindex="-1">Read more →</a>
     </div>
 

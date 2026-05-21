@@ -5,7 +5,7 @@
       <li>
         <a href="<%- url_for(post.path) %>">
           <span><%= post.title %></span>
-          <span class="sidebar-widget__count"><%= post.date.format('MM/DD') %></span>
+          <span class="sidebar-widget__count"><%= post.date.format('DD.MM.') %></span>
         </a>
       </li>
     <% }) %>
