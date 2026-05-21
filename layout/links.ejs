@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="<%= config.language || 'en' %>">
+<head>
+  <%- partial('_partial/head') %>
+</head>
+<body>
+
+<a href="#main-content" class="skip-nav">Skip to main content</a>
+
+<%- partial('_partial/header') %>
+
+<%
+  const links = site.data.links || []
+%>
+
+<div class="archive-wrapper">
+  <main id="main-content" role="main">
+
+    <header class="page-header">
+      <h1>Links</h1>
+      <p class="page-header__meta"><%= links.length %> links</p>
+    </header>
+
+    <div class="links-grid">
+      <% links.forEach(function(link) {
+           const host = link.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]
+      %>
+        <article class="link-card">
+          <% if (link.thumbnail) { %>
+          <div class="link-card__thumb">
+            <img src="<%- url_for(link.thumbnail) %>" alt="" loading="lazy">
+          </div>
+          <% } %>
+          <div class="link-card__body">
+            <h2 class="link-card__title"><%= link.title %></h2>
+            <% if (link.subtitle) { %>
+              <p class="link-card__subtitle"><%= link.subtitle %></p>
+            <% } %>
+            <p class="link-card__abstract"><%= link.abstract %></p>
+            <a class="link-card__url"
+               href="<%= link.url %>"
+               target="_blank"
+               rel="noopener noreferrer"><%= host %> ↗</a>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+
+  </main>
+</div>
+
+<%- partial('_partial/footer') %>
+<%- partial('_partial/toast') %>
+
+<script src="<%- url_for('/js/nav.js') %>" defer></script>
+
+</body>
+</html>

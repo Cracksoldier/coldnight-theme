@@ -8,6 +8,8 @@ navbar:
       url: /
     - name: Archive
       url: /archives
+    - name: Links
+      url: /links
     - name: About
       url: /about
 
