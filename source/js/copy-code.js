@@ -101,7 +101,7 @@
 
     document.querySelectorAll('.post-share-copy').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        writeToClipboard(btn.dataset.url).then(function () {
+        writeToClipboard(btn.dataset.permalink).then(function () {
           showToast('Link copied', 'success')
         }).catch(function () {
           showToast('Copy failed', 'error')

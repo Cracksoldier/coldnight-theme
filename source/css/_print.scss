@@ -13,6 +13,7 @@
 
   // ── Hide interactive / navigational chrome ─────────────────────────────────
   .navbar,
+  .mobile-nav,
   .sidebar,
   #back-to-top,
   .back-to-top,
@@ -28,7 +29,8 @@
   .site-footer,
   .toast-container,
   .skip-nav,
-  .series-nav { display: none !important; }
+  .series-nav,
+  .pinned-post { display: none !important; }
 
   // ── Expand post to full width ──────────────────────────────────────────────
   .page-wrapper { display: block !important; }
@@ -36,13 +38,15 @@
   .post-page    { max-width: 100% !important; width: 100% !important; }
 
   // ── Show full URLs after external links ────────────────────────────────────
+  // Order matters: suppress ↗ icon first, then restore full URL for http links.
+  // after_post_render adds target="_blank" to all external links, so the URL
+  // rule must come last to win the cascade.
+  .post-body a[target="_blank"]::after { content: none; }
   .post-body a[href^="http"]::after {
     content: " (" attr(href) ")";
     font-size: 0.75em;
     color: #555 !important;
   }
-  // Suppress the ↗ icon that after_post_render injects (already an ::after)
-  .post-body a[target="_blank"]::after { content: none !important; }
 
   // ── Page breaks ───────────────────────────────────────────────────────────
   h2, h3          { page-break-after: avoid; }

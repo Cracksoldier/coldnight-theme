@@ -29,7 +29,7 @@ social:
   github: ""
   twitter: ""
   rss: true
-  share: true    # show X/Twitter + LinkedIn + copy-link buttons in the post footer
+  share: false   # show X/Twitter + LinkedIn + copy-link buttons in the post footer
 
 reading_time: true     # show "N min read" on post cards and post header
 word_count: true       # show raw word count ("1,240 words") in the post header
