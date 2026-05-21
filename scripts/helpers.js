@@ -111,9 +111,21 @@ const EXTERNAL_ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height
 // The CSS ::before rule uses attr(data-lang), so we inject it at build time.
 
 hexo.extend.filter.register('after_render:html', function (html) {
+  // Pass 1 — inject data-lang and optionally extract // filename: comment
   html = html.replace(
-    /<figure class="highlight ([a-zA-Z0-9_+\-]+)">/g,
-    (match, lang) => `<figure class="highlight ${lang}" data-lang="${lang}">`
+    /<figure class="highlight ([a-zA-Z0-9_+\-]+)">([\s\S]*?)<\/figure>/g,
+    (match, lang, body) => {
+      let dataFilename = ''
+      let cleanBody = body
+      const fnMatch = body.match(
+        /<span class="hljs-comment">(?:\/\/|#|\/\*)\s*filename:\s*([^<]+?)(?:\s*\*\/)?\s*<\/span><br>/
+      )
+      if (fnMatch) {
+        dataFilename = ` data-filename="${fnMatch[1].trim().replace(/"/g, '&quot;')}"`
+        cleanBody = body.slice(0, fnMatch.index) + body.slice(fnMatch.index + fnMatch[0].length)
+      }
+      return `<figure class="highlight ${lang}" data-lang="${lang}"${dataFilename}>${cleanBody}</figure>`
+    }
   )
 
   if (hexo.theme.config.mermaid && hexo.theme.config.mermaid.enabled) {
@@ -143,6 +155,12 @@ hexo.extend.filter.register('after_render:html', function (html) {
       return `<figure>${imgTag}<figcaption>${alt}</figcaption></figure>`
     })
   }
+
+  // Pass 4 — lazy-load all body images not already carrying a loading= attribute
+  html = html.replace(/<img\b([^>]*?)(\s*\/?>)/gi, (match, attrs, close) => {
+    if (/\bloading\s*=/i.test(attrs)) return match
+    return `<img${attrs} loading="lazy"${close}`
+  })
 
   return html
 })
@@ -387,5 +405,45 @@ hexo.extend.tag.register('download', function (args) {
       '</a>' +
       badge +
     '</div>'
+  )
+})
+
+// ─── Video embed tag ──────────────────────────────────────────────────────────
+// Usage: {% video url [caption words] %}
+// Supports: YouTube, Vimeo, direct .mp4/.webm/.ogv files
+
+hexo.extend.tag.register('video', function (args) {
+  const url     = (args[0] || '').trim()
+  const caption = args.length > 1 ? escHtml(args.slice(1).join(' ')) : ''
+  if (!url) return ''
+
+  let embedHtml
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?(?:.*&)?v=|youtu\.be\/)([\w-]+)/)
+  const vmMatch  = !ytMatch && url.match(/vimeo\.com\/(\d+)/)
+  const isFile   = !ytMatch && !vmMatch && /\.(mp4|webm|ogv)(\?|$)/i.test(url)
+
+  if (ytMatch) {
+    const id = escHtml(ytMatch[1])
+    embedHtml = `<iframe src="https://www.youtube.com/embed/${id}"` +
+      ` title="${caption || 'YouTube video'}"` +
+      ` allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"` +
+      ` allowfullscreen loading="lazy"></iframe>`
+  } else if (vmMatch) {
+    const id = escHtml(vmMatch[1])
+    embedHtml = `<iframe src="https://player.vimeo.com/video/${id}"` +
+      ` title="${caption || 'Vimeo video'}"` +
+      ` allow="autoplay; fullscreen; picture-in-picture"` +
+      ` allowfullscreen loading="lazy"></iframe>`
+  } else if (isFile) {
+    embedHtml = `<video controls preload="metadata"><source src="${escHtml(url)}"></video>`
+  } else {
+    return `<p><a href="${escHtml(url)}">${escHtml(url)}</a></p>`
+  }
+
+  return (
+    `<figure class="video-embed">` +
+      `<div class="video-embed__wrapper">${embedHtml}</div>` +
+      (caption ? `<figcaption>${caption}</figcaption>` : '') +
+    `</figure>`
   )
 })

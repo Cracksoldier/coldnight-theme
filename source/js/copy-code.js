@@ -67,6 +67,14 @@
     const toolbar = document.createElement('div')
     toolbar.className = 'code-toolbar'
 
+    const filename = block.getAttribute('data-filename')
+    if (filename) {
+      const fnLabel = document.createElement('span')
+      fnLabel.className = 'code-filename-label'
+      fnLabel.textContent = filename
+      toolbar.appendChild(fnLabel)
+    }
+
     const lang = block.getAttribute('data-lang')
     if (lang) {
       const label = document.createElement('span')

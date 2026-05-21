@@ -776,6 +776,28 @@ details.spoiler[open] .spoiler__summary::before {
   svg { flex-shrink: 0; }
 }
 
+// ─── Video embed ─────────────────────────────────────────────────────────────
+
+.video-embed {
+  margin: $sp-4 0;
+}
+
+.video-embed__wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+
+  iframe,
+  video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: $radius;
+  }
+}
+
 // ─── Pagination ──────────────────────────────────────────────────────────────
 
 .pagination {
