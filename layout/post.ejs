@@ -99,6 +99,20 @@
               </svg>
             </button>
           <% } %>
+          <% if (theme.epub_export !== false) { %>
+            <button class="btn btn--icon btn--sm epub-export-btn"
+                    data-title="<%= page.title %>"
+                    data-author="<%= config.author || '' %>"
+                    data-url="<%= page.permalink %>"
+                    data-slug="<%= page.slug %>"
+                    aria-label="Export as ePub"
+                    title="Download as ePub">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 17V3"/><path d="m6 11 6 6 6-6"/><path d="M19 21H5"/>
+              </svg>
+            </button>
+          <% } %>
         </div>
       </header>
 
@@ -223,6 +237,10 @@
 <script src="<%- url_for('/js/reading-progress.js') %>" defer></script>
 <% } %>
 <script src="<%- url_for('/js/post-nav-keys.js') %>" defer></script>
+<% if (theme.epub_export !== false) { %>
+<script src="<%- url_for('/vendor/jszip/jszip.min.js') %>" defer></script>
+<script src="<%- url_for('/js/epub-export.js') %>" defer></script>
+<% } %>
 
 <% if (lgEnabled) { %>
   <script src="<%- url_for('/vendor/lightgallery/lightgallery.umd.js') %>" defer></script>
