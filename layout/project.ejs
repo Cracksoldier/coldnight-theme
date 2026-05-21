@@ -25,7 +25,7 @@
       <p class="project-subtitle"><%= page.subtitle %></p>
     <% } %>
 
-    <div class="post-body prose">
+    <div class="prose">
       <%- page.content %>
     </div>
 
@@ -36,6 +36,7 @@
 <%- partial('_partial/toast') %>
 
 <script src="<%- url_for('/js/nav.js') %>" defer></script>
+<script src="<%- url_for('/js/copy-code.js') %>" defer></script>
 
 </body>
 </html>

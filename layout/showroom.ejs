@@ -20,9 +20,11 @@
     <div class="showroom-grid">
       <% page.projects.forEach(function(p) { %>
         <a class="project-card" href="<%- url_for(p.path) %>">
+          <% if (p.cover_image) { %>
           <img class="project-card__img" src="<%- url_for(p.cover_image) %>" alt="<%= p.title %>" loading="lazy">
+          <% } %>
           <div class="project-card__overlay">
-            <h2 class="project-card__title"><%= p.title %></h2>
+            <span class="project-card__title"><%= p.title %></span>
             <% if (p.subtitle) { %>
               <p class="project-card__subtitle"><%= p.subtitle %></p>
             <% } %>
