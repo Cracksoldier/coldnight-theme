@@ -269,7 +269,8 @@
   color: $text-muted;
 
   &:hover {
-    color: $text-primary;
+    color: $accent-light;
+    border-color: $border-focus;
   }
 
   &:disabled {

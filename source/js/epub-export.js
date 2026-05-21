@@ -25,17 +25,18 @@
     if (!body) return ''
     var clone = body.cloneNode(true)
     clone.querySelectorAll('.code-toolbar, .heading-anchor').forEach(function (el) { el.remove() })
-    // Fix void elements so the document is valid XHTML
-    return clone.innerHTML.replace(/<(br|hr|img|input|link|meta)(\s[^>]*)?(\/?)>/gi, '<$1$2/>')
+    // Fix void elements so the document is valid XHTML (strip any existing trailing slash first)
+    return clone.innerHTML.replace(/<(br|hr|img|input|link|meta)(\s[^>]*?)?\s*\/?>/gi, '<$1$2/>')
   }
 
   function getPostData(btn) {
     return {
-      title:   btn.dataset.title  || (document.querySelector('.post-title') || {}).textContent || 'Untitled',
-      author:  btn.dataset.author || '',
-      url:     btn.dataset.url    || window.location.href,
-      slug:    btn.dataset.slug   || 'post',
-      content: getCleanContent()
+      title:    btn.dataset.title    || (document.querySelector('.post-title') || {}).textContent || 'Untitled',
+      author:   btn.dataset.author   || '',
+      url:      btn.dataset.url      || window.location.href,
+      slug:     btn.dataset.slug     || 'post',
+      language: btn.dataset.language || 'en',
+      content:  getCleanContent()
     }
   }
 
@@ -61,7 +62,7 @@
           '<dc:identifier id="uid">' + esc(data.url) + '</dc:identifier>' +
           '<dc:title>' + esc(data.title) + '</dc:title>' +
           (data.author ? '<dc:creator>' + esc(data.author) + '</dc:creator>' : '') +
-          '<dc:language>en</dc:language>' +
+          '<dc:language>' + esc(data.language) + '</dc:language>' +
           '<meta property="dcterms:modified">' + now + '</meta>' +
         '</metadata>' +
         '<manifest>' +
