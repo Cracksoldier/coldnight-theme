@@ -103,7 +103,16 @@
       </header>
 
       <% if (page.cover_image) { %>
-        <img src="<%- url_for(page.cover_image) %>" alt="<%= page.title %>" class="post-cover" loading="lazy">
+        <% if (page.cover_caption) { %>
+        <figure class="post-cover-figure">
+          <img src="<%- url_for(page.cover_image) %>" alt="<%= page.title %>"
+               class="post-cover" loading="lazy">
+          <figcaption><%= page.cover_caption %></figcaption>
+        </figure>
+        <% } else { %>
+        <img src="<%- url_for(page.cover_image) %>" alt="<%= page.title %>"
+             class="post-cover" loading="lazy">
+        <% } %>
       <% } %>
 
       <% if (seriesPosts.length > 1 && seriesIndex > 0) { %>
@@ -213,6 +222,7 @@
 <% if (theme.progress_bar) { %>
 <script src="<%- url_for('/js/reading-progress.js') %>" defer></script>
 <% } %>
+<script src="<%- url_for('/js/post-nav-keys.js') %>" defer></script>
 
 <% if (lgEnabled) { %>
   <script src="<%- url_for('/vendor/lightgallery/lightgallery.umd.js') %>" defer></script>

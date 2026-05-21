@@ -213,6 +213,21 @@
   margin-bottom: $sp-6;
 }
 
+.post-cover-figure {
+  margin-bottom: $sp-6;
+
+  .post-cover {
+    margin-bottom: 0;
+  }
+
+  figcaption {
+    color: $text-muted;
+    font-size: 12px;
+    text-align: center;
+    margin-top: 6px;
+  }
+}
+
 .post-title {
   font-size: 1.875rem;
   font-weight: 700;
