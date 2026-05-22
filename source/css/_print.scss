@@ -31,7 +31,8 @@
   .toast-container,
   .skip-nav,
   .series-nav,
-  .pinned-post { display: none !important; }
+  .pinned-post,
+  .pdf-card    { display: none !important; }
 
   // ── Expand post to full width ──────────────────────────────────────────────
   .page-wrapper { display: block !important; }

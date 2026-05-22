@@ -79,3 +79,5 @@ mermaid:
 
 math:
   enabled: true        # render $...$ and $$...$$ as KaTeX math
+
+pdf_viewer: true       # load pdf-viewer.js on post pages; set false to disable

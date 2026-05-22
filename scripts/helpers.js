@@ -104,6 +104,7 @@ const NOTE_ICONS = {
 }
 
 const DOWNLOAD_ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>'
+const PDF_ICON     = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>'
 const EXTERNAL_ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'
 
 // ─── Language label fix ──────────────────────────────────────────────────────
@@ -404,6 +405,26 @@ hexo.extend.tag.register('download', function (args) {
         DOWNLOAD_ICON + ' ' + label +
       '</a>' +
       badge +
+    '</div>'
+  )
+})
+
+// ─── PDF embed tag ────────────────────────────────────────────────────────────
+// Usage: {% pdf /path/to/file.pdf [Optional Title] %}
+
+hexo.extend.tag.register('pdf', function (args) {
+  const src   = args[0] || ''
+  const title = args.length > 1
+    ? args.slice(1).join(' ')
+    : src.split('/').pop().replace(/\.pdf$/i, '')
+  return (
+    '<div class="pdf-card" data-pdf-src="' + escHtml(src) + '" role="button" tabindex="0"' +
+        ' aria-label="Open PDF preview: ' + escHtml(title) + '">' +
+      '<span class="pdf-card__icon">' + PDF_ICON + '</span>' +
+      '<span class="pdf-card__body">' +
+        '<span class="pdf-card__title">' + escHtml(title) + '</span>' +
+        '<span class="pdf-card__hint">Click to preview</span>' +
+      '</span>' +
     '</div>'
   )
 })
