@@ -418,8 +418,8 @@ hexo.extend.tag.register('pdf', function (args) {
     ? args.slice(1).join(' ')
     : src.split('/').pop().replace(/\.pdf$/i, '')
   return (
-    '<div class="pdf-card" data-pdf-src="' + escHtml(src) + '" role="button" tabindex="0"' +
-        ' aria-label="Open PDF preview: ' + escHtml(title) + '">' +
+    '<div class="pdf-card" data-pdf-src="' + escHtml(src) + '" data-pdf-title="' + escHtml(title) + '"' +
+        ' role="button" tabindex="0" aria-label="Open PDF preview: ' + escHtml(title) + '">' +
       '<span class="pdf-card__icon">' + PDF_ICON + '</span>' +
       '<span class="pdf-card__body">' +
         '<span class="pdf-card__title">' + escHtml(title) + '</span>' +

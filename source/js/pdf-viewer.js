@@ -10,9 +10,9 @@
     var currentPage = 1;
     var scale       = 1.5;
     var renderTask  = null;
-    var dialog, canvas, ctx, titleEl, pageEl, prevBtn, nextBtn;
+    var loadSeq     = 0;
+    var dialog, canvas, ctx, titleEl, pageEl, prevBtn, nextBtn, downloadBtn;
 
-    // ── Build the <dialog> once ────────────────────────────────────────────────
     function buildDialog() {
       if (dialog) return;
       dialog = document.createElement('dialog');
@@ -36,12 +36,13 @@
         '</div>';
       document.body.appendChild(dialog);
 
-      canvas  = dialog.querySelector('.pdf-modal__canvas');
-      ctx     = canvas.getContext('2d');
-      titleEl = dialog.querySelector('.pdf-modal__title');
-      pageEl  = dialog.querySelector('.pdf-modal__page');
-      prevBtn = dialog.querySelector('.pdf-modal__prev');
-      nextBtn = dialog.querySelector('.pdf-modal__next');
+      canvas      = dialog.querySelector('.pdf-modal__canvas');
+      ctx         = canvas.getContext('2d');
+      titleEl     = dialog.querySelector('.pdf-modal__title');
+      pageEl      = dialog.querySelector('.pdf-modal__page');
+      prevBtn     = dialog.querySelector('.pdf-modal__prev');
+      nextBtn     = dialog.querySelector('.pdf-modal__next');
+      downloadBtn = dialog.querySelector('.pdf-modal__download');
 
       prevBtn.addEventListener('click', function () { goTo(currentPage - 1); });
       nextBtn.addEventListener('click', function () { goTo(currentPage + 1); });
@@ -49,11 +50,9 @@
       dialog.querySelector('.pdf-modal__zoom-in').addEventListener('click',  function () { zoom(0.25); });
       dialog.querySelector('.pdf-modal__close').addEventListener('click', closeModal);
 
-      // click on the <dialog> element itself (the ::backdrop area) closes it
       dialog.addEventListener('click', function (e) { if (e.target === dialog) closeModal(); });
     }
 
-    // ── Lazy-load PDF.js from CDN ──────────────────────────────────────────────
     function loadPdfJs(cb) {
       if (pdfLib) { cb(); return; }
       import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4/build/pdf.min.mjs').then(function (lib) {
@@ -66,7 +65,6 @@
       });
     }
 
-    // ── Page rendering ─────────────────────────────────────────────────────────
     function renderPage(num) {
       if (!pdfDoc) return;
       pdfDoc.getPage(num).then(function (page) {
@@ -95,21 +93,24 @@
 
     function closeModal() {
       dialog.close();
-      pdfDoc      = null;
+      if (pdfDoc) { pdfDoc.destroy(); pdfDoc = null; }
+      if (renderTask) { renderTask.cancel(); renderTask = null; }
       currentPage = 1;
       scale       = 1.5;
-      if (renderTask) { renderTask.cancel(); renderTask = null; }
     }
 
-    // ── Wire cards ─────────────────────────────────────────────────────────────
     function openCard(card) {
       var src = card.dataset.pdfSrc;
       if (!src) return;
+      var seq = ++loadSeq;
       buildDialog();
-      titleEl.textContent = card.querySelector('.pdf-card__title').textContent;
-      dialog.querySelector('.pdf-modal__download').href = src;
+      titleEl.textContent = card.dataset.pdfTitle || '';
+      downloadBtn.href = src;
       loadPdfJs(function () {
+        if (seq !== loadSeq) return;
         pdfLib.getDocument(src).promise.then(function (doc) {
+          if (seq !== loadSeq) { doc.destroy(); return; }
+          if (pdfDoc) { pdfDoc.destroy(); }
           pdfDoc = doc;
           dialog.showModal();
           renderPage(1);
@@ -119,7 +120,7 @@
       });
     }
 
-    Array.prototype.forEach.call(cards, function (card) {
+    cards.forEach(function (card) {
       card.addEventListener('click', function () { openCard(card); });
       card.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCard(card); }
