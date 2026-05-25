@@ -24,6 +24,7 @@
   align-items: center;
   gap: $sp-4;
   width: 92%;
+  max-width: 2000px;
   margin: 0 auto;
 }
 
@@ -1173,6 +1174,7 @@ details.spoiler[open] .spoiler__summary::before {
 
 .footer-inner {
   width: 92%;
+  max-width: 2000px;
   margin: 0 auto;
   display: flex;
   align-items: center;
