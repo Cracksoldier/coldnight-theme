@@ -544,6 +544,19 @@ button.navbar__hamburger {
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
+.project-card__ai-badge {
+  position: absolute;
+  top: $sp-2;
+  right: $sp-2;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: $accent;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+
 // ─── Project page ─────────────────────────────────────────────────────────────
 
 .project-cover {
