@@ -23,8 +23,7 @@
   display: flex;
   align-items: center;
   gap: $sp-4;
-  width: 100%;
-  max-width: $max-content-width;
+  width: 92%;
   margin: 0 auto;
 }
 
@@ -1173,7 +1172,7 @@ details.spoiler[open] .spoiler__summary::before {
 }
 
 .footer-inner {
-  max-width: $max-content-width;
+  width: 92%;
   margin: 0 auto;
   display: flex;
   align-items: center;
