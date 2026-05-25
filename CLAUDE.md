@@ -27,7 +27,8 @@ themes/coldnight/
 ## Page shells
 
 - **Two-column** (`post`, `index`): `.page-wrapper` with CSS Grid (`65fr 35fr`), `.main-content` + `.sidebar`.
-- **Full-width** (`archive`, `tag`, `category`, `page`, `showroom`, `project`, `links`): `.archive-wrapper`, `max-width: 1100px`. No sidebar.
+- **Full-width** (`archive`, `tag`, `category`, `page`, `showroom`, `project`, `links`): `.archive-wrapper`. No sidebar.
+- Both shells use `width: 92%; max-width: 1600px; margin: 0 auto` — percentage scales naturally on normal monitors, the cap prevents over-stretching on ultra-wide screens. Navbar (`.navbar__inner`) and footer (`.footer-inner`) use the same constraint.
 - Both need `flex: 1` because `body` is `display: flex; flex-direction: column; min-height: 100vh`.
 
 ## EJS gotchas
