@@ -18,25 +18,25 @@
     </header>
 
     <%
-      var hasAI    = page.projects.some(function(p) { return p.ai_assisted })
-      var hasHuman = page.projects.some(function(p) { return !p.ai_assisted })
+      var hasAI    = page.projects.some(function(p) { return p.ai_assisted === true })
+      var hasHuman = page.projects.some(function(p) { return p.ai_assisted !== true })
     %>
     <% if (hasAI && hasHuman) { %>
-    <div class="archive-filters" role="group" aria-label="Filter projects">
-      <button class="archive-filter-chip archive-filter-chip--active" data-filter-type="all" aria-pressed="true">All</button>
-      <button class="archive-filter-chip" data-filter-type="ai" aria-pressed="false">AI-assisted</button>
-      <button class="archive-filter-chip" data-filter-type="human" aria-pressed="false">Human-built</button>
+    <div class="showroom-filters" role="group" aria-label="Filter projects">
+      <button class="showroom-filter-chip showroom-filter-chip--active" data-filter-type="all" aria-pressed="true">All</button>
+      <button class="showroom-filter-chip" data-filter-type="ai" aria-pressed="false">AI-assisted</button>
+      <button class="showroom-filter-chip" data-filter-type="human" aria-pressed="false">Human-built</button>
     </div>
     <% } %>
 
     <div class="showroom-grid">
       <% page.projects.forEach(function(p) { %>
-        <a class="project-card" href="<%- url_for(p.path) %>" data-ai="<%= !!p.ai_assisted %>">
+        <a class="project-card" href="<%- url_for(p.path) %>" data-ai="<%= p.ai_assisted === true %>">
           <% if (p.cover_image) { %>
           <img class="project-card__img" src="<%- url_for(p.cover_image) %>" alt="<%= p.title %>" loading="lazy">
           <% } %>
           <div class="project-card__overlay">
-            <% if (p.ai_assisted) { %><span class="project-card__ai-badge">AI-assisted</span><% } %>
+            <% if (p.ai_assisted === true) { %><span class="project-card__ai-badge">AI-assisted</span><% } %>
             <span class="project-card__title"><%= p.title %></span>
             <% if (p.subtitle) { %>
               <p class="project-card__subtitle"><%= p.subtitle %></p>

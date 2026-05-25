@@ -1,16 +1,16 @@
 ;(function () {
   'use strict'
 
-  var chips = document.querySelectorAll('.archive-filter-chip')
+  var chips = document.querySelectorAll('.showroom-filter-chip')
   if (!chips.length) return
 
   chips.forEach(function (chip) {
     chip.addEventListener('click', function () {
       chips.forEach(function (c) {
-        c.classList.remove('archive-filter-chip--active')
+        c.classList.remove('showroom-filter-chip--active')
         c.setAttribute('aria-pressed', 'false')
       })
-      chip.classList.add('archive-filter-chip--active')
+      chip.classList.add('showroom-filter-chip--active')
       chip.setAttribute('aria-pressed', 'true')
 
       var type = chip.dataset.filterType
