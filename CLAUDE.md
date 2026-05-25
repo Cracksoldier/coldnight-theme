@@ -48,6 +48,23 @@ Registered in `scripts/helpers.js`. Key rules:
 
 The `ai_assisted` front-matter field (bare YAML boolean) renders a blue pill badge on the project card. Template uses strict `=== true` checks throughout — `!!` coercion must not be used because truthy non-boolean values like `"no"` or `1` would be misclassified. CSS for the badge is `.project-card__ai-badge` in `_components.scss`.
 
+## Navbar defaults
+
+`navbar.links` in `_config.yml` ships with only `[Home, Archive, About]`. **Links and Showroom are opt-in** — a site that doesn't have those pages must not show them in the nav or they will 404. Users add them back via `theme_config:` in their site's `_config.yml`:
+
+```yaml
+theme_config:
+  navbar:
+    links:
+      - { name: Home,     url: / }
+      - { name: Archive,  url: /archives }
+      - { name: Links,    url: /links }
+      - { name: Showroom, url: /showroom }
+      - { name: About,    url: /about }
+```
+
+Never add Links/Showroom back to the theme's own `_config.yml` — it's consumed by all sites.
+
 ## Archive filter chips
 
 Uses the `hidden` attribute (not `display:none`) for accessible show/hide. JS is in `source/js/archive-filter.js` (IIFE pattern). The archive/tag/category pages require `per_page: 0` in the site config — guaranteed by the site repo, not the theme.
