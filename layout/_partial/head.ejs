@@ -1,6 +1,6 @@
 <%
   const ogImage    = page.cover_image || (theme.cover && theme.cover.default) || ''
-  const ogImageAbs = ogImage ? config.url.replace(/\/$/, '') + url_for(ogImage) : ''
+  const ogImageAbs = ogImage ? full_url_for(ogImage) : ''
   const rawExcerpt = page.excerpt
     ? page.excerpt
         .replace(/<[^>]+>/g, '')
@@ -30,6 +30,7 @@
 <meta property="og:type" content="<%= page.layout === 'post' ? 'article' : 'website' %>">
 <meta property="og:url" content="<%= page.permalink || config.url %>">
 <meta property="og:site_name" content="<%= config.title %>">
+<meta property="og:locale" content="<%= config.language || 'en' %>">
 <% if (ogImageAbs) { %>
 <meta property="og:image" content="<%= ogImageAbs %>">
 <% } %>
@@ -41,7 +42,7 @@
 <link rel="canonical" href="<%= page.permalink || config.url %>">
 
 <!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:card" content="<%= ogImageAbs ? 'summary_large_image' : 'summary' %>">
 <meta name="twitter:title" content="<%= page.title || config.title %>">
 <meta name="twitter:description" content="<%= metaDesc %>">
 <% if (theme.social && theme.social.twitter) { %>
