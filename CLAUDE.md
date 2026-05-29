@@ -36,6 +36,7 @@ themes/coldnight/
 - `post-card.ejs` expects a local variable — always call it as `partial('_partial/post-card', { post })`.
 - Cover image `src` must use `<%- url_for(coverImg) %>`, never `<%= coverImg %>` — required for subdirectory deployments.
 - The tag/category page accent colour uses `<span class="page-header__accent">` — never an inline `style=`.
+- For OG `og:image`, use `full_url_for(path)` not `config.url + url_for(path)` — `url_for` already prepends the root path, so manual concatenation double-applies the subdirectory; and for already-absolute URLs it produces a mangled string like `https://site.comhttps://cdn.com/img.jpg`.
 
 ## Showroom generator
 
