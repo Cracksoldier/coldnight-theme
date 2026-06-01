@@ -499,9 +499,10 @@ hexo.extend.tag.register('model', function (args) {
   const height = (attrs.height && HEIGHT_RE.test(attrs.height)) ? attrs.height : '400px'
   const bg = attrs.bg || (hexo.theme.config.model_viewer.background || '#1a1a2e')
   const caption = attrs.caption ? escHtml(attrs.caption) : ''
+  const src = escHtml((hexo.config.root + attrs.src.replace(/^\//, '')).replace(/\/+/g, '/'))
   return (
     '<div class="model-viewer-wrap">' +
-      '<div class="model-viewer" data-src="' + escHtml(attrs.src) + '" data-bg="' + escHtml(bg) + '" style="height:' + escHtml(height) + '">' +
+      '<div class="model-viewer" data-src="' + src + '" data-bg="' + escHtml(bg) + '" style="height:' + escHtml(height) + '">' +
         '<div class="model-viewer__loading"><span class="model-viewer__spinner"></span></div>' +
       '</div>' +
       (caption ? '<p class="model-viewer__caption">' + caption + '</p>' : '') +
