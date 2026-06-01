@@ -87,6 +87,21 @@ Uses the `hidden` attribute (not `display:none`) for accessible show/hide. JS is
 | `{% download %}` | `{% download /path/to/file Label %}` |
 | `{% pdf %}` | `{% pdf /path/to/file.pdf Optional Title %}` |
 | `{% video %}` | `{% video <url> Optional Caption %}` |
+| `{% model %}` | `{% model src="/models/foo.glb" [height="400px"] [bg="#111"] [caption="…"] %}` |
+
+## Abstract block
+
+Set `abstract:` in post front-matter to render a styled callout between the post header and body. Supports inline markdown. Rendered by `layout/_partial/post-abstract.ejs` via the `render_abstract` EJS helper (registered in `scripts/helpers.js`).
+
+## 3D model viewer
+
+`{% model src="..." %}` renders a Three.js WebGL canvas. The tag emits `<div class="model-viewer" data-src="...">`. `post.ejs` detects `class="model-viewer"` in `page.content` and conditionally loads Three.js and loader scripts — only on posts that use the tag.
+
+Vendor files in `source/vendor/three/`:
+- `three.module.min.js` — Three.js r170 ESM build
+- `GLTFLoader.js`, `STLLoader.js`, `OrbitControls.js`, `BufferGeometryUtils.js` — addons with `from 'three'` imports rewritten to `from './three.module.min.js'`
+
+The viewer JS is an IIFE at `source/js/model-viewer.js`. It reads `window.__THREE_VIEWER__` which the inline module script in `post.ejs` assigns after importing Three.js.
 
 ## JS patterns
 

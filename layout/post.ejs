@@ -151,6 +151,10 @@
       </nav>
       <% } %>
 
+      <% if (page.abstract) { %>
+      <%- partial('_partial/post-abstract') %>
+      <% } %>
+
       <div class="post-body prose">
         <%- page.content %>
       </div>
@@ -263,6 +267,17 @@
   import mermaid from '<%- url_for('/vendor/mermaid/mermaid.esm.min.mjs') %>';
   mermaid.initialize({ startOnLoad: true, theme: '<%= /^[a-z]+$/.test(theme.mermaid.theme) ? theme.mermaid.theme : "dark" %>' });
 </script>
+<% } %>
+<% if (theme.model_viewer && theme.model_viewer.enabled !== false && page.content && page.content.includes('class="model-viewer"')) { %>
+<script type="module">
+  import * as THREE from '<%- url_for('/vendor/three/three.module.min.js') %>';
+  import { GLTFLoader } from '<%- url_for('/vendor/three/GLTFLoader.js') %>';
+  import { STLLoader } from '<%- url_for('/vendor/three/STLLoader.js') %>';
+  import { OrbitControls } from '<%- url_for('/vendor/three/OrbitControls.js') %>';
+  window.__THREE_VIEWER__ = { THREE, GLTFLoader, STLLoader, OrbitControls };
+  window.dispatchEvent(new Event('three-viewer-ready'));
+</script>
+<script src="<%- url_for('/js/model-viewer.js') %>" defer></script>
 <% } %>
 
 </body>

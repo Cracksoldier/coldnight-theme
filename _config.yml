@@ -77,3 +77,7 @@ math:
   enabled: true        # render $...$ and $$...$$ as KaTeX math
 
 pdf_viewer: true       # load pdf-viewer.js on post pages; set false to disable
+
+model_viewer:
+  enabled: true
+  background: "#1a1a2e"   # canvas background colour

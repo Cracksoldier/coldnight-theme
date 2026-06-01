@@ -32,6 +32,19 @@ hexo.extend.helper.register('word_count', function (content) {
   return count.toLocaleString() + ' words'
 })
 
+// ─── Abstract renderer helper ─────────────────────────────────────────────────
+// Usage in EJS: <%- render_abstract(page.abstract) %>
+// Renders front-matter `abstract:` field as markdown HTML.
+
+hexo.extend.helper.register('render_abstract', function (text) {
+  if (!text) return ''
+  try {
+    return hexo.render.renderSync({ text: String(text), engine: 'markdown' })
+  } catch (e) {
+    return '<p>' + escHtml(String(text)) + '</p>'
+  }
+})
+
 // ─── TOC helper ───────────────────────────────────────────────────────────────
 // Usage in EJS: <%- render_toc(page.content) %>
 
@@ -466,6 +479,32 @@ hexo.extend.tag.register('video', function (args) {
       `<div class="video-embed__wrapper">${embedHtml}</div>` +
       (caption ? `<figcaption>${caption}</figcaption>` : '') +
     `</figure>`
+  )
+})
+
+// ─── 3D model viewer tag ──────────────────────────────────────────────────────
+// Usage: {% model src="/models/foo.glb" %}
+// Optional: height="400px"  bg="#1a1a2e"  caption="some text"
+
+hexo.extend.tag.register('model', function (args) {
+  if (!hexo.theme.config.model_viewer || hexo.theme.config.model_viewer.enabled === false) return ''
+  const attrs = {}
+  args.forEach(a => {
+    const eq = a.indexOf('=')
+    if (eq === -1) return
+    attrs[a.slice(0, eq)] = a.slice(eq + 1).replace(/^["']|["']$/g, '')
+  })
+  if (!attrs.src) return ''
+  const height = attrs.height || '400px'
+  const bg = attrs.bg || (hexo.theme.config.model_viewer.background || '#1a1a2e')
+  const caption = attrs.caption ? escHtml(attrs.caption) : ''
+  return (
+    '<div class="model-viewer-wrap">' +
+      '<div class="model-viewer" data-src="' + escHtml(attrs.src) + '" data-bg="' + escHtml(bg) + '" style="height:' + escHtml(height) + '">' +
+        '<div class="model-viewer__loading"><span class="model-viewer__spinner"></span></div>' +
+      '</div>' +
+      (caption ? '<p class="model-viewer__caption">' + caption + '</p>' : '') +
+    '</div>'
   )
 })
 
