@@ -15,6 +15,8 @@
     if (!src) return
 
     var bg = container.dataset.bg || '#1a1a2e'
+    container.style.background = bg  // fix: match CSS bg to data-bg immediately, before canvas is ready
+
     var loading = container.querySelector('.model-viewer__loading')
 
     var scene = new THREE.Scene()
@@ -91,22 +93,35 @@
       return
     }
 
-    var raf
+    // fix: pause rAF when off-screen, resume when visible
+    var raf = null
     function animate () {
       raf = requestAnimationFrame(animate)
       controls.update()
       renderer.render(scene, camera)
     }
-    animate()
 
+    if (typeof IntersectionObserver !== 'undefined') {
+      new IntersectionObserver(function (entries) {
+        if (entries[0].isIntersecting) {
+          if (!raf) animate()
+        } else {
+          cancelAnimationFrame(raf)
+          raf = null
+        }
+      }, { threshold: 0 }).observe(container)
+    } else {
+      animate()
+    }
+
+    // fix: use entry.contentRect (no forced reflow; correct for display:none transitions)
     if (typeof ResizeObserver !== 'undefined') {
-      new ResizeObserver(function () {
-        var nw = container.clientWidth
-        var nh = container.clientHeight
-        if (!nw || !nh) return
-        camera.aspect = nw / nh
+      new ResizeObserver(function (entries) {
+        var rect = entries[0].contentRect
+        if (rect.width === 0 || rect.height === 0) return
+        camera.aspect = rect.width / rect.height
         camera.updateProjectionMatrix()
-        renderer.setSize(nw, nh)
+        renderer.setSize(rect.width, rect.height)
       }).observe(container)
     }
   }
@@ -115,6 +130,11 @@
     var box = new THREE.Box3().setFromObject(object)
     var size = box.getSize(new THREE.Vector3()).length()
     var center = box.getCenter(new THREE.Vector3())
+
+    // fix: clamp degenerate geometry (empty scene → Infinity, point mesh → 0)
+    if (!isFinite(size) || size === 0) size = 1
+    if (!isFinite(center.x) || !isFinite(center.y) || !isFinite(center.z)) center.set(0, 0, 0)
+
     controls.target.copy(center)
     camera.position.set(center.x, center.y, center.z + size * 1.5)
     camera.near = size / 100

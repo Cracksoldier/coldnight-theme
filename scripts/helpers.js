@@ -495,7 +495,8 @@ hexo.extend.tag.register('model', function (args) {
     attrs[a.slice(0, eq)] = a.slice(eq + 1).replace(/^["']|["']$/g, '')
   })
   if (!attrs.src) return ''
-  const height = attrs.height || '400px'
+  const HEIGHT_RE = /^\d+(\.\d+)?(px|em|rem|vh|vw|%)$/
+  const height = (attrs.height && HEIGHT_RE.test(attrs.height)) ? attrs.height : '400px'
   const bg = attrs.bg || (hexo.theme.config.model_viewer.background || '#1a1a2e')
   const caption = attrs.caption ? escHtml(attrs.caption) : ''
   return (
