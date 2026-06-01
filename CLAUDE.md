@@ -103,6 +103,14 @@ Vendor files in `source/vendor/three/`:
 
 The viewer JS is an IIFE at `source/js/model-viewer.js`. It reads `window.__THREE_VIEWER__` which the inline module script in `post.ejs` assigns after importing Three.js.
 
+### model-viewer.js gotchas
+
+- **`height` is allowlist-validated** in `scripts/helpers.js` — only `px|em|rem|vh|vw|%` units pass; anything else falls back to `400px`. This prevents CSS injection via semicolons (e.g. `height="400px;color:red"`). Do not relax this to `escHtml` alone.
+- **`bg` is applied to `container.style.background`** at init time (before the canvas is ready) so the element shows the author's chosen colour during load and on WebGL failure, not the hardcoded CSS default.
+- **`fitCamera` guards degenerate geometry** — an empty GLTF scene produces an ±Infinity bounding box; a point-mesh produces size=0. Both are clamped to `size=1`/`center=(0,0,0)` to prevent `camera.near=0`/NaN and a broken projection matrix.
+- **`IntersectionObserver` gates the rAF loop** — rendering is paused when the container is off-screen and resumed when it re-enters the viewport. Falls back to an unconditional loop on browsers without IntersectionObserver.
+- **`ResizeObserver` uses `entry.contentRect`** (not `container.clientWidth`) — avoids a forced reflow and correctly handles containers inside `display:none` parents (which do not re-fire the observer on reveal via clientWidth).
+
 ## JS patterns
 
 All JS files are standalone IIFEs (`(function () { 'use strict'; ... })()`). No bundler. Files are copied verbatim to `public/js/`. Each script is only loaded on the pages that need it — check the relevant `.ejs` template for the `<script>` tag.
