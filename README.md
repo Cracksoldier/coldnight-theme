@@ -11,7 +11,7 @@ A dark navy Hexo blog theme. Minimal, readable, and opinionated.
 - Full-text search (client-side JSON index)
 - Series navigation strip for multi-part posts
 - Sidebar widgets: TOC, recent posts, tag cloud, archives, about
-- Tag plugin ecosystem: `{% gallery %}`, `{% note %}`, `{% tabs %}`, `{% timeline %}`, `{% spoiler %}`, `{% download %}`, `{% video %}`, `{% pdf %}`
+- Tag plugin ecosystem: `{% gallery %}`, `{% note %}`, `{% tabs %}`, `{% timeline %}`, `{% spoiler %}`, `{% download %}`, `{% video %}`, `{% pdf %}`, `{% audio %}`
 - KaTeX math rendering (`$...$` inline, `$$...$$` block)
 - Mermaid diagram support
 - In-page PDF preview via PDF.js (lazy-loaded modal)
@@ -90,6 +90,9 @@ All options live in `themes/coldnight/_config.yml` and can be overridden per-sit
 | `mermaid.theme` | `dark` | `default` \| `dark` \| `neutral` \| `forest` |
 | `math.enabled` | `true` | KaTeX math rendering |
 | `pdf_viewer` | `true` | Load PDF.js viewer on post pages |
+| `audio_player` | `true` | Load audio player on post pages that use `{% audio %}` |
+| `model_viewer.enabled` | `true` | Enable the `{% model %}` Three.js viewer tag |
+| `model_viewer.background` | `"#1a1a2e"` | Default canvas background colour for `{% model %}` |
 
 ## Post front-matter
 
@@ -198,6 +201,25 @@ Opens in a PDF.js modal on click. Lazy-loads PDF.js from jsDelivr on first use.
 ```
 
 Supports YouTube, Vimeo, and direct video URLs.
+
+### `{% audio %}`
+
+```
+{% audio src="/audio/episode.mp3" %}
+{% audio src="/audio/episode.mp3" title="Episode 1" caption="Recorded live" %}
+```
+
+Embeds a custom HTML5 audio player with dark-themed controls: play/pause, scrubable progress bar, time label, and mute toggle. Multiple players on the same page automatically pause each other when a new one starts.
+
+| Parameter | Required | Notes |
+|-----------|----------|-------|
+| `src` | yes | Path to `.mp3`, `.ogg`, `.wav`, `.flac`, or `.m4a` |
+| `title` | no | Player label; defaults to the filename |
+| `caption` | no | Small muted text rendered below the player |
+
+**Keyboard:** focus the seek bar and use ← / → to jump ±5 seconds.
+
+Set `audio_player: false` in the theme config to disable the tag globally.
 
 ## License
 

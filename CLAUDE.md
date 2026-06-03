@@ -88,6 +88,7 @@ Uses the `hidden` attribute (not `display:none`) for accessible show/hide. JS is
 | `{% pdf %}` | `{% pdf /path/to/file.pdf Optional Title %}` |
 | `{% video %}` | `{% video <url> Optional Caption %}` |
 | `{% model %}` | `{% model src="/models/foo.glb" [height="400px"] [bg="#111"] [caption="…"] %}` |
+| `{% audio %}` | `{% audio src="/audio/file.mp3" [title="…"] [caption="…"] %}` |
 
 ## Abstract block
 
@@ -110,6 +111,20 @@ The viewer JS is an IIFE at `source/js/model-viewer.js`. It reads `window.__THRE
 - **`fitCamera` guards degenerate geometry** — an empty GLTF scene produces an ±Infinity bounding box; a point-mesh produces size=0. Both are clamped to `size=1`/`center=(0,0,0)` to prevent `camera.near=0`/NaN and a broken projection matrix.
 - **`IntersectionObserver` gates the rAF loop** — rendering is paused when the container is off-screen and resumed when it re-enters the viewport. Falls back to an unconditional loop on browsers without IntersectionObserver.
 - **`ResizeObserver` uses `entry.contentRect`** (not `container.clientWidth`) — avoids a forced reflow and correctly handles containers inside `display:none` parents (which do not re-fire the observer on reveal via clientWidth).
+
+## Audio player
+
+`{% audio src="..." %}` renders a custom HTML5 audio player with dark-themed controls. The tag emits `<div class="audio-player" data-src="...">`. `post.ejs` detects `class="audio-player"` in `page.content` and conditionally loads `audio-player.js` — only on posts that use the tag.
+
+The player is a pure IIFE (`source/js/audio-player.js`) with no dependencies. At runtime it creates a hidden `<audio>` element, wires custom play/pause, seek, and mute controls, and exposes:
+- Play/pause toggle (SVG icons swap; `aria-label` updated)
+- Seek bar via Pointer Events API (supports both mouse and touch drag)
+- Keyboard seek: focus the bar, press ← / → to jump ±5 seconds
+- Mute toggle (SVG icon swaps between volume and mute)
+- Loading spinner via `.is-loading` class on `waiting`/`canplay` events
+- Mutual pause: starting one player automatically pauses all others on the page
+
+Set `audio_player: false` in the theme config to disable the tag globally.
 
 ## JS patterns
 
