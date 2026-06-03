@@ -15,7 +15,7 @@
     if (!src) return
 
     var bg         = container.dataset.bg || '#1a1a2e'
-    var view       = container.dataset.view || 'front'
+    var view       = container.dataset.view
     var autorotate = container.dataset.autorotate === 'true'
     container.style.background = bg  // fix: match CSS bg to data-bg immediately, before canvas is ready
 
@@ -48,8 +48,7 @@
     controls.enableDamping = true
     controls.dampingFactor = 0.05
     if (autorotate) {
-      controls.autoRotate      = true
-      controls.autoRotateSpeed = 2.0
+      controls.autoRotate = true
     }
 
     var initialCamPos = camera.position.clone()

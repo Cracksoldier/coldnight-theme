@@ -500,15 +500,14 @@ hexo.extend.tag.register('model', function (args) {
   const HEIGHT_RE = /^\d+(\.\d+)?(px|em|rem|vh|vw|%)$/
   const height = (attrs.height && HEIGHT_RE.test(attrs.height)) ? attrs.height : '400px'
   const bg = attrs.bg || (hexo.theme.config.model_viewer.background || '#1a1a2e')
-  const VIEW_RE = /^(front|iso)$/
-  const view = (attrs.view && VIEW_RE.test(attrs.view) && attrs.view !== 'front') ? attrs.view : ''
-  const autorotate = attrs.autorotate === 'true'
+  const view = attrs.view === 'iso' ? 'iso' : ''
+  const autorotate = !!attrs.autorotate
   const caption = attrs.caption ? escHtml(attrs.caption) : ''
   const src = escHtml((hexo.config.root + attrs.src.replace(/^\//, '')).replace(/\/+/g, '/'))
   return (
     '<div class="model-viewer-wrap">' +
       '<div class="model-viewer" data-src="' + src + '" data-bg="' + escHtml(bg) + '"' +
-        (view ? ' data-view="' + view + '"' : '') +
+        (view ? ' data-view="' + escHtml(view) + '"' : '') +
         (autorotate ? ' data-autorotate="true"' : '') +
         ' style="height:' + escHtml(height) + '">' +
         '<div class="model-viewer__loading"><span class="model-viewer__spinner"></span></div>' +

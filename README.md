@@ -217,7 +217,7 @@ Embeds an interactive Three.js WebGL canvas. Drag to orbit, scroll to zoom, righ
 | `height` | no | `400px` | CSS length — `px\|em\|rem\|vh\|vw\|%` |
 | `bg` | no | `#1a1a2e` | Canvas background colour |
 | `view` | no | `front` | `front` = camera on Z axis; `iso` = isometric (1,1,1) diagonal |
-| `autorotate` | no | — | `"true"` to continuously spin the model |
+| `autorotate` | no | — | Any non-empty value (e.g. `"true"`) enables continuous spin |
 | `caption` | no | — | Plain-text caption below the viewer |
 
 Set `model_viewer.enabled: false` in the theme config to disable the tag globally.
