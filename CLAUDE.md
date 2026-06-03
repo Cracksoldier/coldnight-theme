@@ -112,6 +112,14 @@ The viewer JS is an IIFE at `source/js/model-viewer.js`. It reads `window.__THRE
 - **`IntersectionObserver` gates the rAF loop** — rendering is paused when the container is off-screen and resumed when it re-enters the viewport. Falls back to an unconditional loop on browsers without IntersectionObserver.
 - **`ResizeObserver` uses `entry.contentRect`** (not `container.clientWidth`) — avoids a forced reflow and correctly handles containers inside `display:none` parents (which do not re-fire the observer on reveal via clientWidth).
 
+## Giscus comments
+
+`layout/_partial/giscus.ejs` renders the `<script>` tag that loads the Giscus iframe from `giscus.app`. It is included from `post.ejs` when `theme.giscus.enabled` is `true`, `repo` and `category_id` are non-empty, and `page.comments !== false`.
+
+All config values are output via EJS `<%= %>` (auto-HTML-encodes). `mapping` is validated against an explicit allowlist; `theme` against `/^[a-z_]+$/`; `lang` is stripped of non-`[a-z-]` chars.
+
+To enable: fill in the IDs from the [giscus.app](https://giscus.app) setup wizard and set `giscus.enabled: true` in the theme config (or site `theme_config:`). To suppress on a single post, add `comments: false` to front-matter.
+
 ## Audio player
 
 `{% audio src="..." %}` renders a custom HTML5 audio player with dark-themed controls. The tag emits `<div class="audio-player" data-src="...">`. `post.ejs` detects `class="audio-player"` in `page.content` and conditionally loads `audio-player.js` — only on posts that use the tag.

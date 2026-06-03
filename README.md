@@ -93,6 +93,16 @@ All options live in `themes/coldnight/_config.yml` and can be overridden per-sit
 | `audio_player` | `true` | Load audio player on post pages that use `{% audio %}` |
 | `model_viewer.enabled` | `true` | Enable the `{% model %}` Three.js viewer tag |
 | `model_viewer.background` | `"#1a1a2e"` | Default canvas background colour for `{% model %}` |
+| `giscus.enabled` | `false` | Opt-in GitHub Discussions comments widget |
+| `giscus.repo` | `""` | `"owner/repo"` — from giscus.app setup |
+| `giscus.repo_id` | `""` | Repo ID from giscus.app |
+| `giscus.category` | `""` | Discussion category name |
+| `giscus.category_id` | `""` | Category ID from giscus.app |
+| `giscus.mapping` | `pathname` | `pathname` \| `url` \| `title` \| `og:title` |
+| `giscus.reactions_enabled` | `true` | Emoji reactions on the discussion |
+| `giscus.input_position` | `bottom` | `top` \| `bottom` |
+| `giscus.theme` | `dark_dimmed` | Any valid giscus theme slug |
+| `giscus.lang` | `""` | Empty = inherit `config.language` |
 
 ## Post front-matter
 
@@ -240,6 +250,26 @@ Embeds a custom HTML5 audio player with dark-themed controls: play/pause, scruba
 **Keyboard:** focus the seek bar and use ← / → to jump ±5 seconds.
 
 Set `audio_player: false` in the theme config to disable the tag globally.
+
+## Giscus comments
+
+Giscus embeds GitHub Discussions-based comments via an `<iframe>` from `giscus.app`. Anonymous visitors can read all comments; GitHub login is only required to post.
+
+**Setup:**
+
+1. Go to [giscus.app](https://giscus.app), connect your repo, and copy the generated IDs.
+2. Set `giscus.enabled: true` and fill in the IDs in the theme config (or site `theme_config:`):
+
+```yaml
+giscus:
+  enabled: true
+  repo: "owner/repo"
+  repo_id: "R_..."
+  category: "Announcements"
+  category_id: "DIC_..."
+```
+
+The widget appears below the article body on all posts. To suppress it on a single post, add `comments: false` to that post's front-matter.
 
 ## License
 

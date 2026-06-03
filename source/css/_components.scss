@@ -2358,3 +2358,23 @@ select.form-input {
   0%, 100% { opacity: 0.4; }
   50%       { opacity: 1; }
 }
+
+// ─── Giscus comments ─────────────────────────────────────────────────────────
+
+.giscus-wrap {
+  margin: $sp-8 0 0;
+  padding-top: $sp-6;
+  border-top: 1px solid $border-subtle;
+
+  &__heading {
+    font-size: 1rem;
+    font-weight: 600;
+    color: $text-secondary;
+    margin-bottom: $sp-4;
+  }
+
+  .giscus,
+  .giscus-frame {
+    width: 100%;
+  }
+}

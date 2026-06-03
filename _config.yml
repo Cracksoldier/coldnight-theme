@@ -82,3 +82,15 @@ audio_player: true     # load audio-player.js on post pages that use {% audio %}
 model_viewer:
   enabled: true
   background: "#1a1a2e"   # canvas background colour
+
+giscus:
+  enabled: false          # opt-in — set true after completing giscus.app setup
+  repo: ""                # "owner/repo"
+  repo_id: ""             # from giscus.app
+  category: ""            # discussion category name
+  category_id: ""         # from giscus.app
+  mapping: pathname       # pathname | url | title | og:title
+  reactions_enabled: true
+  input_position: bottom  # top | bottom
+  theme: dark_dimmed      # giscus theme — dark_dimmed matches coldnight palette
+  lang: ""                # empty = inherit site config.language

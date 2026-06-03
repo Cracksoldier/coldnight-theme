@@ -204,6 +204,10 @@
 
     </article>
 
+    <% if (theme.giscus && theme.giscus.enabled && theme.giscus.repo && theme.giscus.category_id && page.comments !== false) { %>
+      <%- partial('_partial/giscus') %>
+    <% } %>
+
     <% if (theme.related_posts && relatedPosts.length) { %>
     <section class="related-posts" aria-labelledby="related-heading">
       <h3 class="related-posts__heading" id="related-heading">You might also like</h3>
