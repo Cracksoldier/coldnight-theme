@@ -38,6 +38,7 @@
     var fill      = wrap.querySelector('.audio-player__fill')
     var timeLabel = wrap.querySelector('.audio-player__time')
 
+    var fmtDuration = '0:00'
     var audio = document.createElement('audio')
     audio.preload = 'metadata'
     audio.src = src
@@ -50,7 +51,8 @@
     playBtn.addEventListener('click', function () {
       if (audio.paused) {
         pauseOthers(audio)
-        audio.play()
+        var p = audio.play()
+        if (p !== undefined) p.catch(function (e) { if (e.name !== 'AbortError') throw e })
       } else {
         audio.pause()
       }
@@ -69,6 +71,7 @@
     })
 
     audio.addEventListener('ended', function () {
+      audio.currentTime = 0
       wrap.classList.remove('is-playing')
       playBtn.innerHTML = PLAY_SVG
       playBtn.setAttribute('aria-label', 'Play')
@@ -81,11 +84,12 @@
       var pct = (audio.currentTime / audio.duration) * 100
       fill.style.width = pct + '%'
       bar.setAttribute('aria-valuenow', Math.round(pct))
-      timeLabel.textContent = fmtTime(audio.currentTime) + ' / ' + fmtTime(audio.duration)
+      timeLabel.textContent = fmtTime(audio.currentTime) + ' / ' + fmtDuration
     })
 
     audio.addEventListener('loadedmetadata', function () {
-      timeLabel.textContent = '0:00 / ' + fmtTime(audio.duration)
+      fmtDuration = fmtTime(audio.duration)
+      timeLabel.textContent = '0:00 / ' + fmtDuration
     })
 
     audio.addEventListener('waiting', function () { wrap.classList.add('is-loading') })
