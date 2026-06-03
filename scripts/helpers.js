@@ -119,6 +119,10 @@ const NOTE_ICONS = {
 const DOWNLOAD_ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>'
 const PDF_ICON     = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>'
 const EXTERNAL_ICON = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'
+const PLAY_ICON    = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>'
+const PAUSE_ICON   = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>'
+const VOLUME_ICON  = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>'
+const MUTE_ICON    = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/></svg>'
 
 // ─── Language label fix ──────────────────────────────────────────────────────
 // Hexo emits `<figure class="highlight bash">` but not `data-lang="bash"`.
@@ -506,6 +510,42 @@ hexo.extend.tag.register('model', function (args) {
         '<div class="model-viewer__loading"><span class="model-viewer__spinner"></span></div>' +
       '</div>' +
       (caption ? '<p class="model-viewer__caption">' + caption + '</p>' : '') +
+    '</div>'
+  )
+})
+
+// ─── Audio player tag ─────────────────────────────────────────────────────────
+// Usage: {% audio src="/audio/file.mp3" [title="Track name"] [caption="…"] %}
+// Supports: .mp3 .ogg .wav .flac .m4a
+
+hexo.extend.tag.register('audio', function (args) {
+  if (hexo.theme.config.audio_player === false) return ''
+  const attrs = {}
+  args.forEach(a => {
+    const eq = a.indexOf('=')
+    if (eq === -1) return
+    attrs[a.slice(0, eq)] = a.slice(eq + 1).replace(/^["']|["']$/g, '')
+  })
+  if (!attrs.src) return ''
+  const src     = escHtml((hexo.config.root + attrs.src.replace(/^\//, '')).replace(/\/+/g, '/'))
+  const title   = attrs.title ? escHtml(attrs.title) : escHtml(attrs.src.split('/').pop())
+  const caption = attrs.caption ? escHtml(attrs.caption) : ''
+  return (
+    '<div class="audio-player" data-src="' + src + '">' +
+      '<div class="audio-player__body">' +
+        '<button class="audio-player__play" aria-label="Play">' + PLAY_ICON + '</button>' +
+        '<div class="audio-player__info">' +
+          '<span class="audio-player__title">' + title + '</span>' +
+          '<div class="audio-player__timeline">' +
+            '<div class="audio-player__bar" role="slider" aria-label="Seek" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">' +
+              '<div class="audio-player__fill"></div>' +
+            '</div>' +
+            '<span class="audio-player__time">0:00 / 0:00</span>' +
+          '</div>' +
+        '</div>' +
+        '<button class="audio-player__mute" aria-label="Mute">' + VOLUME_ICON + '</button>' +
+      '</div>' +
+      (caption ? '<p class="audio-player__caption">' + caption + '</p>' : '') +
     '</div>'
   )
 })

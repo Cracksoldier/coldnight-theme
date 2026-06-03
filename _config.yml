@@ -77,6 +77,7 @@ math:
   enabled: true        # render $...$ and $$...$$ as KaTeX math
 
 pdf_viewer: true       # load pdf-viewer.js on post pages; set false to disable
+audio_player: true     # load audio-player.js on post pages that use {% audio %}; set false to disable
 
 model_viewer:
   enabled: true

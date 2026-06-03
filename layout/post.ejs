@@ -279,6 +279,9 @@
 </script>
 <script src="<%- url_for('/js/model-viewer.js') %>" defer></script>
 <% } %>
+<% if (theme.audio_player !== false && page.content && page.content.includes('class="audio-player"')) { %>
+<script src="<%- url_for('/js/audio-player.js') %>" defer></script>
+<% } %>
 
 </body>
 </html>
