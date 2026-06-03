@@ -87,7 +87,7 @@ Uses the `hidden` attribute (not `display:none`) for accessible show/hide. JS is
 | `{% download %}` | `{% download /path/to/file Label %}` |
 | `{% pdf %}` | `{% pdf /path/to/file.pdf Optional Title %}` |
 | `{% video %}` | `{% video <url> Optional Caption %}` |
-| `{% model %}` | `{% model src="/models/foo.glb" [height="400px"] [bg="#111"] [caption="…"] %}` |
+| `{% model %}` | `{% model src="/models/foo.glb" [height="400px"] [bg="#111"] [view="iso"] [autorotate="true"] [caption="…"] %}` |
 | `{% audio %}` | `{% audio src="/audio/file.mp3" [title="…"] [caption="…"] %}` |
 
 ## Abstract block

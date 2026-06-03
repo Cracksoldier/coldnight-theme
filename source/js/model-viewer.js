@@ -14,7 +14,9 @@
     var src = container.dataset.src
     if (!src) return
 
-    var bg = container.dataset.bg || '#1a1a2e'
+    var bg         = container.dataset.bg || '#1a1a2e'
+    var view       = container.dataset.view || 'front'
+    var autorotate = container.dataset.autorotate === 'true'
     container.style.background = bg  // fix: match CSS bg to data-bg immediately, before canvas is ready
 
     var loading = container.querySelector('.model-viewer__loading')
@@ -45,6 +47,10 @@
     var controls = new lib.OrbitControls(camera, renderer.domElement)
     controls.enableDamping = true
     controls.dampingFactor = 0.05
+    if (autorotate) {
+      controls.autoRotate      = true
+      controls.autoRotateSpeed = 2.0
+    }
 
     var initialCamPos = camera.position.clone()
     var initialTarget = controls.target.clone()
@@ -62,7 +68,7 @@
     var ext = src.split('?')[0].split('.').pop().toLowerCase()
 
     function onLoad (object) {
-      fitCamera(camera, controls, object, THREE)
+      fitCamera(camera, controls, object, THREE, view)
       initialCamPos = camera.position.clone()
       initialTarget = controls.target.clone()
       scene.add(object)
@@ -126,7 +132,7 @@
     }
   }
 
-  function fitCamera (camera, controls, object, THREE) {
+  function fitCamera (camera, controls, object, THREE, view) {
     var box = new THREE.Box3().setFromObject(object)
     var size = box.getSize(new THREE.Vector3()).length()
     var center = box.getCenter(new THREE.Vector3())
@@ -136,7 +142,12 @@
     if (!isFinite(center.x) || !isFinite(center.y) || !isFinite(center.z)) center.set(0, 0, 0)
 
     controls.target.copy(center)
-    camera.position.set(center.x, center.y, center.z + size * 1.5)
+    if (view === 'iso') {
+      var dir = new THREE.Vector3(1, 1, 1).normalize()
+      camera.position.copy(center).addScaledVector(dir, size * 1.5)
+    } else {
+      camera.position.set(center.x, center.y, center.z + size * 1.5)
+    }
     camera.near = size / 100
     camera.far = size * 200
     camera.updateProjectionMatrix()

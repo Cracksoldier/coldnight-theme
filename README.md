@@ -202,6 +202,26 @@ Opens in a PDF.js modal on click. Lazy-loads PDF.js from jsDelivr on first use.
 
 Supports YouTube, Vimeo, and direct video URLs.
 
+### `{% model %}`
+
+```
+{% model src="/models/robot.glb" %}
+{% model src="/models/part.stl" view="iso" autorotate="true" caption="Bracket assembly" %}
+```
+
+Embeds an interactive Three.js WebGL canvas. Drag to orbit, scroll to zoom, right-click to pan. Three.js is only loaded on posts that use the tag.
+
+| Parameter | Required | Default | Notes |
+|-----------|----------|---------|-------|
+| `src` | yes | — | Path to `.glb`, `.gltf`, or `.stl` |
+| `height` | no | `400px` | CSS length — `px\|em\|rem\|vh\|vw\|%` |
+| `bg` | no | `#1a1a2e` | Canvas background colour |
+| `view` | no | `front` | `front` = camera on Z axis; `iso` = isometric (1,1,1) diagonal |
+| `autorotate` | no | — | `"true"` to continuously spin the model |
+| `caption` | no | — | Plain-text caption below the viewer |
+
+Set `model_viewer.enabled: false` in the theme config to disable the tag globally.
+
 ### `{% audio %}`
 
 ```
