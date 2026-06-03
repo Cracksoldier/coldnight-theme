@@ -14,7 +14,7 @@
     data-reactions-enabled="<%= gc.reactions_enabled === false ? '0' : '1' %>"
     data-emit-metadata="0"
     data-input-position="<%= gc.input_position === 'top' ? 'top' : 'bottom' %>"
-    data-theme="<%= /^[a-z_]+$/.test(gc.theme || '') ? gc.theme : 'dark_dimmed' %>"
+    data-theme="<%= /^[a-z_]+$/.test(gc.theme || '') || /^https?:\/\//.test(gc.theme || '') ? gc.theme : 'dark_dimmed' %>"
     data-lang="<%= lang %>"
     data-loading="lazy"
     crossorigin="anonymous"
