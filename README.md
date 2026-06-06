@@ -28,19 +28,41 @@ A dark navy Hexo blog theme. Minimal, readable, and opinionated.
 
 ## Installation
 
-As a git submodule (recommended):
+### Via npm
 
 ```bash
-git submodule add git@github.com:Cracksoldier/coldnight-theme.git themes/coldnight
+npm install hexo-theme-coldnight
 ```
 
-Then set the theme in your site's `_config.yml`:
+Set the theme in your site's `_config.yml`:
 
 ```yaml
 theme: coldnight
 ```
 
-When cloning a site that uses this theme:
+Configure the theme by creating `_config.coldnight.yml` in your site root (Hexo 5+ standard — this file survives theme updates):
+
+```yaml
+# paste and customise options from node_modules/hexo-theme-coldnight/_config.yml
+navbar:
+  title: My Blog
+```
+
+### Via git submodule
+
+```bash
+git submodule add https://github.com/Cracksoldier/coldnight-theme.git themes/coldnight
+```
+
+Set the theme in your site's `_config.yml`:
+
+```yaml
+theme: coldnight
+```
+
+Configure via `theme_config:` in your site's `_config.yml`, or edit `themes/coldnight/_config.yml` directly.
+
+When cloning a site that uses the submodule:
 
 ```bash
 git clone --recurse-submodules <your-site-repo>
@@ -50,7 +72,7 @@ git submodule update --init
 
 ## Configuration
 
-All options live in `themes/coldnight/_config.yml` and can be overridden per-site via `theme_config:` in the site's `_config.yml`.
+All options live in `themes/coldnight/_config.yml` (submodule) or `node_modules/hexo-theme-coldnight/_config.yml` (npm) and can be overridden per-site via `_config.coldnight.yml` or `theme_config:` in the site's `_config.yml`.
 
 | Key | Default | Effect |
 |-----|---------|--------|

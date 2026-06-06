@@ -2,5 +2,26 @@
   "name": "hexo-theme-coldnight",
   "version": "1.0.0",
   "description": "A dark navy Hexo blog theme",
-  "license": "MIT"
+  "license": "MIT",
+  "author": "Cracksoldier",
+  "homepage": "https://github.com/Cracksoldier/coldnight-theme#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Cracksoldier/coldnight-theme.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Cracksoldier/coldnight-theme/issues"
+  },
+  "keywords": ["hexo-theme", "hexo", "theme", "coldnight", "dark"],
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "peerDependencies": {
+    "hexo": ">=6.0.0",
+    "hexo-renderer-dartsass": ">=0.1.0",
+    "hexo-renderer-marked": ">=6.0.0"
+  },
+  "dependencies": {
+    "katex": ">=0.16.0"
+  }
 }
