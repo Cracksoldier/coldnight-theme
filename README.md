@@ -31,7 +31,7 @@ A dark navy Hexo blog theme. Minimal, readable, and opinionated.
 ### Via npm
 
 ```bash
-npm install hexo-theme-coldnight
+npm install hexo-theme-coldnight hexo-renderer-dartsass hexo-renderer-marked
 ```
 
 Set the theme in your site's `_config.yml`:

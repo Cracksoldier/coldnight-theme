@@ -18,10 +18,10 @@
   },
   "peerDependencies": {
     "hexo": ">=6.0.0",
-    "hexo-renderer-dartsass": ">=0.1.0",
-    "hexo-renderer-marked": ">=6.0.0"
+    "hexo-renderer-dartsass": ">=1.0.0",
+    "hexo-renderer-marked": ">=7.0.0"
   },
   "dependencies": {
-    "katex": ">=0.16.0"
+    "katex": "^0.16.0"
   }
 }
