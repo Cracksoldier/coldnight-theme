@@ -1,6 +1,7 @@
 // ─── Coldnight theme — entry point ───────────────────────────────────────────
 // Variables are pulled in by each partial via @use 'variables' as *.
 
+@use 'fonts';
 @use 'base';
 @use 'typography';
 @use 'layout';

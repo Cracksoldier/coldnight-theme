@@ -19,7 +19,7 @@
       const isList     = gridCols === 1
 
       // Pinned/featured post — hero on page 1 only
-      const pinnedPost = site.posts.sort('-date').toArray().find(p => p.pinned)
+      const pinnedPost = pinned_post()
       const showHero   = !!pinnedPost && (page.current === 1 || !page.current)
     %>
 

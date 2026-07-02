@@ -44,7 +44,7 @@
       var matched = data.filter(function (post) {
         var hay = [
           post.title || '',
-          post.content ? post.content.slice(0, 800) : '',
+          post.content || '',
           (post.tags || []).join(' ')
         ].join(' ').toLowerCase()
         return terms.every(function (t) { return hay.indexOf(t) !== -1 })
@@ -61,8 +61,8 @@
         return
       }
       results.innerHTML = matched.map(function (post) {
-        var title = mark(esc(post.title || 'Untitled'), q)
-        var snip  = mark(esc(snippet(post.content, q)), q)
+        var title = mark(post.title || 'Untitled', q)
+        var snip  = mark(snippet(post.content, q), q)
         return '<a href="' + esc(post.url) + '" class="search-result-item">' +
           '<div>' + title + '</div>' +
           (snip ? '<div class="search-result-item__snip">' + snip + '</div>' : '') +
@@ -169,11 +169,17 @@
     return text.slice(0, 130) + (text.length > 130 ? '…' : '')
   }
 
+  // Takes plain (unescaped) text; escapes it segment-wise so terms can never
+  // match inside inserted <mark> tags or HTML entities.
   function mark(text, q) {
-    q.trim().split(/\s+/).filter(Boolean).forEach(function (t) {
-      text = text.replace(new RegExp('(' + reEsc(t) + ')', 'gi'), '<mark>$1</mark>')
-    })
-    return text
+    var terms = q.trim().split(/\s+/).filter(Boolean)
+      .sort(function (a, b) { return b.length - a.length })
+      .map(reEsc)
+    if (!terms.length) return esc(text)
+    var re = new RegExp('(' + terms.join('|') + ')', 'gi')
+    return String(text).split(re).map(function (part, i) {
+      return i % 2 === 1 ? '<mark>' + esc(part) + '</mark>' : esc(part)
+    }).join('')
   }
 
   function esc(s) {

@@ -22,11 +22,10 @@
 
   function getCleanContent() {
     var body = document.querySelector('.post-body')
-    if (!body) return ''
+    if (!body) return null
     var clone = body.cloneNode(true)
-    clone.querySelectorAll('.code-toolbar, .heading-anchor').forEach(function (el) { el.remove() })
-    // Fix void elements so the document is valid XHTML (strip any existing trailing slash first)
-    return clone.innerHTML.replace(/<(br|hr|img|input|link|meta)(\s[^>]*?)?\s*\/?>/gi, '<$1$2/>')
+    clone.querySelectorAll('.code-toolbar, .heading-anchor, script').forEach(function (el) { el.remove() })
+    return clone
   }
 
   function getPostData(btn) {
@@ -40,6 +39,39 @@
     }
   }
 
+  var IMG_TYPES = {
+    png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif',
+    svg: 'image/svg+xml', webp: 'image/webp', avif: 'image/avif'
+  }
+
+  // Fetch every <img> and bundle it into the zip so the ePub works offline.
+  // Rewrites srcs to the bundled path; unfetchable images (e.g. CORS-blocked
+  // hotlinks) fall back to their absolute URL so the XHTML stays valid.
+  function embedImages(root, zip) {
+    if (!root) return Promise.resolve([])
+    var imgs = Array.prototype.slice.call(root.querySelectorAll('img'))
+    var manifest = []
+    var jobs = imgs.map(function (img, i) {
+      var abs
+      try { abs = new URL(img.getAttribute('src') || '', window.location.href).href } catch (e) { return Promise.resolve() }
+      return fetch(abs).then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status)
+        return r.blob()
+      }).then(function (blob) {
+        var ext  = (abs.split('?')[0].split('.').pop() || '').toLowerCase()
+        var type = IMG_TYPES[ext] || blob.type || 'image/png'
+        if (!IMG_TYPES[ext]) ext = (type.split('/')[1] || 'png').replace('+xml', '')
+        var name = 'images/img' + i + '.' + ext
+        zip.file('OEBPS/' + name, blob)
+        manifest.push('<item id="img' + i + '" href="' + name + '" media-type="' + type + '"/>')
+        img.setAttribute('src', name)
+      }).catch(function () {
+        img.setAttribute('src', abs)
+      })
+    })
+    return Promise.all(jobs).then(function () { return manifest.join('') })
+  }
+
   function buildEpub(data) {
     var zip = new JSZip() // eslint-disable-line no-undef
     var now = new Date().toISOString().replace(/\.\d+Z$/, 'Z')
@@ -47,71 +79,80 @@
     // mimetype must be the first file and stored without compression
     zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' })
 
-    zip.file('META-INF/container.xml',
-      '<?xml version="1.0"?>' +
-      '<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">' +
-        '<rootfiles>' +
-          '<rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>' +
-        '</rootfiles>' +
-      '</container>')
+    return embedImages(data.content, zip).then(function (imageItems) {
+      // XMLSerializer emits well-formed XML (self-closed voids, no named
+      // entities like &nbsp;) — required by strict ePub readers.
+      var contentXhtml = data.content
+        ? new XMLSerializer().serializeToString(data.content)
+        : ''
 
-    zip.file('OEBPS/content.opf',
-      '<?xml version="1.0" encoding="UTF-8"?>' +
-      '<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid">' +
-        '<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">' +
-          '<dc:identifier id="uid">' + esc(data.url) + '</dc:identifier>' +
-          '<dc:title>' + esc(data.title) + '</dc:title>' +
-          (data.author ? '<dc:creator>' + esc(data.author) + '</dc:creator>' : '') +
-          '<dc:language>' + esc(data.language) + '</dc:language>' +
-          '<meta property="dcterms:modified">' + now + '</meta>' +
-        '</metadata>' +
-        '<manifest>' +
-          '<item id="nav"     href="nav.xhtml"     media-type="application/xhtml+xml" properties="nav"/>' +
-          '<item id="content" href="content.xhtml" media-type="application/xhtml+xml"/>' +
-          '<item id="css"     href="style.css"     media-type="text/css"/>' +
-        '</manifest>' +
-        '<spine><itemref idref="content"/></spine>' +
-      '</package>')
+      zip.file('META-INF/container.xml',
+        '<?xml version="1.0"?>' +
+        '<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">' +
+          '<rootfiles>' +
+            '<rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/>' +
+          '</rootfiles>' +
+        '</container>')
 
-    zip.file('OEBPS/nav.xhtml',
-      '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html>' +
-      '<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">' +
-        '<head><title>' + esc(data.title) + '</title></head>' +
-        '<body>' +
-          '<nav epub:type="toc">' +
-            '<ol><li><a href="content.xhtml">' + esc(data.title) + '</a></li></ol>' +
-          '</nav>' +
-        '</body>' +
-      '</html>')
+      zip.file('OEBPS/content.opf',
+        '<?xml version="1.0" encoding="UTF-8"?>' +
+        '<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="uid">' +
+          '<metadata xmlns:dc="http://purl.org/dc/elements/1.1/">' +
+            '<dc:identifier id="uid">' + esc(data.url) + '</dc:identifier>' +
+            '<dc:title>' + esc(data.title) + '</dc:title>' +
+            (data.author ? '<dc:creator>' + esc(data.author) + '</dc:creator>' : '') +
+            '<dc:language>' + esc(data.language) + '</dc:language>' +
+            '<meta property="dcterms:modified">' + now + '</meta>' +
+          '</metadata>' +
+          '<manifest>' +
+            '<item id="nav"     href="nav.xhtml"     media-type="application/xhtml+xml" properties="nav"/>' +
+            '<item id="content" href="content.xhtml" media-type="application/xhtml+xml"/>' +
+            '<item id="css"     href="style.css"     media-type="text/css"/>' +
+            imageItems +
+          '</manifest>' +
+          '<spine><itemref idref="content"/></spine>' +
+        '</package>')
 
-    zip.file('OEBPS/content.xhtml',
-      '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html>' +
-      '<html xmlns="http://www.w3.org/1999/xhtml">' +
-        '<head>' +
-          '<meta charset="UTF-8"/>' +
-          '<title>' + esc(data.title) + '</title>' +
-          '<link rel="stylesheet" type="text/css" href="style.css"/>' +
-        '</head>' +
-        '<body>' +
-          '<h1>' + esc(data.title) + '</h1>' +
-          data.content +
-        '</body>' +
-      '</html>')
+      zip.file('OEBPS/nav.xhtml',
+        '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html>' +
+        '<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">' +
+          '<head><title>' + esc(data.title) + '</title></head>' +
+          '<body>' +
+            '<nav epub:type="toc">' +
+              '<ol><li><a href="content.xhtml">' + esc(data.title) + '</a></li></ol>' +
+            '</nav>' +
+          '</body>' +
+        '</html>')
 
-    zip.file('OEBPS/style.css',
-      'body{font-family:Georgia,"Times New Roman",serif;line-height:1.7;max-width:42em;margin:0 auto;padding:1em}' +
-      'h1,h2,h3{line-height:1.3}' +
-      'pre,code{font-family:monospace;font-size:.9em}' +
-      'pre{background:#f5f5f5;padding:1em;white-space:pre-wrap;overflow-x:auto}' +
-      'img{max-width:100%}' +
-      'a{color:#4080ff}' +
-      'blockquote{border-left:3px solid #ccc;margin-left:0;padding-left:1em;color:#555}' +
-      'table{border-collapse:collapse;width:100%}' +
-      'td,th{border:1px solid #ddd;padding:.5em}' +
-      'figure{margin:1.5em 0}figcaption{font-size:.875em;color:#666;text-align:center;margin-top:.25em}' +
-      'details summary{cursor:pointer;font-weight:600}')
+      zip.file('OEBPS/content.xhtml',
+        '<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html>' +
+        '<html xmlns="http://www.w3.org/1999/xhtml">' +
+          '<head>' +
+            '<meta charset="UTF-8"/>' +
+            '<title>' + esc(data.title) + '</title>' +
+            '<link rel="stylesheet" type="text/css" href="style.css"/>' +
+          '</head>' +
+          '<body>' +
+            '<h1>' + esc(data.title) + '</h1>' +
+            contentXhtml +
+          '</body>' +
+        '</html>')
 
-    return zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' })
+      zip.file('OEBPS/style.css',
+        'body{font-family:Georgia,"Times New Roman",serif;line-height:1.7;max-width:42em;margin:0 auto;padding:1em}' +
+        'h1,h2,h3{line-height:1.3}' +
+        'pre,code{font-family:monospace;font-size:.9em}' +
+        'pre{background:#f5f5f5;padding:1em;white-space:pre-wrap;overflow-x:auto}' +
+        'img{max-width:100%}' +
+        'a{color:#4080ff}' +
+        'blockquote{border-left:3px solid #ccc;margin-left:0;padding-left:1em;color:#555}' +
+        'table{border-collapse:collapse;width:100%}' +
+        'td,th{border:1px solid #ddd;padding:.5em}' +
+        'figure{margin:1.5em 0}figcaption{font-size:.875em;color:#666;text-align:center;margin-top:.25em}' +
+        'details summary{cursor:pointer;font-weight:600}')
+
+      return zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' })
+    })
   }
 
   function triggerDownload(blob, filename) {

@@ -6,6 +6,9 @@ let _tabCounter = 0
 
 const stripHtml = (html) => html
   .replace(/<(pre|figure)\b[^>]*>[\s\S]*?<\/\1>/gi, '')
+  // KaTeX emits each formula twice (MathML + HTML); drop the MathML copy so
+  // word/reading-time counts aren't inflated
+  .replace(/<math\b[\s\S]*?<\/math>/gi, '')
   .replace(/<[^>]+>/g, '')
 
 const escHtml = s => String(s)
@@ -181,12 +184,68 @@ hexo.extend.filter.register('after_render:html', function (html) {
   return html
 })
 
+// ─── Cached site-wide lookups ─────────────────────────────────────────────────
+// related_posts / pinned_post are called once per rendered page; without a
+// cache each call scans all posts (O(n²) over a full build).
+
+let _postIndexCache = null
+let _pinnedPostCache
+
+function getPostIndex(posts) {
+  if (_postIndexCache) return _postIndexCache
+  const byTag = new Map()
+  const byCat = new Map()
+  posts.each(p => {
+    if (p.tags) p.tags.each(t => {
+      if (!byTag.has(t.name)) byTag.set(t.name, [])
+      byTag.get(t.name).push(p)
+    })
+    if (p.categories && p.categories.length) {
+      const cat = p.categories.first().name
+      if (!byCat.has(cat)) byCat.set(cat, [])
+      byCat.get(cat).push(p)
+    }
+  })
+  _postIndexCache = { byTag, byCat }
+  return _postIndexCache
+}
+
+// Score: 2 pts per shared tag, 1 pt for same (first) category.
+hexo.extend.helper.register('related_posts', function (page, limit) {
+  limit = limit || 3
+  const { byTag, byCat } = getPostIndex(this.site.posts)
+  const scores = new Map()
+  const bump = (p, pts) => {
+    if (p.path === page.path) return
+    const cur = scores.get(p.path)
+    if (cur) cur.score += pts
+    else scores.set(p.path, { post: p, score: pts })
+  }
+  if (page.tags) page.tags.each(t => (byTag.get(t.name) || []).forEach(p => bump(p, 2)))
+  if (page.categories && page.categories.length) {
+    (byCat.get(page.categories.first().name) || []).forEach(p => bump(p, 1))
+  }
+  return Array.from(scores.values())
+    .sort((a, b) => b.score - a.score || b.post.date - a.post.date)
+    .slice(0, limit)
+    .map(x => x.post)
+})
+
+hexo.extend.helper.register('pinned_post', function () {
+  if (_pinnedPostCache === undefined) {
+    _pinnedPostCache = this.site.posts.sort('-date').toArray().find(p => p.pinned) || null
+  }
+  return _pinnedPostCache
+})
+
 // ─── Grid per_page sync ───────────────────────────────────────────────────────
 // Overrides index_generator.per_page so the user only needs to set grid.columns
 // and grid.rows in the theme config.
 
 hexo.extend.filter.register('before_generate', function () {
   _tabCounter = 0
+  _postIndexCache = null
+  _pinnedPostCache = undefined
   hexo.theme.config.version = themeVersion
 
   const grid = hexo.theme.config.grid
@@ -197,8 +256,9 @@ hexo.extend.filter.register('before_generate', function () {
 })
 
 hexo.extend.tag.register('note', function (args, content) {
-  const type = (args[0] || 'info').toLowerCase()
-  const icon = NOTE_ICONS[type] || NOTE_ICONS.info
+  let type = (args[0] || 'info').toLowerCase()
+  if (!NOTE_ICONS[type]) type = 'info'
+  const icon = NOTE_ICONS[type]
   let rendered
   try {
     rendered = hexo.render.renderSync({ text: content, engine: 'markdown' })
@@ -380,8 +440,10 @@ hexo.extend.filter.register('after_post_render', function (data) {
 hexo.extend.filter.register('after_post_render', function (data) {
   if (!hexo.theme.config.external_links) return data
 
+  // www.example.com and example.com are the same site
+  const normHost = h => h.replace(/^www\./i, '')
   let siteHostname = ''
-  try { siteHostname = new URL(hexo.config.url).hostname } catch (e) {}
+  try { siteHostname = normHost(new URL(hexo.config.url).hostname) } catch (e) {}
 
   data.content = data.content.replace(
     /<a\b([^>]*?)href="(https?:\/\/[^"]*?)"([^>]*?)>/gi,
@@ -389,7 +451,7 @@ hexo.extend.filter.register('after_post_render', function (data) {
       if (/\btarget\s*=/i.test(before + after)) return match
       if (/\bdownload\b/i.test(before + after)) return match
       try {
-        if (siteHostname && new URL(href).hostname === siteHostname) return match
+        if (siteHostname && normHost(new URL(href).hostname) === siteHostname) return match
       } catch (e) { return match }
       return `<a${before}href="${href}"${after} target="_blank" rel="noopener noreferrer">`
     }
