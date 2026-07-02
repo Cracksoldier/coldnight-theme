@@ -615,6 +615,43 @@ hexo.extend.tag.register('audio', function (args) {
   )
 })
 
+// ─── Compare slider tag ───────────────────────────────────────────────────────
+// Usage:
+// {% compare before="/images/old.png" after="/images/new.png" %}
+// {% compare before="/a.png" after="/b.png" label_before="2019" label_after="2026" caption="Redesign" %}
+// Without JS the slider renders as a static 50/50 split.
+
+hexo.extend.tag.register('compare', function (args) {
+  if (hexo.theme.config.compare_slider === false) return ''
+  const attrs = {}
+  args.forEach(a => {
+    const eq = a.indexOf('=')
+    if (eq === -1) return
+    attrs[a.slice(0, eq)] = a.slice(eq + 1).replace(/^(["'])(.*)\1$/, '$2')
+  })
+  if (!attrs.before || !attrs.after) return ''
+  const rootSrc     = s => escHtml((hexo.config.root + s.replace(/^\//, '')).replace(/\/+/g, '/'))
+  const before      = rootSrc(attrs.before)
+  const after       = rootSrc(attrs.after)
+  const labelBefore = escHtml(attrs.label_before || 'Before')
+  const labelAfter  = escHtml(attrs.label_after || 'After')
+  const caption     = attrs.caption ? escHtml(attrs.caption) : ''
+  return (
+    '<figure class="compare-slider">' +
+      '<div class="compare-slider__frame" style="--compare-pos:50%">' +
+        '<img class="compare-slider__img compare-slider__img--after" src="' + after + '" alt="' + labelAfter + '" loading="lazy">' +
+        '<img class="compare-slider__img compare-slider__img--before" src="' + before + '" alt="' + labelBefore + '" loading="lazy">' +
+        '<div class="compare-slider__divider" aria-hidden="true"></div>' +
+        '<span class="compare-slider__label compare-slider__label--before">' + labelBefore + '</span>' +
+        '<span class="compare-slider__label compare-slider__label--after">' + labelAfter + '</span>' +
+        '<input type="range" class="compare-slider__range" min="0" max="100" value="50"' +
+          ' aria-label="Compare slider: ' + labelBefore + ' / ' + labelAfter + '">' +
+      '</div>' +
+      (caption ? '<figcaption>' + caption + '</figcaption>' : '') +
+    '</figure>'
+  )
+})
+
 // ─── Showroom generator ───────────────────────────────────────────────────────
 
 hexo.extend.generator.register('showroom', function (locals) {

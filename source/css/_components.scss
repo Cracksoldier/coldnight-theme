@@ -67,6 +67,11 @@
   pointer-events: none;
   transition: opacity $transition-normal, transform $transition-normal;
 
+  @media (prefers-reduced-motion: reduce) {
+    transform: none;
+    transition: opacity $transition-normal;
+  }
+
   @media (max-width: $bp-mobile) {
     display: none;
   }
@@ -295,6 +300,10 @@ button.navbar__hamburger {
   &:hover img {
     transform: scale(1.03);
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    &:hover img { transform: none; }
+  }
 }
 
 .post-card__body {
@@ -504,6 +513,10 @@ button.navbar__hamburger {
   &:hover .project-card__img { transform: scale(1.04); }
   &:hover .project-card__subtitle { opacity: 1; transform: translateY(0); }
   &:focus-visible { outline: 2px solid $border-focus; outline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    &:hover .project-card__img { transform: none; }
+  }
 }
 
 .project-card__img {
@@ -542,6 +555,11 @@ button.navbar__hamburger {
   opacity: 0;
   transform: translateY(4px);
   transition: opacity 0.2s ease, transform 0.2s ease;
+
+  @media (prefers-reduced-motion: reduce) {
+    transform: none;
+    transition: opacity 0.2s ease;
+  }
 }
 
 .project-card__ai-badge {
@@ -657,6 +675,10 @@ button.navbar__hamburger {
 
   &:hover img {
     transform: scale(1.03);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &:hover img { transform: none; }
   }
 
   @media (max-width: $bp-mobile) {
@@ -1360,6 +1382,10 @@ details.spoiler[open] .spoiler__summary::before {
     &:hover img {
       transform: scale(1.05);
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      &:hover img { transform: none; }
+    }
   }
 }
 
@@ -1555,6 +1581,10 @@ select.form-input {
   background: rgba(0, 0, 0, 0.5);
   z-index: 40;
   animation: toc-fade-in $transition-normal both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 }
 
 .toc-drawer__panel {
@@ -1570,6 +1600,10 @@ select.form-input {
   display: flex;
   flex-direction: column;
   animation: toc-slide-up $transition-normal both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 }
 
 .toc-drawer__header {
@@ -2357,6 +2391,107 @@ select.form-input {
 @keyframes audio-pulse {
   0%, 100% { opacity: 0.4; }
   50%       { opacity: 1; }
+}
+
+// ─── Compare slider ──────────────────────────────────────────────────────────
+
+.compare-slider {
+  margin: $sp-6 0;
+
+  &__frame {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid $border-subtle;
+    border-radius: $radius-lg;
+    background: $bg-surface;
+    line-height: 0;
+
+    &:focus-within {
+      outline: 2px solid $border-focus;
+      outline-offset: 2px;
+    }
+  }
+
+  &__img {
+    display: block;
+    width: 100%;
+    height: auto;
+    margin: 0;
+
+    &--before {
+      position: absolute;
+      inset: 0;
+      height: 100%;
+      object-fit: cover;
+      clip-path: inset(0 calc(100% - var(--compare-pos)) 0 0);
+    }
+  }
+
+  &__divider {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: var(--compare-pos);
+    width: 2px;
+    margin-left: -1px;
+    background: $accent-light;
+    box-shadow: 0 0 8px $accent-glow;
+    pointer-events: none;
+
+    &::after {
+      content: '⟨ ⟩';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: $sp-1 $sp-2;
+      border-radius: $radius;
+      background: $bg-elevated;
+      border: 1px solid $border-subtle;
+      color: $text-primary;
+      font-size: 0.7rem;
+      line-height: 1;
+      white-space: nowrap;
+    }
+  }
+
+  &__label {
+    position: absolute;
+    top: $sp-2;
+    padding: $sp-1 $sp-2;
+    border-radius: $radius;
+    background: rgba(5, 13, 26, 0.75);
+    color: $text-secondary;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    line-height: 1.2;
+    pointer-events: none;
+
+    &--before { left: $sp-2; }
+    &--after  { right: $sp-2; }
+  }
+
+  &__range {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: ew-resize;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  figcaption {
+    margin-top: $sp-2;
+    font-size: 0.8rem;
+    color: $text-muted;
+    text-align: center;
+    line-height: 1.5;
+  }
 }
 
 // ─── Giscus comments ─────────────────────────────────────────────────────────

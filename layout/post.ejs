@@ -7,6 +7,23 @@
   // Related posts — scored by shared tags/category via cached helper
   const relatedPosts = related_posts(page, 3)
 
+  // Stale-post warning — age computed at build time. Only trusts page.updated
+  // when updated: is explicit in front-matter; with updated_option 'mtime' it
+  // defaults to file mtime, which is "now" on fresh clones and would mask age.
+  const _staleCfg = theme.stale_warning || {}
+  let staleMsg = ''
+  if (_staleCfg.enabled && page.stale_warning !== false) {
+    const _fm = typeof page.raw === 'string' ? (page.raw.split(/^---\s*$/m)[1] || '') : ''
+    const _staleRef = (/^updated\s*:/m.test(_fm) && page.updated) ? page.updated : page.date
+    const _ageMonths = (Date.now() - _staleRef.valueOf()) / (1000 * 60 * 60 * 24 * 30.44)
+    if (_ageMonths > (_staleCfg.months || 24)) {
+      const _years = Math.floor(_ageMonths / 12)
+      staleMsg = _years >= 1
+        ? 'This post is over ' + _years + ' year' + (_years > 1 ? 's' : '') + ' old — information may be outdated.'
+        : 'This post is over ' + Math.floor(_ageMonths) + ' months old — information may be outdated.'
+    }
+  }
+
   // Series nav — group posts sharing the same `series:` front-matter value
   const _seriesName = page.series || null
   let seriesPosts = []
@@ -101,6 +118,13 @@
           <% } %>
         </div>
       </header>
+
+      <% if (staleMsg) { %>
+      <div class="note note-warning stale-warning" role="note">
+        <span class="note-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span>
+        <div><p><%= staleMsg %></p></div>
+      </div>
+      <% } %>
 
       <% if (page.cover_image) { %>
         <% if (page.cover_caption) { %>
@@ -270,6 +294,9 @@
 <% } %>
 <% if (theme.audio_player !== false && page.content && page.content.includes('class="audio-player"')) { %>
 <script src="<%- url_for('/js/audio-player.js') %>" defer></script>
+<% } %>
+<% if (theme.compare_slider !== false && page.content && page.content.includes('class="compare-slider"')) { %>
+<script src="<%- url_for('/js/compare-slider.js') %>" defer></script>
 <% } %>
 
 </body>

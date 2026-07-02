@@ -47,7 +47,7 @@
     var controls = new lib.OrbitControls(camera, renderer.domElement)
     controls.enableDamping = true
     controls.dampingFactor = 0.05
-    if (autorotate) {
+    if (autorotate && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       controls.autoRotate = true
     }
 

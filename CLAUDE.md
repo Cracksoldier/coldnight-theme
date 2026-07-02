@@ -49,6 +49,7 @@ Fonts are **not** loaded from the Google Fonts CDN. The woff2 files (latin + lat
 - Canonical and `og:url` use `page.permalink || url` (Hexo's per-page `url` local) with a trailing `index.html` stripped — never fall back to `config.url`, or every archive/tag page canonicalises to the site root.
 - `og:locale` needs territory form (`en_US`, `de_DE`); `config.language` is usually bare. `head.ejs` maps it (exceptions table + `xx_XX` fallback).
 - Post covers and the pinned hero are the LCP element: they must stay `loading="eager" fetchpriority="high"`. The blanket lazy-load pass in `helpers.js` skips any `<img>` that already has a `loading=` attribute.
+- JSON-LD (`BlogPosting` + `BreadcrumbList`, posts only) is emitted in `head.ejs` via `<%- JSON.stringify(obj).replace(/</g, '\\u003c') %>` — the raw `<%-` is required (JSON must not be HTML-encoded) and the `<` escape prevents `</script>` breakout from post titles/descriptions. Never switch it to `<%=`.
 
 ## Cached site-wide helpers
 
@@ -107,6 +108,7 @@ Uses the `hidden` attribute (not `display:none`) for accessible show/hide. JS is
 | `{% video %}` | `{% video <url> Optional Caption %}` |
 | `{% model %}` | `{% model src="/models/foo.glb" [height="400px"] [bg="#111"] [view="iso"] [autorotate="true"] [caption="…"] %}` |
 | `{% audio %}` | `{% audio src="/audio/file.mp3" [title="…"] [caption="…"] %}` |
+| `{% compare %}` | `{% compare before="/a.png" after="/b.png" [label_before="…"] [label_after="…"] [caption="…"] %}` |
 
 ## Abstract block
 
@@ -162,6 +164,22 @@ The player is a pure IIFE (`source/js/audio-player.js`) with no dependencies. At
 - Mutual pause: starting one player automatically pauses all others on the page
 
 Set `audio_player: false` in the theme config to disable the tag globally.
+
+## Compare slider
+
+`{% compare before="..." after="..." %}` renders a before/after image slider (`<figure class="compare-slider">`). The interactive control is a transparent full-size native `<input type="range">` — pointer, touch, and keyboard handling come free; do not replace it with custom drag handlers. The *before* image is clipped via `clip-path: inset(0 calc(100% - var(--compare-pos)) 0 0)`; `compare-slider.js` (IIFE, conditionally loaded like audio/model) only updates the `--compare-pos` custom property. Without JS the slider is a static 50/50 split. Both images carry explicit `loading="lazy"` so the blanket lazy pass skips them. Disable globally with `compare_slider: false`.
+
+## Stale-post warning
+
+Opt-in via theme config (`stale_warning.enabled` + `stale_warning.months`, default 24); per-post opt-out with `stale_warning: false` front-matter. Rendered in `post.ejs` reusing the `{% note %}` warning markup (`.note.note-warning.stale-warning`).
+
+- **Age is computed at build time** — fine for static sites (rebuilds happen on publish), but the banner does not age in place on a stale deployment.
+- **`page.updated` is only trusted when `updated:` is explicit in front-matter** (detected via `page.raw`). With Hexo's default `updated_option: 'mtime'`, `page.updated` falls back to file mtime, which is "now" on fresh clones/CI and would permanently mask the banner. Do not simplify to `page.updated || page.date`.
+
+## View transitions & reduced motion
+
+- `head.ejs` emits an inline `<style>@media not (prefers-reduced-motion: reduce){@view-transition{navigation:auto}}</style>` when `view_transitions !== false` — inline because compiled SCSS can't read theme config. Progressive enhancement; non-supporting browsers ignore it.
+- `prefers-reduced-motion: reduce` coverage: central block in `_base.scss` (scroll-behavior, `.fade-in`, `.toast`) plus co-located nested `@media` blocks in `_components.scss` (toc-drawer entrance animations, hover zoom/lift transforms — opacity/color transitions are kept). JS honours it via `matchMedia` in `back-to-top.js` (instant jump) and `model-viewer.js` (no autorotate). **Loading/progress indicators (`model-viewer-spin`, `audio-pulse`) are intentionally exempt** — they convey state, not decoration.
 
 ## helpers.js gotchas
 

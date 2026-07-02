@@ -48,6 +48,12 @@ sticky_title: true   # fade post title into navbar when h1 scrolls out of view
 related_posts: true  # "You might also like" section at the bottom of post pages
 series: true         # series navigation strip for multi-part posts (requires series: in front-matter)
 
+stale_warning:
+  enabled: false     # show "this post is old" banner on posts older than `months`
+  months: 24         # age threshold; based on updated: (or date:) at build time
+
+view_transitions: true # cross-document View Transitions crossfade (progressive enhancement)
+
 search:
   enabled: true   # search box in navbar
 
@@ -78,6 +84,7 @@ math:
 
 pdf_viewer: true       # load pdf-viewer.js on post pages; set false to disable
 audio_player: true     # load audio-player.js on post pages that use {% audio %}; set false to disable
+compare_slider: true   # load compare-slider.js on post pages that use {% compare %}; set false to disable
 
 model_viewer:
   enabled: true

@@ -20,6 +20,33 @@
   const metaKeywords = (page.tags && page.tags.length
     ? page.tags.toArray().map(function(t){ return t.name }).join(', ')
     : '') || config.keywords || ''
+
+  let jsonLd = null
+  if (page.layout === 'post') {
+    const posting = {
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: page.title || '',
+      datePublished: page.date.toISOString(),
+      dateModified: (page.updated || page.date).toISOString(),
+      author: { '@type': 'Person', name: config.author },
+      publisher: { '@type': 'Person', name: config.author },
+      mainEntityOfPage: { '@type': 'WebPage', '@id': pageUrl },
+      description: metaDesc
+    }
+    if (ogImageAbs) posting.image = ogImageAbs
+    if (metaKeywords) posting.keywords = metaKeywords
+
+    const crumbs = [{ '@type': 'ListItem', position: 1, name: 'Home', item: full_url_for('/') }]
+    const firstCat = page.categories && page.categories.length ? page.categories.first() : null
+    if (firstCat) {
+      crumbs.push({ '@type': 'ListItem', position: crumbs.length + 1, name: firstCat.name, item: full_url_for(firstCat.path) })
+    }
+    // last crumb represents the current page — no `item`, per spec
+    crumbs.push({ '@type': 'ListItem', position: crumbs.length + 1, name: page.title || '' })
+
+    jsonLd = [posting, { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: crumbs }]
+  }
 %>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -49,6 +76,13 @@
 
 <link rel="canonical" href="<%= pageUrl %>">
 
+<% if (jsonLd) { %>
+<!-- Structured data -->
+<% jsonLd.forEach(function (obj) { %>
+<script type="application/ld+json"><%- JSON.stringify(obj).replace(/</g, '\\u003c') %></script>
+<% }) %>
+<% } %>
+
 <!-- Twitter Card -->
 <meta name="twitter:card" content="<%= ogImageAbs ? 'summary_large_image' : 'summary' %>">
 <meta name="twitter:title" content="<%= page.title || config.title %>">
@@ -69,6 +103,11 @@
 
 <!-- Theme stylesheet -->
 <link rel="stylesheet" href="<%- url_for('/css/style.css') %>">
+
+<% if (theme.view_transitions !== false) { %>
+<!-- Cross-document View Transitions (progressive enhancement; inline because compiled SCSS can't read theme config) -->
+<style>@media not (prefers-reduced-motion: reduce){@view-transition{navigation:auto}}</style>
+<% } %>
 
 <!-- LightGallery CSS — post pages only -->
 <% if (page.layout === 'post' && theme.lightgallery && theme.lightgallery.enabled) { %>
