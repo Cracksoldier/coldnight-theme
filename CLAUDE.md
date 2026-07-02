@@ -13,6 +13,7 @@ themes/coldnight/
 │   └── *.ejs            ← one file per Hexo page type
 ├── source/
 │   ├── css/             ← SCSS source; compiled by hexo-renderer-dartsass
+│   ├── fonts/           ← self-hosted woff2 files (JetBrains Mono + Roboto)
 │   └── js/              ← vanilla JS; copied verbatim to public/js/
 └── scripts/
     └── helpers.js       ← Hexo helper + tag plugin registrations
@@ -23,6 +24,14 @@ themes/coldnight/
 - Never hardcode color values — always reference a variable from `_variables.scss`.
 - `$font-sans` and `$font-mono` are **unquoted** SCSS lists. Wrapping them in quotes causes the browser to treat the entire comma-separated value as one unrecognised font name.
 - All spacing uses `$sp-*` tokens from `_variables.scss`. Do not use raw `px` or `rem` values for spacing.
+
+## Fonts (self-hosted)
+
+Fonts are **not** loaded from the Google Fonts CDN. The woff2 files (latin + latin-ext subsets of JetBrains Mono and Roboto) live in `source/fonts/`; the `@font-face` rules are in `source/css/_fonts.scss` (imported first by `style.scss`).
+
+- `src:` URLs in `_fonts.scss` must be **relative** (`../fonts/…`) so they resolve correctly on subdirectory deployments — never root-absolute `/fonts/…`.
+- `head.ejs` preloads the primary body font (`roboto-latin-400-normal.woff2`).
+- To add weights/styles, download the woff2 + unicode-range blocks from the fonts.googleapis.com css2 API (with a woff2-capable User-Agent) and regenerate the `@font-face` rules — keep `font-display: swap`.
 
 ## Page shells
 
@@ -37,6 +46,15 @@ themes/coldnight/
 - Cover image `src` must use `<%- url_for(coverImg) %>`, never `<%= coverImg %>` — required for subdirectory deployments.
 - The tag/category page accent colour uses `<span class="page-header__accent">` — never an inline `style=`.
 - For OG `og:image`, use `full_url_for(path)` not `config.url + url_for(path)` — `url_for` already prepends the root path, so manual concatenation double-applies the subdirectory; and for already-absolute URLs it produces a mangled string like `https://site.comhttps://cdn.com/img.jpg`.
+- Canonical and `og:url` use `page.permalink || url` (Hexo's per-page `url` local) with a trailing `index.html` stripped — never fall back to `config.url`, or every archive/tag page canonicalises to the site root.
+- `og:locale` needs territory form (`en_US`, `de_DE`); `config.language` is usually bare. `head.ejs` maps it (exceptions table + `xx_XX` fallback).
+- Post covers and the pinned hero are the LCP element: they must stay `loading="eager" fetchpriority="high"`. The blanket lazy-load pass in `helpers.js` skips any `<img>` that already has a `loading=` attribute.
+
+## Cached site-wide helpers
+
+`related_posts(page, limit)` and `pinned_post()` (registered in `scripts/helpers.js`) replace inline `site.posts` scans in templates. They build a tag/category index once per generation cycle — caches are reset in the `before_generate` filter. Never iterate all of `site.posts` inside a per-post EJS template; add or reuse a cached helper instead (inline scans are O(n²) over a full build).
+
+Related-post scoring: 2 pts per shared tag, 1 pt for the same first category; ties broken by date (newest first).
 
 ## Showroom generator
 
@@ -79,7 +97,7 @@ Uses the `hidden` attribute (not `display:none`) for accessible show/hide. JS is
 
 | Tag | Syntax |
 |-----|--------|
-| `{% note %}` | `{% note info/tip/warning/danger %}...{% endnote %}` |
+| `{% note %}` | `{% note info/tip/warning/danger %}...{% endnote %}` — type is allowlisted against `NOTE_ICONS`; unknown types fall back to `info` |
 | `{% tabs %}` | `{% tabs %}<!-- tab Name -->...<!-- endtab -->{% endtabs %}` |
 | `{% gallery %}` | `{% gallery cols %}![](img)...{% endgallery %}` |
 | `{% timeline %}` | `{% timeline %}<!-- event DATE -->...<!-- endevent -->{% endtimeline %}` |
@@ -112,6 +130,17 @@ The viewer JS is an IIFE at `source/js/model-viewer.js`. It reads `window.__THRE
 - **`IntersectionObserver` gates the rAF loop** — rendering is paused when the container is off-screen and resumed when it re-enters the viewport. Falls back to an unconditional loop on browsers without IntersectionObserver.
 - **`ResizeObserver` uses `entry.contentRect`** (not `container.clientWidth`) — avoids a forced reflow and correctly handles containers inside `display:none` parents (which do not re-fire the observer on reveal via clientWidth).
 
+## ePub export
+
+`source/js/epub-export.js` builds the ePub client-side with JSZip. Two invariants:
+
+- **Content is serialized with `XMLSerializer`**, never `innerHTML` — `innerHTML` emits named entities (`&nbsp;`) and unclosed voids that strict ePub readers reject as invalid XML.
+- **Images are fetched and bundled** into `OEBPS/images/` with manifest entries so the file works offline. Unfetchable images (CORS-blocked hotlinks) fall back to their absolute URL, keeping the XHTML valid.
+
+## Search
+
+`source/js/search.js` filters the full `search.json` content (title + entire body + tags) — do not re-introduce a content-length cap, it silently hides results. `mark()` takes **plain unescaped text** and escapes segment-wise around a single alternation regex; never apply per-term `.replace()` passes to already-escaped HTML (terms like `amp` or `mark` would match inside entities/tags and corrupt the markup).
+
 ## Giscus comments
 
 `layout/_partial/giscus.ejs` renders the `<script>` tag that loads the Giscus iframe from `giscus.app`. It is included from `post.ejs` when `theme.giscus.enabled` is `true`, `repo` and `category_id` are non-empty, and `page.comments !== false`.
@@ -133,6 +162,11 @@ The player is a pure IIFE (`source/js/audio-player.js`) with no dependencies. At
 - Mutual pause: starting one player automatically pauses all others on the page
 
 Set `audio_player: false` in the theme config to disable the tag globally.
+
+## helpers.js gotchas
+
+- `stripHtml` (feeds `reading_time` / `word_count`) strips `<math>` elements — KaTeX emits every formula twice (MathML + HTML) and counts would double without this.
+- The `external_links` filter strips a leading `www.` from both hostnames before comparing — `www.example.com` and `example.com` are the same site.
 
 ## JS patterns
 
