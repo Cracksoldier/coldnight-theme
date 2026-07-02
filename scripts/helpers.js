@@ -238,6 +238,18 @@ hexo.extend.helper.register('pinned_post', function () {
   return _pinnedPostCache
 })
 
+// True when updated: is written in the post's front-matter. With Hexo's
+// default updated_option 'mtime', page.updated falls back to file mtime —
+// "now" on fresh clones/CI — so callers surfacing revision age must not
+// trust page.updated unless it is explicit.
+hexo.extend.helper.register('has_explicit_updated', function (page) {
+  if (typeof page.raw !== 'string' || !page.updated) return false
+  const parts = page.raw.split(/^---\s*$/m)
+  // hexo-front-matter allows omitting the leading --- delimiter
+  const fm = /^---/.test(page.raw) ? (parts[1] || '') : parts[0]
+  return /^updated\s*:/m.test(fm)
+})
+
 // ─── Grid per_page sync ───────────────────────────────────────────────────────
 // Overrides index_generator.per_page so the user only needs to set grid.columns
 // and grid.rows in the theme config.

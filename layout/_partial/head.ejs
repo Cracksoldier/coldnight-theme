@@ -28,11 +28,14 @@
       '@type': 'BlogPosting',
       headline: page.title || '',
       datePublished: page.date.toISOString(),
-      dateModified: (page.updated || page.date).toISOString(),
-      author: { '@type': 'Person', name: config.author },
-      publisher: { '@type': 'Person', name: config.author },
+      // mtime-based page.updated is "now" on fresh clones — only trust it when explicit
+      dateModified: (has_explicit_updated(page) ? page.updated : page.date).toISOString(),
       mainEntityOfPage: { '@type': 'WebPage', '@id': pageUrl },
       description: metaDesc
+    }
+    if (config.author) {
+      posting.author = { '@type': 'Person', name: config.author }
+      posting.publisher = { '@type': 'Person', name: config.author }
     }
     if (ogImageAbs) posting.image = ogImageAbs
     if (metaKeywords) posting.keywords = metaKeywords

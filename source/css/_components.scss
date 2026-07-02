@@ -2439,7 +2439,8 @@ select.form-input {
     pointer-events: none;
 
     &::after {
-      content: '⟨ ⟩';
+      // U+2039/203A — stay inside the self-hosted latin font subset
+      content: '‹ ›';
       position: absolute;
       top: 50%;
       left: 50%;
@@ -2481,6 +2482,8 @@ select.form-input {
     margin: 0;
     opacity: 0;
     cursor: ew-resize;
+    // vertical swipes scroll the page; horizontal drags move the slider
+    touch-action: pan-y;
     -webkit-appearance: none;
     appearance: none;
   }

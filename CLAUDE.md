@@ -174,7 +174,7 @@ Set `audio_player: false` in the theme config to disable the tag globally.
 Opt-in via theme config (`stale_warning.enabled` + `stale_warning.months`, default 24); per-post opt-out with `stale_warning: false` front-matter. Rendered in `post.ejs` reusing the `{% note %}` warning markup (`.note.note-warning.stale-warning`).
 
 - **Age is computed at build time** — fine for static sites (rebuilds happen on publish), but the banner does not age in place on a stale deployment.
-- **`page.updated` is only trusted when `updated:` is explicit in front-matter** (detected via `page.raw`). With Hexo's default `updated_option: 'mtime'`, `page.updated` falls back to file mtime, which is "now" on fresh clones/CI and would permanently mask the banner. Do not simplify to `page.updated || page.date`.
+- **`page.updated` is only trusted when `updated:` is explicit in front-matter**, via the `has_explicit_updated(page)` helper in `scripts/helpers.js` (parses `page.raw`; handles hexo-front-matter's optional leading `---`). With Hexo's default `updated_option: 'mtime'`, `page.updated` falls back to file mtime, which is "now" on fresh clones/CI and would permanently mask the banner. Do not simplify to `page.updated || page.date`. The JSON-LD `dateModified` in `head.ejs` uses the same helper for the same reason.
 
 ## View transitions & reduced motion
 
