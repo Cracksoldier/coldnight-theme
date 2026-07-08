@@ -18,6 +18,7 @@ A dark navy Hexo blog theme. Minimal, readable, and opinionated.
 - LightGallery image viewer with zoom and thumbnails
 - ePub export button
 - Showroom page — paginated project portfolio with optional AI-assisted badge
+- Difficulty/effort indicator — 1–5 signal-bar meter from `difficulty:`/`effort:` front-matter on posts and projects
 - Accessible: skip nav, ARIA labels, keyboard navigation
 
 ## Requirements
@@ -90,6 +91,7 @@ All options live in `themes/coldnight/_config.yml` (submodule) or `node_modules/
 | `image_captions` | `true` | Wrap `<p><img alt="..."></p>` in `<figure><figcaption>` |
 | `external_links` | `true` | `target="_blank"` + ↗ icon on external links in post body |
 | `permalink_button` | `true` | Copy-permalink icon in post metadata |
+| `difficulty` | `true` | 1–5 signal-bar meter on posts, cards, and showroom projects (front-matter `difficulty:`/`effort:`) |
 | `epub_export` | `true` | ePub download button in post metadata |
 | `toc.enabled` | `true` | TOC sidebar widget and drawer |
 | `toc.max_depth` | `3` | `2` = h2 only, `3` = h2 + h3 |

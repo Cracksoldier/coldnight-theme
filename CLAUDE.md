@@ -69,6 +69,15 @@ Registered in `scripts/helpers.js`. Key rules:
 
 The `ai_assisted` front-matter field (bare YAML boolean) renders a blue pill badge on the project card. Template uses strict `=== true` checks throughout — `!!` coercion must not be used because truthy non-boolean values like `"no"` or `1` would be misclassified. CSS for the badge is `.project-card__ai-badge` in `_components.scss`.
 
+## Difficulty meter
+
+The `difficulty_meter(post, variant?)` helper (registered in `scripts/helpers.js`) renders the optional `difficulty:` / `effort:` front-matter as a 1–5 signal-bar pill (`.difficulty` in `_components.scss`).
+
+- Validation: only integers 1–5 render (integer strings like `"3"` are coerced; anything else — floats, out-of-range, words — silently renders `''`). `difficulty:` wins over `effort:`; if `difficulty:` is present but invalid there is **no fallback** to `effort:`.
+- Global opt-out: `theme.difficulty === false` short-circuits inside the helper — call sites need no gating.
+- Call sites (5): `post.ejs` (`.post-meta`), `_partial/post-card.ejs`, `_partial/pinned-post.ejs`, `showroom.ejs` (overlay variant: `difficulty_meter(p, 'overlay')`, positioned top-left — top-right belongs to the AI badge), `project.ejs` (after subtitle). Deliberately **not** on archive/tag/category pages.
+- Filled-bar colour shifts by level: `$success` (1–2), `$amber` (3), `$danger` (4–5). Accessibility: the pill has `role="img"` + `aria-label="Difficulty: N of 5"`; individual bars are `aria-hidden`.
+
 ## Navbar defaults
 
 `navbar.links` in `_config.yml` ships with only `[Home, Archive, About]`. **Links and Showroom are opt-in** — a site that doesn't have those pages must not show them in the nav or they will 404. Users add them back via `theme_config:` in their site's `_config.yml`:

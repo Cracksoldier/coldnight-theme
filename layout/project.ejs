@@ -24,6 +24,7 @@
     <% if (page.subtitle) { %>
       <p class="project-subtitle"><%= page.subtitle %></p>
     <% } %>
+    <%- difficulty_meter(page) %>
 
     <div class="prose">
       <%- page.content %>

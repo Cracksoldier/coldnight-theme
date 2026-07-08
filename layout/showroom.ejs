@@ -25,6 +25,7 @@
           <% } %>
           <div class="project-card__overlay">
             <% if (p.ai_assisted === true) { %><span class="project-card__ai-badge">AI-assisted</span><% } %>
+            <%- difficulty_meter(p, 'overlay') %>
             <span class="project-card__title"><%= p.title %></span>
             <% if (p.subtitle) { %>
               <p class="project-card__subtitle"><%= p.subtitle %></p>

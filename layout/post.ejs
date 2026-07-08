@@ -87,6 +87,8 @@
             <% }) %>
           <% } %>
 
+          <%- difficulty_meter(page) %>
+
           <% if (theme.permalink_button !== false) { %>
             <button class="btn btn--icon btn--sm post-permalink-btn"
                     data-permalink="<%= page.permalink %>"
