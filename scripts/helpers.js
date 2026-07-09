@@ -703,6 +703,82 @@ hexo.extend.tag.register('compare', function (args) {
   )
 })
 
+// ─── llms.txt generator ───────────────────────────────────────────────────────
+// Emits /llms.txt (llmstxt.org site index) and, unless llms_txt.full is false,
+// /llms-full.txt with the complete markdown of every post and project.
+// Opt-in: llms_txt.enabled defaults to false.
+
+// Trailing index.html stripped like head.ejs does for canonical/og:url
+const cleanPermalink = p => (p.permalink || '').replace(/index\.html$/, '')
+
+// One-line description; priority mirrors og:description in head.ejs
+function llmsDescription(page) {
+  let text = page.description ||
+    (page.excerpt && stripHtml(page.excerpt)) ||
+    stripHtml(page.content || '').slice(0, 300)
+  text = String(text).replace(/\s+/g, ' ').trim()
+  if (text.length > 200) text = text.slice(0, 199).replace(/\s+\S*$/, '') + '…'
+  return text
+}
+
+// [ and ] would corrupt the surrounding markdown link syntax
+const escMdLabel = s => String(s).replace(/([\[\]])/g, '\\$1')
+
+function llmsLinkLine(page, desc) {
+  return '- [' + escMdLabel(page.title || page.path) + '](' + cleanPermalink(page) + ')' +
+    (desc ? ': ' + desc : '')
+}
+
+hexo.extend.generator.register('llms_txt', function (locals) {
+  const cfg = hexo.theme.config.llms_txt
+  if (!cfg || !cfg.enabled) return []
+
+  const posts = locals.posts.sort('-date').toArray()
+  const isProject = p => p.layout === 'project' && p.path.startsWith('showroom/')
+  const projects = locals.pages.toArray().filter(isProject).sort((a, b) => b.date - a.date)
+  const otherPages = locals.pages.toArray().filter(p => !isProject(p) && p.title)
+
+  const header = '# ' + (hexo.config.title || '') + '\n\n' +
+    (hexo.config.description ? '> ' + hexo.config.description + '\n\n' : '')
+
+  let index = header
+  if (posts.length) {
+    index += '## Posts\n\n' +
+      posts.map(p => llmsLinkLine(p, llmsDescription(p))).join('\n') + '\n\n'
+  }
+  if (projects.length) {
+    index += '## Projects\n\n' +
+      projects.map(p => llmsLinkLine(p, p.subtitle || llmsDescription(p))).join('\n') + '\n\n'
+  }
+  if (otherPages.length) {
+    index += '## Optional\n\n' +
+      otherPages.map(p => llmsLinkLine(p, '')).join('\n') + '\n\n'
+  }
+
+  const routes = [{ path: 'llms.txt', data: index.trimEnd() + '\n' }]
+
+  if (cfg.full !== false) {
+    const entry = (page, extra) =>
+      '---\n\n# ' + (page.title || page.path) + '\n\n' +
+      'URL: ' + cleanPermalink(page) + '\n' +
+      'Date: ' + (page.date ? page.date.format('YYYY-MM-DD') : '') + '\n' +
+      (extra || '') + '\n' +
+      String(page._content || '').replace(/<!--\s*more\s*-->/g, '').trim() + '\n\n'
+
+    let full = header
+    posts.forEach(p => {
+      const tags = p.tags && p.tags.length
+        ? 'Tags: ' + p.tags.map(t => t.name).join(', ') + '\n'
+        : ''
+      full += entry(p, tags)
+    })
+    projects.forEach(p => full += entry(p, p.subtitle ? 'Subtitle: ' + p.subtitle + '\n' : ''))
+    routes.push({ path: 'llms-full.txt', data: full.trimEnd() + '\n' })
+  }
+
+  return routes
+})
+
 // ─── Showroom generator ───────────────────────────────────────────────────────
 
 hexo.extend.generator.register('showroom', function (locals) {

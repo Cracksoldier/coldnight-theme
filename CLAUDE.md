@@ -65,6 +65,16 @@ Registered in `scripts/helpers.js`. Key rules:
 - The generator paginates at 9 projects per page, emitting `showroom/index.html` (page 1) and `showroom/page/N/index.html` for subsequent pages.
 - Projects are collected by filtering `locals.pages` for `layout === 'project'` and `path.startsWith('showroom/')`.
 
+## llms.txt generator
+
+Registered in `scripts/helpers.js` above the showroom generator. **Opt-in**: `llms_txt.enabled` defaults to `false`; when enabled, `llms_txt.full: false` suppresses the companion `llms-full.txt`.
+
+- `/llms.txt` — llmstxt.org index: `# config.title`, `> config.description`, then `## Posts` (newest first), `## Projects` (same filter as the showroom generator), `## Optional` (remaining titled pages). Descriptions mirror the og:description priority in `head.ejs`: `description:` → stripped excerpt → first ~200 chars of stripped content; projects prefer `subtitle:`.
+- `/llms-full.txt` — full markdown body of each post/project via `page._content` (raw markdown, front-matter already removed), **not** `stripHtml(page.content)` — `stripHtml` removes `<pre>`/`<figure>` wholesale and would drop every code block. `<!-- more -->` markers are stripped; unrendered `{% … %}` tags in the body are acceptable.
+- URLs come from `page.permalink` with a trailing `index.html` stripped — same rule as canonical/og:url in `head.ejs`.
+- Titles are markdown-escaped (`[` `]`) before being placed in link labels.
+- Routes return plain strings — Hexo serves `.txt` string routes verbatim as `text/plain`.
+
 ## Showroom AI-assisted badge
 
 The `ai_assisted` front-matter field (bare YAML boolean) renders a blue pill badge on the project card. Template uses strict `=== true` checks throughout — `!!` coercion must not be used because truthy non-boolean values like `"no"` or `1` would be misclassified. CSS for the badge is `.project-card__ai-badge` in `_components.scss`.

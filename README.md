@@ -117,6 +117,8 @@ All options live in `themes/coldnight/_config.yml` (submodule) or `node_modules/
 | `audio_player` | `true` | Load audio player on post pages that use `{% audio %}` |
 | `model_viewer.enabled` | `true` | Enable the `{% model %}` Three.js viewer tag |
 | `model_viewer.background` | `"#1a1a2e"` | Default canvas background colour for `{% model %}` |
+| `llms_txt.enabled` | `false` | Opt-in — emit `/llms.txt` (LLM-friendly site index per [llmstxt.org](https://llmstxt.org)) |
+| `llms_txt.full` | `true` | When enabled, also emit `/llms-full.txt` with complete post/project markdown |
 | `giscus.enabled` | `false` | Opt-in GitHub Discussions comments widget |
 | `giscus.repo` | `""` | `"owner/repo"` — from giscus.app setup |
 | `giscus.repo_id` | `""` | Repo ID from giscus.app |
@@ -274,6 +276,18 @@ Embeds a custom HTML5 audio player with dark-themed controls: play/pause, scruba
 **Keyboard:** focus the seek bar and use ← / → to jump ±5 seconds.
 
 Set `audio_player: false` in the theme config to disable the tag globally.
+
+## llms.txt
+
+Opt-in support for the [llms.txt convention](https://llmstxt.org) — a markdown index of the site that LLMs can consume without parsing HTML:
+
+```yaml
+llms_txt:
+  enabled: true   # emit /llms.txt — site title, description, and link lists for posts, projects, and pages
+  full: true      # also emit /llms-full.txt — the complete markdown body of every post and project
+```
+
+`/llms.txt` lists every post (newest first) and showroom project with a one-line description (front-matter `description:` → excerpt → start of the body; projects use `subtitle:`), plus remaining pages under an `## Optional` section. `/llms-full.txt` appends each post's and project's raw markdown body with its URL, date, and tags. Both files are generated at build time — no runtime cost.
 
 ## Giscus comments
 
