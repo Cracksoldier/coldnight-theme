@@ -289,6 +289,8 @@ llms_txt:
 
 `/llms.txt` lists every post (newest first) and showroom project with a one-line description (front-matter `description:` → excerpt → start of the body; projects use `subtitle:`), plus remaining pages under an `## Optional` section. `/llms-full.txt` appends each post's and project's raw markdown body with its URL, date, and tags. Both files are generated at build time — no runtime cost.
 
+To exclude a specific post, project, or page from both files (an unlisted page, a post you don't want packaged for LLM ingestion), set `llms_txt: false` in its front-matter.
+
 ## Giscus comments
 
 Giscus embeds GitHub Discussions-based comments via an `<iframe>` from `giscus.app`. Anonymous visitors can read all comments; GitHub login is only required to post.

@@ -703,29 +703,68 @@ hexo.extend.tag.register('compare', function (args) {
   )
 })
 
+// ─── Shared page description ──────────────────────────────────────────────────
+// One line of plain text from a page: tags stripped (code/figure/math blocks
+// dropped wholesale by stripHtml), entities decoded, whitespace collapsed.
+const plainText = html =>
+  unescHtml(stripHtml(String(html)).replace(/&nbsp;/g, ' ')).replace(/\s+/g, ' ').trim()
+
+// Priority: description → excerpt → start of the body. Single source for
+// og:description (head.ejs, via the page_description helper) and the llms.txt
+// generator. Each candidate is normalised BEFORE the fallback decision — an
+// excerpt that strips to whitespace (image- or code-only intro) must not
+// short-circuit the chain.
+function pageDescription(page) {
+  const fromDesc = page.description ? plainText(page.description) : ''
+  if (fromDesc) return fromDesc
+  const fromExcerpt = page.excerpt ? plainText(page.excerpt) : ''
+  if (fromExcerpt) return fromExcerpt
+  // Only ~200 visible chars are needed — bound the input before the regex
+  // passes. A cut mid-tag or inside an unclosed <pre>/<figure>/<math> block
+  // is trimmed so no markup or code text leaks through stripHtml.
+  const bounded = String(page.content || '').slice(0, 4096)
+    .replace(/<[^>]*$/, '')
+    .replace(/<(pre|figure|math)\b(?![\s\S]*<\/\1>)[\s\S]*$/i, '')
+  return plainText(bounded)
+}
+
+hexo.extend.helper.register('page_description', function (page) {
+  return pageDescription(page)
+})
+
+// ─── Showroom project collection ──────────────────────────────────────────────
+// Single definition of "what is a showroom project" — consumed by both the
+// showroom and llms.txt generators; changing it in one place keeps the
+// showroom pages and the llms.txt sections in sync.
+const isProject = p => p.layout === 'project' && p.path.startsWith('showroom/')
+
+function collectProjects(locals) {
+  return locals.pages.toArray().filter(isProject).sort((a, b) => b.date - a.date)
+}
+
 // ─── llms.txt generator ───────────────────────────────────────────────────────
 // Emits /llms.txt (llmstxt.org site index) and, unless llms_txt.full is false,
 // /llms-full.txt with the complete markdown of every post and project.
-// Opt-in: llms_txt.enabled defaults to false.
+// Opt-in: llms_txt.enabled defaults to false. Per-page opt-out: `llms_txt: false`
+// in front-matter excludes a post/project/page from both files.
 
 // Trailing index.html stripped like head.ejs does for canonical/og:url
 const cleanPermalink = p => (p.permalink || '').replace(/index\.html$/, '')
 
-// One-line description; priority mirrors og:description in head.ejs
 function llmsDescription(page) {
-  let text = page.description ||
-    (page.excerpt && stripHtml(page.excerpt)) ||
-    stripHtml(page.content || '').slice(0, 300)
-  text = String(text).replace(/\s+/g, ' ').trim()
+  let text = pageDescription(page)
   if (text.length > 200) text = text.slice(0, 199).replace(/\s+\S*$/, '') + '…'
   return text
 }
 
-// [ and ] would corrupt the surrounding markdown link syntax
+// [ and ] would corrupt the link label; ( ) and whitespace would terminate
+// the link target early — percent-encode those in the URL.
 const escMdLabel = s => String(s).replace(/([\[\]])/g, '\\$1')
+const escMdUrl = u => String(u).replace(/[()\s]/g, c =>
+  '%' + c.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0'))
 
 function llmsLinkLine(page, desc) {
-  return '- [' + escMdLabel(page.title || page.path) + '](' + cleanPermalink(page) + ')' +
+  return '- [' + escMdLabel(page.title || page.path) + '](' + escMdUrl(cleanPermalink(page)) + ')' +
     (desc ? ': ' + desc : '')
 }
 
@@ -733,13 +772,14 @@ hexo.extend.generator.register('llms_txt', function (locals) {
   const cfg = hexo.theme.config.llms_txt
   if (!cfg || !cfg.enabled) return []
 
-  const posts = locals.posts.sort('-date').toArray()
-  const isProject = p => p.layout === 'project' && p.path.startsWith('showroom/')
-  const projects = locals.pages.toArray().filter(isProject).sort((a, b) => b.date - a.date)
-  const otherPages = locals.pages.toArray().filter(p => !isProject(p) && p.title)
+  const included = p => p.llms_txt !== false
+  const posts = locals.posts.sort('-date').toArray().filter(included)
+  const projects = collectProjects(locals).filter(included)
+  const otherPages = locals.pages.toArray().filter(p => !isProject(p) && p.title && included(p))
 
-  const header = '# ' + (hexo.config.title || '') + '\n\n' +
-    (hexo.config.description ? '> ' + hexo.config.description + '\n\n' : '')
+  const siteDesc = hexo.config.description ? plainText(hexo.config.description) : ''
+  const header = '# ' + plainText(hexo.config.title || '') + '\n\n' +
+    (siteDesc ? '> ' + siteDesc + '\n\n' : '')
 
   let index = header
   if (posts.length) {
@@ -748,7 +788,7 @@ hexo.extend.generator.register('llms_txt', function (locals) {
   }
   if (projects.length) {
     index += '## Projects\n\n' +
-      projects.map(p => llmsLinkLine(p, p.subtitle || llmsDescription(p))).join('\n') + '\n\n'
+      projects.map(p => llmsLinkLine(p, (p.subtitle && plainText(p.subtitle)) || llmsDescription(p))).join('\n') + '\n\n'
   }
   if (otherPages.length) {
     index += '## Optional\n\n' +
@@ -772,7 +812,10 @@ hexo.extend.generator.register('llms_txt', function (locals) {
         : ''
       full += entry(p, tags)
     })
-    projects.forEach(p => full += entry(p, p.subtitle ? 'Subtitle: ' + p.subtitle + '\n' : ''))
+    projects.forEach(p => {
+      const sub = p.subtitle ? plainText(p.subtitle) : ''
+      full += entry(p, sub ? 'Subtitle: ' + sub + '\n' : '')
+    })
     routes.push({ path: 'llms-full.txt', data: full.trimEnd() + '\n' })
   }
 
@@ -784,9 +827,7 @@ hexo.extend.generator.register('llms_txt', function (locals) {
 hexo.extend.generator.register('showroom', function (locals) {
   const PER_PAGE = 9
 
-  const projects = locals.pages.toArray()
-    .filter(p => p.layout === 'project' && p.path.startsWith('showroom/'))
-    .sort((a, b) => b.date - a.date)
+  const projects = collectProjects(locals)
 
   if (!projects.length) return []
 

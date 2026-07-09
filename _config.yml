@@ -94,6 +94,7 @@ model_viewer:
 llms_txt:
   enabled: false       # opt-in — emit /llms.txt (LLM-friendly site index per llmstxt.org)
   full: true           # when enabled, also emit /llms-full.txt with complete post/project markdown
+                       # per-page opt-out: set `llms_txt: false` in any post/page front-matter
 
 giscus:
   enabled: false          # opt-in — set true after completing giscus.app setup

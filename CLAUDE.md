@@ -63,17 +63,28 @@ Registered in `scripts/helpers.js`. Key rules:
 
 - The `layout` key in each route object must be at the **top level**, not inside `data`. Hexo uses it to select the EJS template; inside `data` it serialises to JSON instead.
 - The generator paginates at 9 projects per page, emitting `showroom/index.html` (page 1) and `showroom/page/N/index.html` for subsequent pages.
-- Projects are collected by filtering `locals.pages` for `layout === 'project'` and `path.startsWith('showroom/')`.
+- Projects are collected via the shared `collectProjects(locals)` (see "Showroom project collection" below).
+
+## Shared page description
+
+`pageDescription(page)` in `scripts/helpers.js` is the **single** description chain — `description:` → excerpt → start of the body — consumed by both `head.ejs` (og:description / meta description / JSON-LD, via the registered `page_description` EJS helper) and the llms.txt generator. Do not re-implement the chain inline anywhere.
+
+- Each candidate is normalised (`plainText`: stripHtml + entity decode + whitespace collapse) **before** the fallback decision — an excerpt that strips to whitespace (image- or code-only intro) must not short-circuit the chain.
+- The body fallback bounds input to 4 KB before the regex passes and trims a cut-off partial tag or unclosed `<pre>`/`<figure>`/`<math>` block so no markup/code text leaks.
+- No length cap inside — callers cap (`head.ejs` slices at 160 with `config.description` fallback; the generator caps at 200 on a word boundary).
 
 ## llms.txt generator
 
-Registered in `scripts/helpers.js` above the showroom generator. **Opt-in**: `llms_txt.enabled` defaults to `false`; when enabled, `llms_txt.full: false` suppresses the companion `llms-full.txt`.
+Registered in `scripts/helpers.js` above the showroom generator. **Opt-in**: `llms_txt.enabled` defaults to `false`; when enabled, `llms_txt.full: false` suppresses the companion `llms-full.txt`. **Per-page opt-out**: `llms_txt: false` front-matter excludes a post/project/page from both files — check `included()` when adding new sections.
 
-- `/llms.txt` — llmstxt.org index: `# config.title`, `> config.description`, then `## Posts` (newest first), `## Projects` (same filter as the showroom generator), `## Optional` (remaining titled pages). Descriptions mirror the og:description priority in `head.ejs`: `description:` → stripped excerpt → first ~200 chars of stripped content; projects prefer `subtitle:`.
-- `/llms-full.txt` — full markdown body of each post/project via `page._content` (raw markdown, front-matter already removed), **not** `stripHtml(page.content)` — `stripHtml` removes `<pre>`/`<figure>` wholesale and would drop every code block. `<!-- more -->` markers are stripped; unrendered `{% … %}` tags in the body are acceptable.
-- URLs come from `page.permalink` with a trailing `index.html` stripped — same rule as canonical/og:url in `head.ejs`.
-- Titles are markdown-escaped (`[` `]`) before being placed in link labels.
+- `/llms.txt` — llmstxt.org index: `# config.title`, `> config.description` (both run through `plainText` — multi-line YAML must not inject markdown structure), then `## Posts` (newest first), `## Projects` (via the shared `collectProjects`), `## Optional` (remaining titled pages). Descriptions come from the shared `pageDescription` chain; projects prefer a `plainText`-sanitised `subtitle:`.
+- `/llms-full.txt` — full markdown body of each post/project via `page._content` (raw markdown, front-matter already removed), **not** `stripHtml(page.content)` — `stripHtml` removes `<pre>`/`<figure>` wholesale and would drop every code block. `<!-- more -->` markers are stripped; unrendered `{% … %}` tags in the body are acceptable. Note `_content` bypasses render-time transforms — a site using content-protection plugins must opt affected posts out via `llms_txt: false`.
+- URLs come from `page.permalink` with a trailing `index.html` stripped — same rule as canonical/og:url in `head.ejs`. Link labels are markdown-escaped (`[` `]`); link targets percent-encode `(` `)` and whitespace (`escMdUrl`) so explicit `permalink:` front-matter can't truncate the link.
 - Routes return plain strings — Hexo serves `.txt` string routes verbatim as `text/plain`.
+
+## Showroom project collection
+
+`collectProjects(locals)` / `isProject(p)` in `scripts/helpers.js` are the single definition of "what is a showroom project" (`layout === 'project' && path.startsWith('showroom/')`, newest first) — used by both the showroom and llms.txt generators. Never inline the predicate again; the llms.txt `## Optional` classification is defined as `!isProject`, so a drifted copy silently reclassifies pages.
 
 ## Showroom AI-assisted badge
 
