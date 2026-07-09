@@ -73,10 +73,12 @@ The `ai_assisted` front-matter field (bare YAML boolean) renders a blue pill bad
 
 The `difficulty_meter(post, variant?)` helper (registered in `scripts/helpers.js`) renders the optional `difficulty:` / `effort:` front-matter as a 1–5 signal-bar pill (`.difficulty` in `_components.scss`).
 
-- Validation: only integers 1–5 render (integer strings like `"3"` are coerced; anything else — floats, out-of-range, words — silently renders `''`). `difficulty:` wins over `effort:`; if `difficulty:` is present but invalid there is **no fallback** to `effort:`.
+- Validation: only integers 1–5 render (integer strings like `"3"` are coerced; anything else — non-integer values, out-of-range, words — silently renders `''`). `difficulty:` wins over `effort:`; if `difficulty:` is present but invalid there is **no fallback** to `effort:`.
+- The label word follows the front-matter key that supplied the value: `difficulty:` → "Difficulty: N of 5", `effort:` → "Effort: N of 5".
 - Global opt-out: `theme.difficulty === false` short-circuits inside the helper — call sites need no gating.
-- Call sites (5): `post.ejs` (`.post-meta`), `_partial/post-card.ejs`, `_partial/pinned-post.ejs`, `showroom.ejs` (overlay variant: `difficulty_meter(p, 'overlay')`, positioned top-left — top-right belongs to the AI badge), `project.ejs` (after subtitle). Deliberately **not** on archive/tag/category pages.
-- Filled-bar colour shifts by level: `$success` (1–2), `$amber` (3), `$danger` (4–5). Accessibility: the pill has `role="img"` + `aria-label="Difficulty: N of 5"`; individual bars are `aria-hidden`.
+- Call sites (5): `post.ejs` (`.post-meta`), `_partial/post-card.ejs`, `_partial/pinned-post.ejs`, `showroom.ejs` (overlay variant: `difficulty_meter(p, 'overlay')`, positioned top-left — top-right belongs to the AI badge), `project.ejs` (`'page'` variant — `.difficulty--page` carries the bottom margin, no sibling selectors). Deliberately **not** on archive/tag/category pages.
+- Filled-bar colour shifts by level: `$success` (1–2), `$amber` (3), `$danger` (4–5). Accessibility: the pill has `role="img"` + `aria-label`; individual bars are `aria-hidden`. The **overlay variant is fully `aria-hidden`** (only a `title` tooltip) so the level does not pollute the card link's accessible name — do not add `role="img"` back to it.
+- The pill chrome is shared via the `%accent-pill` placeholder in `_components.scss` (also consumed by `.series-nav__badge`) — restyle the pill there, not per-component.
 
 ## Navbar defaults
 

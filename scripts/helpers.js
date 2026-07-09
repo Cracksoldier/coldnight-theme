@@ -49,34 +49,42 @@ hexo.extend.helper.register('render_abstract', function (text) {
 })
 
 // ─── Difficulty meter helper ──────────────────────────────────────────────────
-// Usage in EJS: <%- difficulty_meter(post) %> / <%- difficulty_meter(p, 'overlay') %>
+// Usage in EJS: <%- difficulty_meter(post) %>            — post meta rows/cards
+//               <%- difficulty_meter(page, 'page') %>    — project detail page
+//               <%- difficulty_meter(p, 'overlay') %>    — showroom card overlay
 // Renders front-matter `difficulty:` (wins) or `effort:` as a 1–5 signal-bar
-// pill. Renders '' unless the value is an integer 1–5 (integer strings are
-// coerced; everything else is silently dropped — no fallback to effort: when
-// difficulty: is present but invalid). theme.difficulty: false disables globally.
+// pill; the label word follows the key used. Renders '' unless the value is an
+// integer 1–5 (integer strings are coerced; non-integer values are silently
+// dropped — no fallback to effort: when difficulty: is present but invalid).
+// theme.difficulty: false disables globally.
 
 function difficultyLevel(post) {
   if (!post) return null
-  const hasDifficulty = post.difficulty !== undefined && post.difficulty !== null
-  let v = hasDifficulty ? post.difficulty : post.effort
-  if (v === undefined || v === null) return null
+  const key = post.difficulty != null ? 'difficulty' : 'effort'
+  let v = post[key]
+  if (v == null) return null
   if (typeof v === 'string' && /^[1-5]$/.test(v.trim())) v = Number(v.trim())
-  if (typeof v !== 'number' || !Number.isInteger(v) || v < 1 || v > 5) return null
-  return v
+  if (!Number.isInteger(v) || v < 1 || v > 5) return null
+  return { level: v, key }
 }
 
 hexo.extend.helper.register('difficulty_meter', function (post, variant) {
   if (this.theme && this.theme.difficulty === false) return ''
-  const level = difficultyLevel(post)
-  if (level === null) return ''
-  const label = 'Difficulty: ' + level + ' of 5'
+  const meter = difficultyLevel(post)
+  if (meter === null) return ''
+  const label = (meter.key === 'effort' ? 'Effort: ' : 'Difficulty: ') + meter.level + ' of 5'
   let bars = ''
   for (let i = 1; i <= 5; i++) {
-    bars += '<span class="difficulty__bar' + (i <= level ? ' difficulty__bar--filled' : '') + '" aria-hidden="true"></span>'
+    bars += '<span class="difficulty__bar' + (i <= meter.level ? ' difficulty__bar--filled' : '') + '" aria-hidden="true"></span>'
   }
-  return '<span class="difficulty difficulty--level-' + level +
+  // overlay pills sit inside the card <a>; aria-hidden keeps the level out of
+  // the link's accessible name (the project page itself carries the full label)
+  const aria = variant === 'overlay'
+    ? 'aria-hidden="true"'
+    : 'role="img" aria-label="' + label + '"'
+  return '<span class="difficulty difficulty--level-' + meter.level +
     (variant ? ' difficulty--' + variant : '') +
-    '" role="img" aria-label="' + label + '" title="' + label + '">' + bars + '</span>'
+    '" ' + aria + ' title="' + label + '">' + bars + '</span>'
 })
 
 // ─── TOC helper ───────────────────────────────────────────────────────────────

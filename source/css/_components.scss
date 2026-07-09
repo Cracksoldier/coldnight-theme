@@ -579,15 +579,20 @@ button.navbar__hamburger {
 // 5 ascending signal bars in a subtle pill; emitted by the difficulty_meter
 // helper on posts, cards, and showroom projects.
 
-.difficulty {
-  display: inline-flex;
-  align-items: flex-end;
-  gap: 2px;
-  padding: 4px 8px;
+// shared subtle-pill chrome — also consumed by .series-nav__badge
+%accent-pill {
   background: $accent-glow;
   border: 1px solid rgba($accent, 0.3);
   border-radius: 999px;
   flex-shrink: 0;
+}
+
+.difficulty {
+  @extend %accent-pill;
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  padding: $sp-1 $sp-2;
   vertical-align: middle;
   line-height: 1;
 }
@@ -618,9 +623,8 @@ button.navbar__hamburger {
   border-color: rgba($text-primary, 0.15);
 }
 
-// breathing room on the project detail page (rendered between subtitle/h1 and .prose)
-.project-subtitle + .difficulty,
-h1 + .difficulty {
+// project detail page variant — breathing room between the title block and .prose
+.difficulty--page {
   margin-bottom: $sp-4;
 }
 
@@ -1733,16 +1737,13 @@ select.form-input {
 }
 
 .series-nav__badge {
+  @extend %accent-pill;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: $accent-light;
-  background: $accent-glow;
-  border: 1px solid rgba($accent, 0.3);
-  border-radius: 999px;
   padding: 2px 8px;
-  flex-shrink: 0;
 }
 
 .series-nav__name {
