@@ -92,7 +92,7 @@ model_viewer:
   background: "#1a1a2e"   # canvas background colour
 
 llms_txt:
-  enabled: true       # opt-in — emit /llms.txt (LLM-friendly site index per llmstxt.org)
+  enabled: false       # opt-in — emit /llms.txt (LLM-friendly site index per llmstxt.org)
   full: true           # when enabled, also emit /llms-full.txt with complete post/project markdown
 
 giscus:
