@@ -1,2 +1,4 @@
 CLAUDE.md
 source/vendor/mermaid/**/*.map
+*.tgz
+.github/
