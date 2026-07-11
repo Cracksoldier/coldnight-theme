@@ -46,8 +46,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: auto;
+  min-width: 28px;
   font-size: 20px;
   line-height: 1;
+  white-space: nowrap;
 }
 
 img.navbar__logo {

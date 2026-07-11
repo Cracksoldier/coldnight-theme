@@ -79,11 +79,11 @@ All options live in `themes/coldnight/_config.yml` (submodule) or `node_modules/
 |-----|---------|--------|
 | `navbar.title` | `"My Blog"` | Site name in the navbar |
 | `navbar.icon` | `""` | Brand icon before the title: image path (`/images/logo.png`) or emoji/short text (`"❄"`); empty = built-in SVG logo |
-| `navbar.icon_color` | `""` | CSS color for the text icon (e.g. `"#60a5fa"`, `steelblue`); ignored for images |
+| `navbar.icon_color` | `""` | CSS color for the text icon (e.g. `"#60a5fa"`, `steelblue`, `rgb(96 165 250 / 80%)`, `var(--accent)`); ignored for images |
 | `navbar.icon_after` | `""` | Optional image path or emoji/text after the title |
 | `navbar.icon_after_color` | `""` | CSS color for the after-title text icon; ignored for images |
 | `navbar.links` | Home, Archive, Links, Showroom, About | Navbar link list |
-| `favicon` | `""` | Favicon image path (`/favicon.png`, `/icon.svg`); empty = theme default `favicon.svg`/`.ico` |
+| `favicon` | `""` | Favicon image path (`/favicon.png`, `/icon.svg`); empty or not an image path = theme default `favicon.svg`/`.ico` |
 | `sidebar.position` | `right` | `left` \| `right` \| `hidden` |
 | `sidebar.widgets` | toc, recent\_posts, tags, archives, about | Widget order |
 | `sponsor.enabled` | `false` | Show a sponsor/donate button |

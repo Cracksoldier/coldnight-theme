@@ -15,7 +15,7 @@ navbar:
     - name: About
       url: /about
 
-favicon: ""            # image path ("/favicon.png", "/icon.svg"); empty = theme default favicon.svg/.ico
+favicon: ""            # image path ("/favicon.png", "/icon.svg"); anything else (incl. empty) = theme default favicon.svg/.ico
 
 sidebar:
   position: right      # left | right | hidden

@@ -35,6 +35,30 @@ hexo.extend.helper.register('word_count', function (content) {
   return count.toLocaleString() + ' words'
 })
 
+// ─── Image-path helpers ───────────────────────────────────────────────────────
+// Single source of truth for "does this config value name an image file" and
+// its MIME type — consumed by header.ejs (navbar icons) and head.ejs (favicon).
+// Usage in EJS: <% if (is_image_path(value)) %> / <%= image_mime(value) %>
+
+const IMAGE_EXT_MIME = {
+  svg: 'image/svg+xml', png: 'image/png', ico: 'image/x-icon', gif: 'image/gif',
+  jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', avif: 'image/avif'
+}
+
+const imagePathExt = (value) => {
+  if (typeof value !== 'string') return null
+  const m = value.trim().match(/\.(\w+)(\?.*)?$/)
+  const ext = m && m[1].toLowerCase()
+  return ext && IMAGE_EXT_MIME[ext] ? ext : null
+}
+
+hexo.extend.helper.register('is_image_path', value => !!imagePathExt(value))
+
+hexo.extend.helper.register('image_mime', function (value) {
+  const ext = imagePathExt(value)
+  return ext ? IMAGE_EXT_MIME[ext] : ''
+})
+
 // ─── Abstract renderer helper ─────────────────────────────────────────────────
 // Usage in EJS: <%- render_abstract(page.abstract) %>
 // Renders front-matter `abstract:` field as markdown HTML.

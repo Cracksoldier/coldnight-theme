@@ -1,11 +1,11 @@
 <% const navLinks = theme.navbar && theme.navbar.links ? theme.navbar.links : [] %>
 <% const siteTitle = (theme.navbar && theme.navbar.title) || config.title %>
-<% const ICON_IMG_RE = /\.(svg|png|jpe?g|gif|webp|ico|avif)(\?.*)?$/i %>
-<% const ICON_COLOR_RE = /^(#[0-9a-fA-F]{3,8}|[a-zA-Z]+|rgba?\([\d\s.,%]+\)|hsla?\([\d\s.,%a-z]+\))$/ %>
-<% const navIcon = ((theme.navbar && theme.navbar.icon) || '').toString().trim() %>
-<% const navIconAfter = ((theme.navbar && theme.navbar.icon_after) || '').toString().trim() %>
-<% const navIconColor = ((theme.navbar && theme.navbar.icon_color) || '').toString().trim() %>
-<% const navIconAfterColor = ((theme.navbar && theme.navbar.icon_after_color) || '').toString().trim() %>
+<% const ICON_COLOR_RE = /^(#[0-9a-f]{3,8}|[a-z]+|(rgba?|hsla?|hwb|lab|lch|oklab|oklch|color|var)\([\w\s.,%/#-]+\))$/i %>
+<% const cfgStr = v => (typeof v === 'string' ? v.trim() : '') %>
+<% const navIcon = cfgStr(theme.navbar && theme.navbar.icon) %>
+<% const navIconAfter = cfgStr(theme.navbar && theme.navbar.icon_after) %>
+<% const navIconColor = cfgStr(theme.navbar && theme.navbar.icon_color) %>
+<% const navIconAfterColor = cfgStr(theme.navbar && theme.navbar.icon_after_color) %>
 <% const navIconStyle = ICON_COLOR_RE.test(navIconColor) ? ' style="color: ' + navIconColor + '"' : '' %>
 <% const navIconAfterStyle = ICON_COLOR_RE.test(navIconAfterColor) ? ' style="color: ' + navIconAfterColor + '"' : '' %>
 
@@ -14,8 +14,8 @@
 
     <!-- Brand -->
     <a href="<%- url_for('/') %>" class="navbar__brand" aria-label="<%= siteTitle %> — home">
-      <% if (navIcon && ICON_IMG_RE.test(navIcon)) { %>
-      <img class="navbar__logo" src="<%- url_for(navIcon) %>" alt="" width="28" height="28" loading="eager">
+      <% if (is_image_path(navIcon)) { %>
+      <img class="navbar__logo" src="<%= url_for(navIcon) %>" alt="" width="28" height="28" loading="eager">
       <% } else if (navIcon) { %>
       <span class="navbar__logo navbar__logo--text" aria-hidden="true"<%- navIconStyle %>><%= navIcon %></span>
       <% } else { %>
@@ -26,8 +26,8 @@
       </svg>
       <% } %>
       <span class="navbar__title"><%= siteTitle %></span>
-      <% if (navIconAfter && ICON_IMG_RE.test(navIconAfter)) { %>
-      <img class="navbar__icon-after" src="<%- url_for(navIconAfter) %>" alt="" width="20" height="20" loading="eager">
+      <% if (is_image_path(navIconAfter)) { %>
+      <img class="navbar__icon-after" src="<%= url_for(navIconAfter) %>" alt="" width="20" height="20" loading="eager">
       <% } else if (navIconAfter) { %>
       <span class="navbar__icon-after" aria-hidden="true"<%- navIconAfterStyle %>><%= navIconAfter %></span>
       <% } %>
