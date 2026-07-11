@@ -3,6 +3,10 @@
 
 navbar:
   title: "My Blog"
+  icon: ""             # image path ("/images/logo.png") OR emoji/short text ("❄"); empty = built-in SVG logo
+  icon_color: ""       # CSS color for the text icon (e.g. "#60a5fa"); ignored for images; empty = inherit
+  icon_after: ""       # optional image path OR emoji/text rendered after the title; empty = nothing
+  icon_after_color: "" # CSS color for the after-title text icon; ignored for images; empty = inherit
   links:
     - name: Home
       url: /
@@ -10,6 +14,8 @@ navbar:
       url: /archives
     - name: About
       url: /about
+
+favicon: ""            # image path ("/favicon.png", "/icon.svg"); empty = theme default favicon.svg/.ico
 
 sidebar:
   position: right      # left | right | hidden

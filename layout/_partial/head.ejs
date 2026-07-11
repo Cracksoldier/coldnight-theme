@@ -93,8 +93,16 @@
 <% } %>
 
 <!-- Favicon -->
+<% const favicon = (theme.favicon || '').toString().trim() %>
+<% if (favicon) { %>
+<% const fext = (favicon.match(/\.(\w+)(\?.*)?$/) || [])[1]
+   const ftype = ({ svg: 'image/svg+xml', png: 'image/png', ico: 'image/x-icon', gif: 'image/gif',
+                    jpg: 'image/jpeg', jpeg: 'image/jpeg', webp: 'image/webp', avif: 'image/avif' })[fext && fext.toLowerCase()] %>
+<link rel="icon"<%- ftype ? ' type="' + ftype + '"' : '' %> href="<%- url_for(favicon) %>">
+<% } else { %>
 <link rel="icon" type="image/svg+xml" href="<%- url_for('/favicon.svg') %>">
 <link rel="alternate icon" href="<%- url_for('/favicon.ico') %>">
+<% } %>
 
 <!-- Fonts (self-hosted, latin + latin-ext) -->
 <link rel="preload" href="<%- url_for('/fonts/roboto-latin-400-normal.woff2') %>" as="font" type="font/woff2" crossorigin>

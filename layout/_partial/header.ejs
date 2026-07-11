@@ -1,17 +1,36 @@
 <% const navLinks = theme.navbar && theme.navbar.links ? theme.navbar.links : [] %>
 <% const siteTitle = (theme.navbar && theme.navbar.title) || config.title %>
+<% const ICON_IMG_RE = /\.(svg|png|jpe?g|gif|webp|ico|avif)(\?.*)?$/i %>
+<% const ICON_COLOR_RE = /^(#[0-9a-fA-F]{3,8}|[a-zA-Z]+|rgba?\([\d\s.,%]+\)|hsla?\([\d\s.,%a-z]+\))$/ %>
+<% const navIcon = ((theme.navbar && theme.navbar.icon) || '').toString().trim() %>
+<% const navIconAfter = ((theme.navbar && theme.navbar.icon_after) || '').toString().trim() %>
+<% const navIconColor = ((theme.navbar && theme.navbar.icon_color) || '').toString().trim() %>
+<% const navIconAfterColor = ((theme.navbar && theme.navbar.icon_after_color) || '').toString().trim() %>
+<% const navIconStyle = ICON_COLOR_RE.test(navIconColor) ? ' style="color: ' + navIconColor + '"' : '' %>
+<% const navIconAfterStyle = ICON_COLOR_RE.test(navIconAfterColor) ? ' style="color: ' + navIconAfterColor + '"' : '' %>
 
 <header class="navbar" role="banner">
   <div class="navbar__inner">
 
     <!-- Brand -->
     <a href="<%- url_for('/') %>" class="navbar__brand" aria-label="<%= siteTitle %> — home">
+      <% if (navIcon && ICON_IMG_RE.test(navIcon)) { %>
+      <img class="navbar__logo" src="<%- url_for(navIcon) %>" alt="" width="28" height="28" loading="eager">
+      <% } else if (navIcon) { %>
+      <span class="navbar__logo navbar__logo--text" aria-hidden="true"<%- navIconStyle %>><%= navIcon %></span>
+      <% } else { %>
       <svg class="navbar__logo" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <rect width="28" height="28" rx="6" fill="#050d1a"/>
         <path d="M8 20L14 8L20 20" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
         <path d="M10 16h8" stroke="#60a5fa" stroke-width="1.8" stroke-linecap="round"/>
       </svg>
+      <% } %>
       <span class="navbar__title"><%= siteTitle %></span>
+      <% if (navIconAfter && ICON_IMG_RE.test(navIconAfter)) { %>
+      <img class="navbar__icon-after" src="<%- url_for(navIconAfter) %>" alt="" width="20" height="20" loading="eager">
+      <% } else if (navIconAfter) { %>
+      <span class="navbar__icon-after" aria-hidden="true"<%- navIconAfterStyle %>><%= navIconAfter %></span>
+      <% } %>
     </a>
 
     <!-- Desktop nav -->

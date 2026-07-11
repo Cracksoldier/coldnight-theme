@@ -118,6 +118,16 @@ theme_config:
 
 Never add Links/Showroom back to the theme's own `_config.yml` — it's consumed by all sites.
 
+## Navbar brand icons & favicon
+
+`navbar.icon` (before the title), `navbar.icon_after` (after the title), and top-level `favicon` each accept **an image path or a text/emoji snippet**, distinguished by extension sniffing: a value matching `\.(svg|png|jpe?g|gif|webp|ico|avif)(\?.*)?$` (case-insensitive) renders as an image, any other non-empty value as text.
+
+- Image branch: `src`/`href` goes through `<%- url_for(...) %>` (subdirectory-deployment rule). Text branch is emitted **escaped** via `<%= %>` — inline SVG in config is deliberately not supported; ship a file instead.
+- Empty/unset keeps the legacy output exactly: the built-in inline SVG logo (`header.ejs`) and the `/favicon.svg` + `/favicon.ico` link pair (`head.ejs`).
+- The favicon `type` attribute comes from an extension→MIME allowlist in `head.ejs`; unknown extensions omit `type` (browsers sniff). The raw `<%- %>` around it is safe only because values come from that allowlist — never interpolate the config value itself there.
+- Both brand slots are `aria-hidden` / empty-`alt` so the brand link's accessible name stays the `aria-label`. `.navbar__icon-after` hides below `$bp-tablet` together with `.navbar__title`; the before-icon stays visible on mobile.
+- `navbar.icon_color` / `navbar.icon_after_color` set the text-icon font colour via an inline `style="color: …"` on the span (config-driven colours can't live in compiled SCSS — same reason as the view-transitions inline style). The value is **allowlist-validated** (`ICON_COLOR_RE`: hex, keyword, `rgb()/rgba()/hsl()/hsla()`) before being interpolated raw — semicolons and quotes never pass, preventing CSS/attribute injection (same posture as the model-viewer `height` allowlist). Invalid values are silently dropped (inherit). Image icons ignore these keys. Note: colour only affects glyphs rendered as text — colour-emoji glyphs ignore CSS `color`.
+
 ## Archive filter chips
 
 Uses the `hidden` attribute (not `display:none`) for accessible show/hide. JS is in `source/js/archive-filter.js` (IIFE pattern). The archive/tag/category pages require `per_page: 0` in the site config — guaranteed by the site repo, not the theme.
