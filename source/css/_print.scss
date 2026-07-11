@@ -27,12 +27,16 @@
   .related-posts,
   .post-nav,
   .code-toolbar,
+  .code-collapse,
   .site-footer,
   .toast-container,
   .skip-nav,
   .series-nav,
   .pinned-post,
   .pdf-card    { display: none !important; }
+
+  // ── Always print code blocks fully expanded ────────────────────────────────
+  .code-collapsible { max-height: none !important; }
 
   // ── Expand post to full width ──────────────────────────────────────────────
   .page-wrapper { display: block !important; }

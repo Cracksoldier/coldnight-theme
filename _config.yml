@@ -67,6 +67,8 @@ search:
 code:
   copy_button: true    # show copy-to-clipboard button on code blocks
   language_label: true # show language tag top-right of code blocks
+  collapse: true       # auto-collapse long code blocks behind an Expand button
+  collapse_lines: 25   # visible lines when collapsed; blocks must exceed this by 5+ lines to collapse
 
 grid:
   columns: 1           # index page columns (1 = list view, 2–6 = grid)

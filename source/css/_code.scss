@@ -2,6 +2,11 @@
 
 // ─── Code Blocks ─────────────────────────────────────────────────────────────
 
+// Absolute line-box height shared by the gutter and code columns. An absolute
+// value (not a bare number) keeps the 0.8rem line numbers aligned with the
+// 0.875rem code, and makes the collapsed max-height calc below deterministic.
+$code-line: 0.875rem * 1.7;
+
 .post-body, .prose {
   pre {
     background: $bg-elevated;
@@ -11,6 +16,7 @@
     overflow-x: auto;
     margin: 1rem 0;
     position: relative;
+    line-height: $code-line;
   }
 
   code {
@@ -84,6 +90,7 @@ figure.highlight {
     border: none;
     background: none;
     padding: 1rem;
+    line-height: $code-line; // both gutter and code pre — keeps line numbers aligned
   }
 }
 
@@ -127,6 +134,55 @@ figure.highlight {
   &:hover {
     background: $bg-elevated;
     color: $text-primary;
+  }
+}
+
+// ─── Collapse long code blocks ───────────────────────────────────────────────
+// copy-code.js adds .code-collapsible.is-collapsed + a .code-collapse footer
+// when a block exceeds the configured line threshold (data-collapse-lines on
+// the script tag). Without JS nothing is added and blocks render fully expanded.
+
+.code-collapsible {
+  scroll-margin-top: 72px; // clear the sticky navbar on re-collapse (matches heading scroll-margin)
+}
+
+.code-collapsible.is-collapsed {
+  // visible lines + the pre's 1rem top padding; the cut-off line hides under the fade
+  max-height: calc(var(--code-visible-lines, 25) * #{$code-line} + 1rem);
+  overflow: hidden;
+}
+
+.code-collapse {
+  display: flex;
+  justify-content: center;
+  padding: $sp-2;
+  border-top: 1px solid $border-subtle;
+  background: $bg-elevated;
+  white-space: normal; // bare <pre> parents inherit white-space: pre
+
+  // Expanded footer inside a bare padded <pre>: bleed to the pre's edges
+  pre > & {
+    margin: 1rem -1rem -1rem;
+  }
+
+  .is-collapsed & {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    border-top: none;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 100%;
+      height: $sp-8;
+      background: linear-gradient(to bottom, transparent, $bg-elevated);
+      pointer-events: none;
+    }
   }
 }
 

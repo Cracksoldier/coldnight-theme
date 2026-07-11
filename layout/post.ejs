@@ -243,7 +243,7 @@
 <% } %>
 
 <script src="<%- url_for('/js/nav.js') %>" defer></script>
-<script src="<%- url_for('/js/copy-code.js') %>" defer></script>
+<script src="<%- url_for('/js/copy-code.js') %>"<% if (!(theme.code && theme.code.collapse === false)) { %> data-collapse-lines="<%= parseInt(theme.code && theme.code.collapse_lines, 10) > 0 ? parseInt(theme.code.collapse_lines, 10) : 25 %>"<% } %> defer></script>
 <% if (theme.toc && theme.toc.enabled) { %>
 <script src="<%- url_for('/js/toc.js') %>" defer></script>
 <script src="<%- url_for('/js/toc-drawer.js') %>" defer></script>

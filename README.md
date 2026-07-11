@@ -107,6 +107,8 @@ All options live in `themes/coldnight/_config.yml` (submodule) or `node_modules/
 | `search.enabled` | `true` | Search box in navbar |
 | `code.copy_button` | `true` | Copy-to-clipboard on code blocks |
 | `code.language_label` | `true` | Language tag on code blocks |
+| `code.collapse` | `true` | Auto-collapse long code blocks behind a "Show N more lines" button |
+| `code.collapse_lines` | `25` | Visible lines when collapsed; blocks collapse only when longer by 5+ lines |
 | `grid.columns` | `1` | Index page columns (1 = list, 2–6 = grid) |
 | `grid.rows` | `3` | Rows per page; `per_page` is set to `columns × rows` |
 | `cover.default` | `""` | Fallback cover image path |

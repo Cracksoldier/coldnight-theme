@@ -1,6 +1,17 @@
 (function () {
   'use strict'
 
+  // Threshold arrives via data-collapse-lines on this file's <script> tag
+  // (post.ejs omits the attribute when code.collapse is false). 0 = disabled.
+  const collapseLines = (function () {
+    const script = document.currentScript
+    const n = script ? parseInt(script.dataset.collapseLines, 10) : 0
+    return n > 0 ? n : 0
+  })()
+
+  // Never collapse unless the button would reveal more than this many lines
+  const COLLAPSE_MARGIN = 5
+
   function showToast(message, type) {
     const container = document.getElementById('toast-container')
     if (!container) return
@@ -88,6 +99,48 @@
     block.appendChild(toolbar)
   }
 
+  function countLines(block) {
+    const gutterLines = block.querySelectorAll('td.gutter .line')
+    if (gutterLines.length) return gutterLines.length
+    const code = block.querySelector('code') || block
+    const brs = code.querySelectorAll('br').length
+    if (brs) return brs + 1
+    return code.textContent.replace(/\n$/, '').split('\n').length
+  }
+
+  function makeCollapsible(block, index) {
+    const total = countLines(block)
+    if (total <= collapseLines + COLLAPSE_MARGIN) return
+
+    const hiddenCount = total - collapseLines
+    if (!block.id) block.id = 'code-block-' + index
+
+    block.classList.add('code-collapsible', 'is-collapsed')
+    block.style.setProperty('--code-visible-lines', collapseLines)
+
+    const btn = document.createElement('button')
+    btn.type = 'button'
+    btn.className = 'btn btn--sm btn--ghost code-collapse__btn'
+    btn.setAttribute('aria-expanded', 'false')
+    btn.setAttribute('aria-controls', block.id)
+    btn.textContent = 'Show ' + hiddenCount + ' more lines'
+
+    btn.addEventListener('click', function () {
+      const collapsed = block.classList.toggle('is-collapsed')
+      btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true')
+      btn.textContent = collapsed ? 'Show ' + hiddenCount + ' more lines' : 'Collapse'
+      if (collapsed && block.getBoundingClientRect().top < 0) {
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        block.scrollIntoView({ block: 'start', behavior: reduced ? 'auto' : 'smooth' })
+      }
+    })
+
+    const footer = document.createElement('div')
+    footer.className = 'code-collapse'
+    footer.appendChild(btn)
+    block.appendChild(footer)
+  }
+
   document.addEventListener('DOMContentLoaded', function () {
     // Hexo wraps code in figure.highlight — target those as well as bare <pre>
     const figures = document.querySelectorAll('figure.highlight')
@@ -95,6 +148,11 @@
 
     const pres = document.querySelectorAll('.post-body pre:not(figure.highlight pre)')
     pres.forEach(addCopyButton)
+
+    if (collapseLines > 0) {
+      figures.forEach(makeCollapsible)
+      pres.forEach(function (pre, i) { makeCollapsible(pre, figures.length + i) })
+    }
 
     const permaBtn = document.querySelector('.post-permalink-btn')
     if (permaBtn) {

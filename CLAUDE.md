@@ -182,6 +182,18 @@ The viewer JS is an IIFE at `source/js/model-viewer.js`. It reads `window.__THRE
 - **Content is serialized with `XMLSerializer`**, never `innerHTML` — `innerHTML` emits named entities (`&nbsp;`) and unclosed voids that strict ePub readers reject as invalid XML.
 - **Images are fetched and bundled** into `OEBPS/images/` with manifest entries so the file works offline. Unfetchable images (CORS-blocked hotlinks) fall back to their absolute URL, keeping the XHTML valid.
 
+## Code block collapse
+
+Long code blocks auto-collapse behind a "Show N more lines" button (`code.collapse`, default on; threshold `code.collapse_lines`, default 25). Implementation is split between `copy-code.js` and `_code.scss`:
+
+- **Config reaches the static JS via a `data-collapse-lines` attribute** on the copy-code.js `<script>` tag in `post.ejs` (same pattern as search.js's `data-search-url`); the attribute is omitted entirely when `code.collapse: false`, and copy-code.js treats a missing/invalid value as disabled.
+- **No-JS = fully expanded** — JS adds `.code-collapsible.is-collapsed` and the `.code-collapse` footer; the CSS `max-height` only applies under `.is-collapsed`. Never move the collapsed state into build-time markup.
+- **Hysteresis**: `COLLAPSE_MARGIN = 5` in copy-code.js — a block only collapses when it exceeds `collapse_lines + 5`, so the button never hides ≤5 lines.
+- Line counting prefers `td.gutter .line` spans (exact for hljs figures), then `<br>` count + 1, then `textContent` newlines (bare `<pre>`).
+- The collapsed height is a CSS calc from `--code-visible-lines` × `$code-line` (`_code.scss`) — `$code-line` is an **absolute** line-height shared by the gutter and code columns; don't change one without the other or line numbers drift.
+- Print always expands (`_print.scss`). Copy button is unaffected (it clones the code node, not the visible layout).
+- No per-block opt-out yet; the future path is extending the `data-lang`/`data-filename` regex pass in `scripts/helpers.js` (e.g. a `// no-collapse` first-line comment).
+
 ## Search
 
 `source/js/search.js` filters the full `search.json` content (title + entire body + tags) — do not re-introduce a content-length cap, it silently hides results. `mark()` takes **plain unescaped text** and escapes segment-wise around a single alternation regex; never apply per-term `.replace()` passes to already-escaped HTML (terms like `amp` or `mark` would match inside entities/tags and corrupt the markup).
