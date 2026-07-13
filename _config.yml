@@ -52,6 +52,10 @@ toc:
 progress_bar: true   # reading progress bar on post pages
 sticky_title: true   # fade post title into navbar when h1 scrolls out of view
 
+heatmap:
+  enabled: true   # GitHub-style posting-activity calendar on the archive page
+  weeks: 52       # number of weeks to show, ending on the current week
+
 related_posts: true  # "You might also like" section at the bottom of post pages
 series: true         # series navigation strip for multi-part posts (requires series: in front-matter)
 

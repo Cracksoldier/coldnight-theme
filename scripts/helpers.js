@@ -301,6 +301,65 @@ hexo.extend.helper.register('pinned_post', function () {
   return _pinnedPostCache
 })
 
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+
+let _heatmapCache = null
+
+// GitHub-style contribution calendar built once per generation cycle from
+// site.posts. Weeks run Sun–Sat and the grid ends on the Saturday of the
+// current week so columns stay aligned; days after "today" are marked
+// isFuture so the template can render them as empty placeholders.
+hexo.extend.helper.register('heatmap_data', function (weeks) {
+  weeks = weeks || 52
+  if (_heatmapCache && _heatmapCache.weeks === weeks) return _heatmapCache.data
+
+  const counts = new Map()
+  this.site.posts.each(post => {
+    const key = post.date.format('YYYY-MM-DD')
+    counts.set(key, (counts.get(key) || 0) + 1)
+  })
+  const max = counts.size ? Math.max(...counts.values()) : 0
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const end = new Date(today)
+  end.setDate(end.getDate() + (6 - end.getDay()))
+  const start = new Date(end)
+  start.setDate(start.getDate() - (weeks * 7 - 1))
+
+  const dayMs = 24 * 60 * 60 * 1000
+  const fmt = d => {
+    const y = d.getFullYear()
+    const m = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${y}-${m}-${day}`
+  }
+
+  const weeksArr = []
+  let prevMonth = -1
+  let total = 0
+  for (let w = 0; w < weeks; w++) {
+    const week = []
+    for (let d = 0; d < 7; d++) {
+      const date = new Date(start.getTime() + (w * 7 + d) * dayMs)
+      const key = fmt(date)
+      const count = counts.get(key) || 0
+      const isFuture = date.getTime() > today.getTime()
+      const level = max === 0 || count === 0 ? 0 : Math.min(4, Math.ceil((count / max) * 4))
+      if (!isFuture) total += count
+      week.push({ date, count, level, isFuture, label: date.toDateString() })
+    }
+    const m = week[0].date.getMonth()
+    week.monthLabel = m !== prevMonth ? MONTH_NAMES[m] : ''
+    prevMonth = m
+    weeksArr.push(week)
+  }
+
+  const data = { weeks: weeksArr, total }
+  _heatmapCache = { weeks, data }
+  return data
+})
+
 // True when updated: is written in the post's front-matter. With Hexo's
 // default updated_option 'mtime', page.updated falls back to file mtime —
 // "now" on fresh clones/CI — so callers surfacing revision age must not
@@ -321,6 +380,7 @@ hexo.extend.filter.register('before_generate', function () {
   _tabCounter = 0
   _postIndexCache = null
   _pinnedPostCache = undefined
+  _heatmapCache = null
   hexo.theme.config.version = themeVersion
 
   const grid = hexo.theme.config.grid
