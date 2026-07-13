@@ -1,6 +1,7 @@
 'use strict'
 
 const themeVersion = require('../package.json').version
+const moment = require('moment-timezone')
 
 let _tabCounter = 0
 
@@ -308,52 +309,60 @@ let _heatmapCache = null
 // GitHub-style contribution calendar built once per generation cycle from
 // site.posts. Weeks run Sun–Sat and the grid ends on the Saturday of the
 // current week so columns stay aligned; days after "today" are marked
-// isFuture so the template can render them as empty placeholders.
+// isFuture so the template can render them as empty placeholders. All grid
+// arithmetic runs on a single moment-timezone chain anchored to config.timezone
+// (falling back to system-local when unset) — post.date carries no .tz() of
+// its own (see adjustDateForTimezone in hexo's post processor), so it must be
+// cloned and re-tz'd here the same way hexo's own list_archives helper does,
+// or the count buckets and the today/future cutoff can disagree by a day.
 hexo.extend.helper.register('heatmap_data', function (weeks) {
   weeks = weeks || 52
   if (_heatmapCache && _heatmapCache.weeks === weeks) return _heatmapCache.data
 
+  const { config } = this
+  const timezone = config.timezone
+
   const counts = new Map()
   this.site.posts.each(post => {
-    const key = post.date.format('YYYY-MM-DD')
+    let date = post.date.clone()
+    if (timezone) date = date.tz(timezone)
+    const key = date.format('YYYY-MM-DD')
     counts.set(key, (counts.get(key) || 0) + 1)
   })
-  const max = counts.size ? Math.max(...counts.values()) : 0
 
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const end = new Date(today)
-  end.setDate(end.getDate() + (6 - end.getDay()))
-  const start = new Date(end)
-  start.setDate(start.getDate() - (weeks * 7 - 1))
-
-  const dayMs = 24 * 60 * 60 * 1000
-  const fmt = d => {
-    const y = d.getFullYear()
-    const m = String(d.getMonth() + 1).padStart(2, '0')
-    const day = String(d.getDate()).padStart(2, '0')
-    return `${y}-${m}-${day}`
-  }
+  const now = timezone ? moment.tz(timezone) : moment()
+  const today = now.clone().startOf('day')
+  const end = today.clone().add(6 - today.day(), 'days')
+  const start = end.clone().subtract(weeks * 7 - 1, 'days')
 
   const weeksArr = []
   let prevMonth = -1
+  let windowMax = 0
   let total = 0
   for (let w = 0; w < weeks; w++) {
     const week = []
     for (let d = 0; d < 7; d++) {
-      const date = new Date(start.getTime() + (w * 7 + d) * dayMs)
-      const key = fmt(date)
+      const date = start.clone().add(w * 7 + d, 'days')
+      const key = date.format('YYYY-MM-DD')
       const count = counts.get(key) || 0
-      const isFuture = date.getTime() > today.getTime()
-      const level = max === 0 || count === 0 ? 0 : Math.min(4, Math.ceil((count / max) * 4))
-      if (!isFuture) total += count
-      week.push({ date, count, level, isFuture, label: date.toDateString() })
+      const isFuture = date.isAfter(today)
+      if (!isFuture) {
+        total += count
+        if (count > windowMax) windowMax = count
+      }
+      week.push({ count, isFuture, label: date.format('ddd, MMM D, YYYY') })
     }
-    const m = week[0].date.getMonth()
+    const m = start.clone().add(w * 7, 'days').month()
     week.monthLabel = m !== prevMonth ? MONTH_NAMES[m] : ''
     prevMonth = m
     weeksArr.push(week)
   }
+
+  // Normalize colors against the max observed inside the visible window only
+  // — a historical high-volume day outside the window must not dim it.
+  weeksArr.forEach(week => week.forEach(day => {
+    day.level = windowMax === 0 || day.count === 0 ? 0 : Math.min(4, Math.ceil((day.count / windowMax) * 4))
+  }))
 
   const data = { weeks: weeksArr, total }
   _heatmapCache = { weeks, data }

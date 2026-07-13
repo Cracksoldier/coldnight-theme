@@ -22,6 +22,7 @@
     "hexo-renderer-marked": ">=7.0.0"
   },
   "dependencies": {
-    "katex": "^0.16.0"
+    "katex": "^0.16.0",
+    "moment-timezone": "^0.5.46"
   }
 }

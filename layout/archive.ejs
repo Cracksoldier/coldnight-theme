@@ -47,15 +47,16 @@
     %>
     <div class="heatmap">
       <div class="heatmap__scroll">
-        <div class="heatmap__grid">
+        <div class="heatmap__grid" role="img" aria-labelledby="heatmap-caption">
           <% _hm.weeks.forEach(week => { %>
-            <div class="heatmap__week">
+            <div class="heatmap__week" aria-hidden="true">
               <div class="heatmap__month-label"><%= week.monthLabel %></div>
               <% week.forEach(day => { %>
                 <% if (day.isFuture) { %>
                   <div class="heatmap__day heatmap__day--empty"></div>
                 <% } else { %>
-                  <div class="heatmap__day" data-level="<%= day.level %>" title="<%= day.count %> post<%= day.count === 1 ? '' : 's' %> on <%= day.label %>"></div>
+                  <% const countText = day.count === 0 ? 'No posts' : `${day.count} post${day.count === 1 ? '' : 's'}` %>
+                  <div class="heatmap__day" data-level="<%= day.level %>" title="<%= countText %> on <%= day.label %>"></div>
                 <% } %>
               <% }) %>
             </div>
@@ -63,7 +64,7 @@
         </div>
       </div>
       <div class="heatmap__footer">
-        <span class="heatmap__caption"><%= _hm.total %> post<%= _hm.total === 1 ? '' : 's' %> in the last <%= _heatmapCfg.weeks || 52 %> weeks</span>
+        <span class="heatmap__caption" id="heatmap-caption"><%= _hm.total %> post<%= _hm.total === 1 ? '' : 's' %> in the last <%= _heatmapCfg.weeks || 52 %> weeks</span>
         <div class="heatmap__legend">
           <span>Less</span>
           <span class="heatmap__day" data-level="0"></span>
