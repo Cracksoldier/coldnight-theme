@@ -42,11 +42,13 @@
     <%
       const _heatmapCfg = theme.heatmap || {}
     %>
-    <% if (_heatmapCfg.enabled !== false) {
+    <%# Only on the top-level archive — year/month sub-archives would show the
+        same site-wide last-N-weeks data, contradicting the page context. %>
+    <% if (_heatmapCfg.enabled !== false && !page.year) {
       const _hm = heatmap_data(_heatmapCfg.weeks)
     %>
     <div class="heatmap">
-      <div class="heatmap__scroll">
+      <div class="heatmap__scroll" tabindex="0" role="region" aria-labelledby="heatmap-caption">
         <div class="heatmap__grid" role="img" aria-labelledby="heatmap-caption">
           <% _hm.weeks.forEach(week => { %>
             <div class="heatmap__week" aria-hidden="true">
