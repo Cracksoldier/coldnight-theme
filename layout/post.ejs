@@ -188,6 +188,12 @@
             <a class="btn btn--ghost btn--sm"
                href="https://www.linkedin.com/sharing/share-offsite/?url=<%= encodeURIComponent(page.permalink) %>"
                target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            <a class="btn btn--ghost btn--sm"
+               href="https://bsky.app/intent/compose?text=<%= encodeURIComponent(page.title + '\n\n' + page.permalink) %>"
+               target="_blank" rel="noopener noreferrer">Bluesky</a>
+            <button class="btn btn--ghost btn--sm post-share-mastodon"
+                    data-title="<%= page.title %>"
+                    data-permalink="<%= page.permalink %>">Mastodon</button>
             <button class="btn btn--ghost btn--sm post-share-copy"
                     data-permalink="<%= page.permalink %>">Copy link</button>
           </div>

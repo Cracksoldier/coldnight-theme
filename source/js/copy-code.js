@@ -165,6 +165,29 @@
       })
     }
 
+    // Mastodon has no universal share endpoint — ask for the reader's home
+    // instance once and remember it; the prefilled prompt doubles as the
+    // change-instance path. The scheme is hardcoded so a malicious entry can
+    // never yield a javascript: URL.
+    document.querySelectorAll('.post-share-mastodon').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var stored = ''
+        try { stored = localStorage.getItem('coldnight:mastodon-instance') || '' } catch (e) {}
+        var input = window.prompt('Your Mastodon instance (e.g. mastodon.social)', stored || 'mastodon.social')
+        if (input === null) return
+        var domain = input.trim().toLowerCase()
+          .replace(/^https?:\/\//, '')
+          .replace(/[\/?#].*$/, '')
+        if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(domain)) {
+          showToast('Invalid instance domain', 'error')
+          return
+        }
+        try { localStorage.setItem('coldnight:mastodon-instance', domain) } catch (e) {}
+        var text = btn.dataset.title + '\n\n' + btn.dataset.permalink
+        window.open('https://' + domain + '/share?text=' + encodeURIComponent(text), '_blank', 'noopener')
+      })
+    })
+
     document.querySelectorAll('.post-share-copy').forEach(function (btn) {
       btn.addEventListener('click', function () {
         writeToClipboard(btn.dataset.permalink).then(function () {

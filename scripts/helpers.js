@@ -23,17 +23,18 @@ const unescHtml = s => s
 // ─── Reading time helper ──────────────────────────────────────────────────────
 // Usage in EJS: <%= reading_time(post.content) %>
 
+const countWords = content =>
+  content ? stripHtml(content).trim().split(/\s+/).filter(Boolean).length : 0
+
 hexo.extend.helper.register('reading_time', function (content) {
   if (!content) return ''
-  const words = stripHtml(content).trim().split(/\s+/).filter(Boolean).length
-  const minutes = Math.max(1, Math.round(words / 200))
+  const minutes = Math.max(1, Math.round(countWords(content) / 200))
   return minutes + ' min read'
 })
 
 hexo.extend.helper.register('word_count', function (content) {
   if (!content) return ''
-  const count = stripHtml(content).trim().split(/\s+/).filter(Boolean).length
-  return count.toLocaleString() + ' words'
+  return countWords(content).toLocaleString() + ' words'
 })
 
 // ─── Image-path helpers ───────────────────────────────────────────────────────
@@ -372,13 +373,18 @@ hexo.extend.helper.register('heatmap_data', function (weeks) {
 // True when updated: is written in the post's front-matter. With Hexo's
 // default updated_option 'mtime', page.updated falls back to file mtime —
 // "now" on fresh clones/CI — so callers surfacing revision age must not
-// trust page.updated unless it is explicit.
-hexo.extend.helper.register('has_explicit_updated', function (page) {
+// trust page.updated unless it is explicit. Plain function because the
+// json_feed generator needs it outside helper context.
+function hasExplicitUpdated(page) {
   if (typeof page.raw !== 'string' || !page.updated) return false
   const parts = page.raw.split(/^---\s*$/m)
   // hexo-front-matter allows omitting the leading --- delimiter
   const fm = /^---/.test(page.raw) ? (parts[1] || '') : parts[0]
   return /^updated\s*:/m.test(fm)
+}
+
+hexo.extend.helper.register('has_explicit_updated', function (page) {
+  return hasExplicitUpdated(page)
 })
 
 // ─── Grid per_page sync ───────────────────────────────────────────────────────
@@ -390,6 +396,8 @@ hexo.extend.filter.register('before_generate', function () {
   _postIndexCache = null
   _pinnedPostCache = undefined
   _heatmapCache = null
+  _glossaryCache = undefined
+  _linkCheckPages = []
   hexo.theme.config.version = themeVersion
 
   const grid = hexo.theme.config.grid
@@ -601,6 +609,63 @@ hexo.extend.filter.register('after_post_render', function (data) {
     }
   )
 
+  return data
+})
+
+// ─── Glossary tooltips ────────────────────────────────────────────────────────
+// Wraps the first occurrence of each term from the site's
+// source/_data/glossary.yml in <abbr class="glossary-term" title="definition">.
+// No-op when the data file is absent; disable globally with glossary: false.
+
+let _glossaryCache
+
+function getGlossary() {
+  if (_glossaryCache !== undefined) return _glossaryCache
+  const data = (hexo.locals.get('data') || {}).glossary
+  const terms = data && typeof data === 'object'
+    ? Object.keys(data).filter(t => t.trim() && typeof data[t] === 'string' && data[t].trim())
+    : []
+  if (!terms.length) {
+    _glossaryCache = null
+    return null
+  }
+  const defs = new Map(terms.map(t => [t.toLowerCase(), data[t].trim()]))
+  // Longest-first so "static site generator" beats "static site"
+  const escaped = terms.sort((a, b) => b.length - a.length)
+    .map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+  _glossaryCache = { defs, re: new RegExp('\\b(' + escaped.join('|') + ')\\b', 'gi') }
+  return _glossaryCache
+}
+
+// Protected regions pass through untouched — code/pre, existing links and
+// abbrs, headings, whole figures (covers highlight blocks), and every bare
+// tag (incl. comments) — so matching only ever happens in inter-tag text and
+// never inside attributes. ASCII \b means symbol-edged terms ("C++") won't
+// boundary-match; documented limitation.
+const GLOSSARY_SPLIT_RE = /(<(pre|code|abbr|a|h[1-6]|figure)\b[\s\S]*?<\/\2\s*>|<[^>]+>)/gi
+
+hexo.extend.filter.register('after_post_render', function (data) {
+  if (hexo.theme.config.glossary === false) return data
+  const glossary = getGlossary()
+  if (!glossary || !data.content) return data
+
+  const wrapped = new Set()
+  const processText = text => text.replace(glossary.re, match => {
+    const key = match.toLowerCase()
+    if (wrapped.has(key)) return match
+    wrapped.add(key)
+    return '<abbr class="glossary-term" title="' + escHtml(glossary.defs.get(key)) + '">' + match + '</abbr>'
+  })
+
+  let out = ''
+  let last = 0
+  let m
+  GLOSSARY_SPLIT_RE.lastIndex = 0
+  while ((m = GLOSSARY_SPLIT_RE.exec(data.content)) !== null) {
+    out += processText(data.content.slice(last, m.index)) + m[0]
+    last = m.index + m[0].length
+  }
+  data.content = out + processText(data.content.slice(last))
   return data
 })
 
@@ -915,6 +980,62 @@ hexo.extend.generator.register('llms_txt', function (locals) {
   return routes
 })
 
+// ─── JSON Feed generator ──────────────────────────────────────────────────────
+// Emits /feed.json per JSON Feed 1.1 (jsonfeed.org). On by default; disable
+// with json_feed.enabled: false. Independent of social.rss — that key only
+// controls the atom.xml <link>s, and the atom feed itself requires the
+// hexo-generator-feed plugin.
+
+hexo.extend.generator.register('json_feed', function (locals) {
+  const cfg = hexo.theme.config.json_feed
+  if (!cfg || cfg.enabled === false) return []
+
+  let origin, feedUrl
+  try {
+    origin = new URL(hexo.config.url).origin
+    feedUrl = new URL(hexo.config.root + 'feed.json', hexo.config.url).href
+  } catch (e) {
+    return []
+  }
+
+  // Root-relative hrefs/srcs must be absolute in feed readers. Paths already
+  // include config.root, so prefixing the bare origin is subdirectory-safe.
+  const absolutise = html => String(html || '')
+    .replace(/(href|src)="\/(?!\/)/g, '$1="' + origin + '/')
+
+  const limit = parseInt(cfg.limit, 10) > 0 ? parseInt(cfg.limit, 10) : 20
+
+  const items = locals.posts.sort('-date').toArray().slice(0, limit).map(post => {
+    const url = cleanPermalink(post)
+    const item = {
+      id: url,
+      url,
+      title: post.title || post.path,
+      content_html: absolutise(post.content),
+      date_published: post.date.toISOString()
+    }
+    // Same explicit-updated rule as the stale banner and JSON-LD dateModified
+    if (hasExplicitUpdated(post)) item.date_modified = post.updated.toISOString()
+    const summary = pageDescription(post)
+    if (summary) item.summary = summary
+    if (post.tags && post.tags.length) item.tags = post.tags.map(t => t.name)
+    return item
+  })
+
+  const feed = {
+    version: 'https://jsonfeed.org/version/1.1',
+    title: plainText(hexo.config.title || ''),
+    home_page_url: hexo.config.url,
+    feed_url: feedUrl
+  }
+  const desc = hexo.config.description ? plainText(hexo.config.description) : ''
+  if (desc) feed.description = desc
+  if (hexo.config.language) feed.language = String(hexo.config.language)
+  feed.items = items
+
+  return [{ path: 'feed.json', data: JSON.stringify(feed, null, 2) + '\n' }]
+})
+
 // ─── Showroom generator ───────────────────────────────────────────────────────
 
 hexo.extend.generator.register('showroom', function (locals) {
@@ -949,4 +1070,149 @@ hexo.extend.generator.register('showroom', function (locals) {
   }
 
   return routes
+})
+
+// ─── Internal link checker ────────────────────────────────────────────────────
+// Warns (or fails with link_check.fail: true) on internal <a href>s that match
+// no generated route. Two phases: hrefs are collected in after_render:html —
+// which Hexo executes once per rendered route with the route path in
+// locals.path (hexo/index.js createLoadThemeRoute) — because reading the lazy
+// route streams in after_generate would render every page a second time.
+// Validation runs in before_exit, after the generate console has consumed all
+// routes; hexo server keeps collecting but never validates (no exit).
+
+let _linkCheckPages = []
+
+hexo.extend.filter.register('after_render:html', function (html, locals) {
+  const cfg = hexo.theme.config.link_check
+  if (!cfg || cfg.enabled === false) return
+  if (!locals || typeof locals.path !== 'string') return
+  const hrefs = []
+  const re = /<a\b[^>]*?href="([^"]*)"/gi
+  let m
+  while ((m = re.exec(html)) !== null) hrefs.push(m[1])
+  if (hrefs.length) _linkCheckPages.push({ page: locals.path, hrefs })
+})
+
+hexo.extend.filter.register('before_exit', function () {
+  const cfg = hexo.theme.config.link_check
+  if (!cfg || cfg.enabled === false || !_linkCheckPages.length) return
+
+  const routes = new Set(hexo.route.list())
+  const exists = p => {
+    if (p === '' || routes.has(p)) return true
+    const slashed = p.endsWith('/') ? p : p + '/'
+    return routes.has(p + 'index.html') || routes.has(slashed + 'index.html')
+  }
+
+  const root = hexo.config.root || '/'
+  let siteOrigin = ''
+  try { siteOrigin = new URL(hexo.config.url).origin } catch (e) {}
+
+  // Aggregate by missing target — a sitewide broken link (e.g. a footer href)
+  // would otherwise repeat once per page and drown out everything else.
+  const missing = new Map()
+  _linkCheckPages.forEach(({ page, hrefs }) => {
+    hrefs.forEach(href => {
+      if (!href || /^(#|mailto:|tel:|javascript:|data:|\/\/)/i.test(href)) return
+      let path = href
+      if (/^https?:\/\//i.test(path)) {
+        if (!siteOrigin || !path.startsWith(siteOrigin + '/')) return
+        path = path.slice(siteOrigin.length)
+      }
+      path = path.replace(/[?#].*$/, '')
+      if (!path) return
+      if (path.startsWith(root)) path = path.slice(root.length)
+      else if (path.startsWith('/')) path = path.slice(1)
+      else {
+        // Page-relative link — resolve against the linking route's directory
+        try { path = new URL(path, 'https://x/' + page).pathname.slice(1) } catch (e) { return }
+      }
+      try { path = decodeURIComponent(path) } catch (e) {}
+      if (!exists(path)) {
+        if (!missing.has(href)) missing.set(href, [])
+        missing.get(href).push(page)
+      }
+    })
+  })
+  _linkCheckPages = []
+
+  missing.forEach((pages, href) => {
+    const examples = pages.slice(0, 3).join(', ')
+    hexo.log.warn('[link-check] missing ' + href + ' — linked from ' + pages.length +
+      ' page' + (pages.length === 1 ? '' : 's') + ' (' + examples + (pages.length > 3 ? ', …' : '') + ')')
+  })
+
+  if (missing.size && cfg.fail) {
+    hexo.log.fatal('[link-check] ' + missing.size + ' broken internal link target' + (missing.size === 1 ? '' : 's'))
+    process.exitCode = 1
+  }
+})
+
+// ─── Stats page generator ─────────────────────────────────────────────────────
+// Opt-in (stats.enabled, default false): emits /stats/ with build-time posting
+// statistics rendered by layout/stats.ejs. Zero client JS — bars are
+// server-computed integer percentages. Dates run through the same
+// config.timezone chain as the heatmap so year/month buckets agree with it.
+
+hexo.extend.generator.register('stats', function (locals) {
+  const cfg = hexo.theme.config.stats
+  if (!cfg || !cfg.enabled) return []
+
+  const posts = locals.posts.sort('-date').toArray()
+  if (!posts.length) return []
+
+  const timezone = hexo.config.timezone
+  const localDate = d => (timezone ? d.clone().tz(timezone) : d.clone())
+
+  let totalWords = 0
+  const yearCounts = new Map()
+  const monthKeys = new Set()
+  posts.forEach(p => {
+    totalWords += countWords(p.content)
+    const d = localDate(p.date)
+    const y = d.year()
+    yearCounts.set(y, (yearCounts.get(y) || 0) + 1)
+    monthKeys.add(d.format('YYYY-MM'))
+  })
+
+  const maxYearCount = Math.max(...yearCounts.values())
+  const years = Array.from(yearCounts.keys()).sort((a, b) => b - a).map(y => ({
+    year: y,
+    count: yearCounts.get(y),
+    pct: Math.round((yearCounts.get(y) / maxYearCount) * 100)
+  }))
+
+  // Longest run of consecutive months with at least one post. Month streaks —
+  // day streaks degenerate to 1 on typical blog cadence.
+  let streak = 0
+  let run = 0
+  let prev = null
+  Array.from(monthKeys).sort().forEach(key => {
+    const cur = moment(key, 'YYYY-MM')
+    run = prev !== null && cur.diff(prev, 'months') === 1 ? run + 1 : 1
+    if (run > streak) streak = run
+    prev = cur
+  })
+
+  const topTags = locals.tags.toArray()
+    .map(t => ({ name: t.name, path: t.path, count: t.posts.length }))
+    .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
+    .slice(0, 10)
+
+  return [{
+    path: 'stats/index.html',
+    layout: ['stats'],
+    data: {
+      title: 'Stats',
+      post_count: posts.length,
+      word_total: totalWords,
+      tag_count: locals.tags.length,
+      category_count: locals.categories.length,
+      years,
+      top_tags: topTags,
+      streak_months: streak,
+      since: localDate(posts[posts.length - 1].date).format('MMM YYYY')
+    }
+  }]
 })

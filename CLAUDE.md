@@ -82,6 +82,48 @@ Registered in `scripts/helpers.js` above the showroom generator. **Opt-in**: `ll
 - URLs come from `page.permalink` with a trailing `index.html` stripped — same rule as canonical/og:url in `head.ejs`. Link labels are markdown-escaped (`[` `]`); link targets percent-encode `(` `)` and whitespace (`escMdUrl`) so explicit `permalink:` front-matter can't truncate the link.
 - Routes return plain strings — Hexo serves `.txt` string routes verbatim as `text/plain`.
 
+## JSON Feed generator
+
+Registered in `scripts/helpers.js` next to the llms.txt generator. Emits `/feed.json` (JSON Feed 1.1) — **default on** (`json_feed.enabled: true`), independent of `social.rss`; `json_feed.limit` caps items (invalid/missing → 20). `head.ejs` emits the `application/feed+json` alternate link under the same gate.
+
+- Item `id`/`url` come from `cleanPermalink(post)` — same trailing-`index.html` rule as canonical/og:url.
+- `content_html` absolutises root-relative `href`/`src` values via `origin = new URL(config.url).origin` — root-relative paths already contain `config.root`, so prepending the bare origin is correct on subdirectory deployments. Do not use `config.url` here (would double-apply the root).
+- `date_modified` is only emitted when `updated:` is explicit in front-matter, via the shared `hasExplicitUpdated()` — same mtime rationale as the stale-warning section.
+- `feed_url` is built with `new URL(config.root + 'feed.json', config.url)` — subdirectory-safe.
+- String route (`{ path, data: JSON-string }`), like llms.txt.
+
+## Internal link checker
+
+Two-phase design in `scripts/helpers.js` (`link_check.enabled`, default on; `link_check.fail`, default off):
+
+1. **Collect** — an `after_render:html` filter (public alias of `_after_html_render`, executed per-route with `locals.path` = route path) regexes `href` values out of final HTML into a module-level array (reset in `before_generate`). Entries without a string `locals.path` are skipped (view-render call sites pass a source path instead).
+2. **Validate** — a `before_exit` filter builds a `Set` from `hexo.route.list()` (accepting `p`, `p + 'index.html'`, `p + '/index.html'`) and checks every collected internal href: skips fragments/`mailto:`/`tel:`/`javascript:`/`data:`/protocol-relative/other-host; strips origin + `config.root`; resolves page-relative paths against the linking page. Findings are **aggregated by missing target** (one warn line per target with count + up to 3 example pages). With `fail: true` it logs `hexo.log.fatal` and sets `process.exitCode = 1`.
+
+**Why not `after_generate`**: generation runs routes with `cache: false`; reading lazy route streams there would render everything a second time. Collect-during-render avoids that. The `locals.path` route-path argument is the one internal-behavior dependency — if it breaks on a Hexo upgrade, the fallback is an `after_generate` stream read at the cost of a double render.
+
+## Glossary tooltips
+
+`glossary: true` (default on) wraps the **first occurrence** per post of each term from the site's `source/_data/glossary.yml` (flat map, multi-word keys quoted) in `<abbr class="glossary-term" title="definition">`. Implemented as an `after_post_render` filter in `scripts/helpers.js`; styled in `_typography.scss` (dotted `$accent-light` underline, `cursor: help`).
+
+- Terms are compiled once per generation into a longest-first alternation regex (`_glossaryCache`, reset in `before_generate`).
+- **Protected-region split**: the content is split on `<pre>`/`<code>`/`<a>`/`<abbr>`/`<h1-6>`/`<figure>` blocks and bare tags; only inter-tag text chunks are matched — guarantees no wraps inside attributes, code, existing links, or headings.
+- Known limitation: ASCII `\b` boundaries — symbol-edged terms like `C++` won't match.
+
+## Stats page
+
+`stats.enabled` is **opt-in** (default `false`). When enabled, a generator in `scripts/helpers.js` emits `stats/index.html` via `layout/stats.ejs` (top-level `layout: ['stats']` key — same rule as the showroom generator). Zero client JS; year-bar widths are server-computed integer percentages in inline `style=` (same posture as `--compare-pos`).
+
+- Word totals use the shared `countWords()` (also feeds `reading_time`/`word_count`).
+- Year buckets use the heatmap timezone pattern (`post.date.clone().tz(config.timezone)` when set).
+- **Streak = consecutive months with ≥1 post** (day streaks degenerate to 1 on typical blogs).
+- Sites enabling it should also add a `Stats` navbar link via `theme_config:` — never in the theme's own `_config.yml`.
+
+## Share buttons (post footer)
+
+Gated by `social.share` (default off). X/Twitter, LinkedIn, Bluesky are plain intent-URL anchors — zero JS. Copy-link and **Mastodon** are wired in `copy-code.js`:
+
+- Mastodon has no central instance, so the button prompts for a domain (prefilled from localStorage key `coldnight:mastodon-instance`; cancel = no-op). Input is sanitised (scheme/path stripped, lowercased) and validated against `/^[a-z0-9.-]+\.[a-z]{2,}$/` — invalid → error toast. The share URL scheme is **hardcoded** (`'https://' + domain + '/share?text=…'`) so `javascript:` can never survive; opened with `window.open(url, '_blank', 'noopener')`. localStorage access is try/catch-wrapped (private-mode Safari throws).
+
 ## Showroom project collection
 
 `collectProjects(locals)` / `isProject(p)` in `scripts/helpers.js` are the single definition of "what is a showroom project" (`layout === 'project' && path.startsWith('showroom/')`, newest first) — used by both the showroom and llms.txt generators. Never inline the predicate again; the llms.txt `## Optional` classification is defined as `!isProject`, so a drifted copy silently reclassifies pages.

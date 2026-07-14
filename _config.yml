@@ -41,6 +41,7 @@ reading_time: true     # show "N min read" on post cards and post header
 word_count: true       # show raw word count ("1,240 words") in the post header
 image_captions: true   # wrap standalone images with non-empty alt text in <figure>/<figcaption>
 external_links: true   # add target="_blank" rel="noopener noreferrer" and ↗ icon to external links in post body
+glossary: true         # wrap first occurrence of terms from source/_data/glossary.yml in <abbr> tooltips
 permalink_button: true # copy-to-clipboard link icon in post metadata row
 difficulty: true       # 1–5 difficulty/effort signal-bar meter (front-matter difficulty:/effort:)
 epub_export: true      # "Export as ePub" download button in the post metadata row
@@ -55,6 +56,9 @@ sticky_title: true   # fade post title into navbar when h1 scrolls out of view
 heatmap:
   enabled: true   # GitHub-style posting-activity calendar on the archive page
   weeks: 52       # number of weeks to show, ending on the current week
+
+stats:
+  enabled: false  # opt-in — emit a /stats/ page with build-time posting statistics
 
 related_posts: true  # "You might also like" section at the bottom of post pages
 series: true         # series navigation strip for multi-part posts (requires series: in front-matter)
@@ -102,6 +106,14 @@ compare_slider: true   # load compare-slider.js on post pages that use {% compar
 model_viewer:
   enabled: true
   background: "#1a1a2e"   # canvas background colour
+
+json_feed:
+  enabled: true        # emit /feed.json (JSON Feed 1.1, jsonfeed.org) — independent of social.rss
+  limit: 20            # number of newest posts included; invalid or missing = 20
+
+link_check:
+  enabled: true        # warn at build time about internal links with no matching route
+  fail: false          # true = exit code 1 when broken links are found (for CI)
 
 llms_txt:
   enabled: false       # opt-in — emit /llms.txt (LLM-friendly site index per llmstxt.org)

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="<%= config.language || 'en' %>">
+<head>
+  <%- partial('_partial/head') %>
+</head>
+<body>
+
+<a href="#main-content" class="skip-nav">Skip to main content</a>
+
+<%- partial('_partial/header') %>
+
+<div class="archive-wrapper">
+  <main id="main-content" role="main">
+
+    <header class="page-header">
+      <h1>Stats</h1>
+      <p class="page-header__meta">Posting activity since <%= page.since %></p>
+    </header>
+
+    <div class="stats-grid">
+      <div class="stats-card">
+        <span class="stats-card__value"><%= page.post_count.toLocaleString() %></span>
+        <span class="stats-card__label">Post<%= page.post_count === 1 ? '' : 's' %></span>
+      </div>
+      <div class="stats-card">
+        <span class="stats-card__value"><%= page.word_total.toLocaleString() %></span>
+        <span class="stats-card__label">Words</span>
+      </div>
+      <div class="stats-card">
+        <span class="stats-card__value"><%= page.tag_count %></span>
+        <span class="stats-card__label">Tag<%= page.tag_count === 1 ? '' : 's' %></span>
+      </div>
+      <div class="stats-card">
+        <span class="stats-card__value"><%= page.category_count %></span>
+        <span class="stats-card__label">Categor<%= page.category_count === 1 ? 'y' : 'ies' %></span>
+      </div>
+      <div class="stats-card">
+        <span class="stats-card__value"><%= page.streak_months %></span>
+        <span class="stats-card__label">Month streak</span>
+      </div>
+    </div>
+
+    <section class="stats-section">
+      <h2>Posts per year</h2>
+      <div class="stats-bars">
+        <% page.years.forEach(y => { %>
+          <div class="stats-bar">
+            <span class="stats-bar__year"><%= y.year %></span>
+            <div class="stats-bar__track">
+              <div class="stats-bar__fill" style="width: <%= y.pct %>%"></div>
+            </div>
+            <span class="stats-bar__count"><%= y.count %></span>
+          </div>
+        <% }) %>
+      </div>
+    </section>
+
+    <% if (page.top_tags.length) { %>
+    <section class="stats-section">
+      <h2>Top tags</h2>
+      <div class="stats-tags">
+        <% page.top_tags.forEach(t => { %>
+          <a href="<%- url_for(t.path) %>" class="tag-pill">#<%= t.name %> <span class="stats-tags__count"><%= t.count %></span></a>
+        <% }) %>
+      </div>
+    </section>
+    <% } %>
+
+  </main>
+</div>
+
+<%- partial('_partial/footer') %>
+<%- partial('_partial/toast') %>
+
+<script src="<%- url_for('/js/nav.js') %>" defer></script>
+
+</body>
+</html>

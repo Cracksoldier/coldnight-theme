@@ -156,6 +156,12 @@
     content: none;
   }
 
+  abbr.glossary-term {
+    text-decoration: underline dotted $accent-light;
+    text-underline-offset: 3px;
+    cursor: help;
+  }
+
   // ─── Footnotes ───────────────────────────────────────────────────────────
 
   .footnote-ref a {

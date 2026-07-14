@@ -275,6 +275,97 @@
   }
 }
 
+// ─── Stats page ──────────────────────────────────────────────────────────────
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: $sp-3;
+  margin-bottom: $sp-8;
+}
+
+.stats-card {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-1;
+  padding: $sp-4;
+  background: $bg-surface;
+  border: 1px solid $border-subtle;
+  border-radius: $radius;
+}
+
+.stats-card__value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: $text-primary;
+}
+
+.stats-card__label {
+  font-size: 12px;
+  color: $text-muted;
+}
+
+.stats-section {
+  margin-bottom: $sp-8;
+
+  h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: $text-primary;
+    margin-bottom: $sp-4;
+  }
+}
+
+.stats-bars {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-2;
+  max-width: 640px;
+}
+
+.stats-bar {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+}
+
+.stats-bar__year {
+  flex: 0 0 3.5em;
+  font-size: 13px;
+  color: $text-secondary;
+}
+
+.stats-bar__track {
+  flex: 1;
+  height: 14px;
+  background: $bg-elevated;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.stats-bar__fill {
+  height: 100%;
+  background: $accent;
+  border-radius: 2px;
+}
+
+.stats-bar__count {
+  flex: 0 0 2.5em;
+  font-size: 13px;
+  color: $text-muted;
+  text-align: right;
+}
+
+.stats-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $sp-2;
+}
+
+.stats-tags__count {
+  opacity: 0.6;
+}
+
 // ─── Post page ───────────────────────────────────────────────────────────────
 
 .post-page {
