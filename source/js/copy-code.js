@@ -59,16 +59,26 @@
     return clone.textContent.trim()
   }
 
+  // The filename comment may carry a project path (// filename: src/app.js)
+  // to show context in the chip — but a.download doesn't sanitize slashes
+  // consistently across browsers, so use the basename for the actual save name.
+  function basename(filename) {
+    return filename.split(/[\\/]/).pop()
+  }
+
   function downloadCode(filename, text) {
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = filename
+    a.download = basename(filename)
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)
-    URL.revokeObjectURL(url)
+    // Deferred revoke — same margin epub-export.js's triggerDownload() uses;
+    // revoking immediately after click() has raced with the download starting
+    // on some browser engines.
+    setTimeout(function () { URL.revokeObjectURL(url) }, 1000)
   }
 
   function addCopyButton(block) {
