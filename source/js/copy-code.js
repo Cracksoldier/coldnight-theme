@@ -183,6 +183,23 @@
       pres.forEach(function (pre, i) { makeCollapsible(pre, figures.length + i) })
     }
 
+    // The filename chip is a real button, so it normally captures pointer
+    // events — but a text-selection drag that starts in the code (not on the
+    // chip itself) should still pass straight through it rather than getting
+    // snagged on the corner. Toggle it transparent for the duration of any
+    // drag that didn't start on the chip; a direct press on the chip is
+    // unaffected and still works as a normal click.
+    const filenameChips = document.querySelectorAll('.code-filename-label')
+    if (filenameChips.length) {
+      document.addEventListener('mousedown', function (e) {
+        if (e.target.closest('.code-filename-label')) return
+        filenameChips.forEach(function (el) { el.classList.add('is-selecting') })
+      })
+      document.addEventListener('mouseup', function () {
+        filenameChips.forEach(function (el) { el.classList.remove('is-selecting') })
+      })
+    }
+
     const permaBtn = document.querySelector('.post-permalink-btn')
     if (permaBtn) {
       permaBtn.addEventListener('click', function () {

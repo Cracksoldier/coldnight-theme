@@ -242,9 +242,11 @@ When a block has a `data-filename` attribute (see the `helpers.js` extraction de
 
 - The chip is a real `<button type="button">`, not a styled `<span>` — free keyboard focus/activation instead of hand-rolled `role`/`tabindex`/keydown handling. `aria-label="Download <filename>"` since the visible text (the bare filename) isn't enough context alone.
 - `getCodeText(block)` is shared between the filename chip and the copy-to-clipboard button — both need the identical "what text does this block contain" extraction (clone the code cell, `<br>` → `\n`, `.textContent.trim()`). Keep it that way; don't fork a second extraction path.
-- Download itself is `Blob` + `URL.createObjectURL` + a temporary `<a download>` click, immediately revoked.
+- Download itself is `Blob` + `URL.createObjectURL` + a temporary `<a download>` click. The revoke is **deferred** (`setTimeout(..., 1000)`), mirroring `epub-export.js`'s `triggerDownload()` — revoking immediately after `click()` has raced with the download starting on some browser engines.
+- `a.download` uses `basename(filename)`, not the raw `data-filename` value — a `// filename: src/app.js` path comment is shown in full in the chip (useful context), but browsers don't sanitize `/` in the suggested save name consistently, so the actual download uses just the last path segment.
 - `.code-filename-label` in `_code.scss` resets native button chrome (`border: none; background: none;`) **before** the `border-right` divider rule in the same block — order matters, since the `border` shorthand would otherwise clear the divider too.
 - `:focus-visible` uses `outline-offset: -2px` (inset), not the theme's usual positive offset — the chip lives inside `figure.highlight`, which has `overflow: hidden`, so a positive offset gets clipped at the figure edge.
+- **Text selection passes through the chip.** A document-level `mousedown`/`mouseup` pair in `copy-code.js` toggles an `.is-selecting` class (→ `pointer-events: none` in `_code.scss`) on every filename chip whenever a drag starts somewhere other than the chip itself — otherwise a selection drag that crosses the chip's corner would get captured by the button instead of extending the text selection underneath. A press that starts directly on the chip is unaffected and still registers as a normal click.
 
 ## Search
 
