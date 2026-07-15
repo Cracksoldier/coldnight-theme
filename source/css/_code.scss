@@ -106,6 +106,11 @@ figure.highlight {
 }
 
 .code-filename-label {
+  // Reset native <button> chrome first — border-right below (the divider
+  // from the language label) must come after or the `border: none` shorthand
+  // would wipe it out too.
+  border: none;
+  background: none;
   font-size: 12px;
   color: $text-primary;
   padding: 3px 8px;
@@ -115,7 +120,19 @@ figure.highlight {
   text-overflow: ellipsis;
   white-space: nowrap;
   border-right: 1px solid $border-subtle;
-  pointer-events: none;
+  cursor: pointer;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: $bg-elevated;
+  }
+
+  // Negative offset: figure.highlight clips with overflow:hidden, so a
+  // positive outline-offset (the theme's usual pattern) would be cut off.
+  &:focus-visible {
+    outline: 2px solid $accent;
+    outline-offset: -2px;
+  }
 }
 
 .code-lang-label {

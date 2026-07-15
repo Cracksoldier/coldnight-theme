@@ -236,6 +236,16 @@ Long code blocks auto-collapse behind a "Show N more lines" button (`code.collap
 - Print always expands (`_print.scss`). Copy button is unaffected (it clones the code node, not the visible layout).
 - No per-block opt-out yet; the future path is extending the `data-lang`/`data-filename` regex pass in `scripts/helpers.js` (e.g. a `// no-collapse` first-line comment).
 
+## Code block filename chip
+
+When a block has a `data-filename` attribute (see the `helpers.js` extraction described above), `copy-code.js` renders it as a clickable chip that downloads the block's contents.
+
+- The chip is a real `<button type="button">`, not a styled `<span>` — free keyboard focus/activation instead of hand-rolled `role`/`tabindex`/keydown handling. `aria-label="Download <filename>"` since the visible text (the bare filename) isn't enough context alone.
+- `getCodeText(block)` is shared between the filename chip and the copy-to-clipboard button — both need the identical "what text does this block contain" extraction (clone the code cell, `<br>` → `\n`, `.textContent.trim()`). Keep it that way; don't fork a second extraction path.
+- Download itself is `Blob` + `URL.createObjectURL` + a temporary `<a download>` click, immediately revoked.
+- `.code-filename-label` in `_code.scss` resets native button chrome (`border: none; background: none;`) **before** the `border-right` divider rule in the same block — order matters, since the `border` shorthand would otherwise clear the divider too.
+- `:focus-visible` uses `outline-offset: -2px` (inset), not the theme's usual positive offset — the chip lives inside `figure.highlight`, which has `overflow: hidden`, so a positive offset gets clipped at the figure edge.
+
 ## Search
 
 `source/js/search.js` filters the full `search.json` content (title + entire body + tags) — do not re-introduce a content-length cap, it silently hides results. `mark()` takes **plain unescaped text** and escapes segment-wise around a single alternation regex; never apply per-term `.replace()` passes to already-escaped HTML (terms like `amp` or `mark` would match inside entities/tags and corrupt the markup).

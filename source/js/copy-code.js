@@ -48,6 +48,29 @@
     }
   }
 
+  function getCodeText(block) {
+    const codeCell = block.querySelector('td.code')
+    const source = codeCell
+      ? (codeCell.querySelector('code') || codeCell)
+      : (block.querySelector('code') || block)
+
+    const clone = source.cloneNode(true)
+    clone.querySelectorAll('br').forEach(function (br) { br.replaceWith('\n') })
+    return clone.textContent.trim()
+  }
+
+  function downloadCode(filename, text) {
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
   function addCopyButton(block) {
     const btn = document.createElement('button')
     btn.className = 'btn btn--icon btn--sm code-copy-btn'
@@ -59,16 +82,7 @@
       '</svg>'
 
     btn.addEventListener('click', function () {
-      const codeCell = block.querySelector('td.code')
-      const source = codeCell
-        ? (codeCell.querySelector('code') || codeCell)
-        : (block.querySelector('code') || block)
-
-      const clone = source.cloneNode(true)
-      clone.querySelectorAll('br').forEach(function (br) { br.replaceWith('\n') })
-      const text = clone.textContent.trim()
-
-      writeToClipboard(text).then(function () {
+      writeToClipboard(getCodeText(block)).then(function () {
         showToast('Copied to clipboard', 'success')
       }).catch(function () {
         showToast('Copy failed', 'error')
@@ -80,9 +94,14 @@
 
     const filename = block.getAttribute('data-filename')
     if (filename) {
-      const fnLabel = document.createElement('span')
+      const fnLabel = document.createElement('button')
+      fnLabel.type = 'button'
       fnLabel.className = 'code-filename-label'
       fnLabel.textContent = filename
+      fnLabel.setAttribute('aria-label', 'Download ' + filename)
+      fnLabel.addEventListener('click', function () {
+        downloadCode(filename, getCodeText(block))
+      })
       toolbar.appendChild(fnLabel)
     }
 
