@@ -726,6 +726,7 @@ button.navbar__hamburger {
 // ─── Pinned / Featured post ───────────────────────────────────────────────────
 
 .pinned-post {
+  position: relative;
   background: $bg-elevated;
   border: 1px solid $border-focus;
   border-radius: $radius-lg;
@@ -788,17 +789,26 @@ button.navbar__hamburger {
   margin-bottom: $sp-3;
 }
 
-.pinned-badge {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 600;
+.pinned-post__marker {
+  position: absolute;
+  top: $sp-2;
+  right: $sp-2;
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-1;
   padding: 2px 8px;
-  background: $accent-glow;
-  color: $accent-light;
-  border: 1px solid $accent;
-  border-radius: $radius;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  background: $accent;
+  color: #fff;
+
+  svg {
+    width: 11px;
+    height: 11px;
+  }
 }
 
 .pinned-post__title {
