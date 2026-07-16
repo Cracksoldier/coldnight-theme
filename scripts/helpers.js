@@ -113,6 +113,22 @@ hexo.extend.helper.register('difficulty_meter', function (post, variant) {
     '" ' + aria + ' title="' + label + '">' + bars + '</span>'
 })
 
+// ─── Card / hero cover resolution ────────────────────────────────────────────
+// Single definition of the thumbnail chain — consumed by post-card.ejs and
+// pinned-post.ejs; never re-inline it in a template. cover_image: false
+// (bare boolean) opts one post out; cover.fallback: false disables the
+// site-wide cover.default fallback (the string "false" is tolerated because
+// silently keeping the fallback would invert the user's intent). og:image in
+// head.ejs deliberately keeps its own cover.default fallback in both cases.
+
+hexo.extend.helper.register('resolve_cover', function (post) {
+  if (post.cover_image === false) return ''
+  if (post.cover_image) return post.cover_image
+  const cover = this.theme && this.theme.cover
+  if (!cover || cover.fallback === false || cover.fallback === 'false') return ''
+  return cover.default || ''
+})
+
 // ─── TOC helper ───────────────────────────────────────────────────────────────
 // Usage in EJS: <%- render_toc(page.content) %>
 
