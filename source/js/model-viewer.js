@@ -5,8 +5,28 @@
     var lib = window.__THREE_VIEWER__
     if (!lib || !lib.THREE) return
     document.querySelectorAll('.model-viewer').forEach(function (el) {
-      initViewer(el, lib)
+      if (el.dataset.thumbnail) {
+        wireLoadButton(el, lib)
+      } else {
+        initViewer(el, lib)
+      }
     })
+  }
+
+  function wireLoadButton (container, lib) {
+    var poster = container.querySelector('.model-viewer__poster')
+    var btn = poster && poster.querySelector('.model-viewer__load-btn')
+    if (!btn) { initViewer(container, lib); return }
+    btn.addEventListener('click', function () {
+      poster.remove()
+      var loading = document.createElement('div')
+      loading.className = 'model-viewer__loading'
+      var spinner = document.createElement('span')
+      spinner.className = 'model-viewer__spinner'
+      loading.appendChild(spinner)
+      container.appendChild(loading)
+      initViewer(container, lib)
+    }, { once: true })
   }
 
   function initViewer (container, lib) {

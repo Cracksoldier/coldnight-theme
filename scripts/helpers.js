@@ -757,7 +757,7 @@ hexo.extend.tag.register('video', function (args) {
 
 // ─── 3D model viewer tag ──────────────────────────────────────────────────────
 // Usage: {% model src="/models/foo.glb" %}
-// Optional: height="400px"  bg="#1a1a2e"  view="iso"  autorotate="true"  caption="some text"
+// Optional: height="400px"  bg="#1a1a2e"  view="iso"  autorotate="true"  thumbnail="/images/thumb.png"  caption="some text"
 
 hexo.extend.tag.register('model', function (args) {
   if (!hexo.theme.config.model_viewer || hexo.theme.config.model_viewer.enabled === false) return ''
@@ -775,13 +775,23 @@ hexo.extend.tag.register('model', function (args) {
   const autorotate = !!attrs.autorotate
   const caption = attrs.caption ? escHtml(attrs.caption) : ''
   const src = escHtml((hexo.config.root + attrs.src.replace(/^\//, '')).replace(/\/+/g, '/'))
+  const thumbnail = attrs.thumbnail
+    ? escHtml((hexo.config.root + attrs.thumbnail.replace(/^\//, '')).replace(/\/+/g, '/'))
+    : ''
+  const inner = thumbnail
+    ? '<div class="model-viewer__poster">' +
+        '<img src="' + thumbnail + '" alt="" class="model-viewer__poster-img">' +
+        '<button class="model-viewer__load-btn" aria-label="Load 3D model">Load 3D model</button>' +
+      '</div>'
+    : '<div class="model-viewer__loading"><span class="model-viewer__spinner"></span></div>'
   return (
     '<div class="model-viewer-wrap">' +
       '<div class="model-viewer" data-src="' + src + '" data-bg="' + escHtml(bg) + '"' +
+        (thumbnail ? ' data-thumbnail="' + thumbnail + '"' : '') +
         (view ? ' data-view="' + escHtml(view) + '"' : '') +
         (autorotate ? ' data-autorotate="true"' : '') +
         ' style="height:' + escHtml(height) + '">' +
-        '<div class="model-viewer__loading"><span class="model-viewer__spinner"></span></div>' +
+        inner +
       '</div>' +
       (caption ? '<p class="model-viewer__caption">' + caption + '</p>' : '') +
     '</div>'
