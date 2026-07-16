@@ -1,5 +1,9 @@
 <%
-  const coverImg = post.cover_image || (theme.cover && theme.cover.default) || ''
+  // same cover resolution as post-card.ejs — see comment there
+  const coverImg = post.cover_image === false ? ''
+    : (post.cover_image
+        || (theme.cover && theme.cover.fallback !== false && theme.cover.default)
+        || '')
   const category = post.categories && post.categories.length ? post.categories.first() : null
   const readTime = theme.reading_time ? reading_time(post.content) : ''
 %>

@@ -1,6 +1,12 @@
 <%
   // post-card.ejs — accepts `post` local variable
-  const coverImg = post.cover_image || (theme.cover && theme.cover.default) || ''
+  // cover_image: false (bare boolean) opts a single post out of the thumbnail;
+  // cover.fallback: false disables the site-wide default for all cards.
+  // og:image in head.ejs keeps its fallback either way.
+  const coverImg = post.cover_image === false ? ''
+    : (post.cover_image
+        || (theme.cover && theme.cover.fallback !== false && theme.cover.default)
+        || '')
   const category = post.categories && post.categories.length ? post.categories.first() : null
   const readTime = theme.reading_time ? reading_time(post.content) : ''
 %>

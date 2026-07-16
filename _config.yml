@@ -84,6 +84,7 @@ grid:
 
 cover:
   default: ""          # fallback image path when no cover_image set in post front-matter
+  fallback: true       # false = posts without cover_image render no card/hero thumbnail (og:image still uses cover.default)
   aspect_ratio: "16/9"
 
 lightgallery:

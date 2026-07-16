@@ -112,6 +112,7 @@ All options live in `themes/coldnight/_config.yml` (submodule) or `node_modules/
 | `grid.columns` | `1` | Index page columns (1 = list, 2–6 = grid) |
 | `grid.rows` | `3` | Rows per page; `per_page` is set to `columns × rows` |
 | `cover.default` | `""` | Fallback cover image path |
+| `cover.fallback` | `true` | `false` = posts without `cover_image` render no card/hero thumbnail (og:image still uses `cover.default`) |
 | `cover.aspect_ratio` | `"16/9"` | Cover image aspect ratio |
 | `lightgallery.enabled` | `true` | LightGallery CDN assets |
 | `lightgallery.auto_mount` | `true` | Auto-wrap post images as gallery items |
@@ -145,7 +146,7 @@ title: My Post
 date: 2026-01-01
 categories: [Dev]
 tags: [javascript, hexo]
-cover_image: /images/cover.jpg      # optional; falls back to cover.default
+cover_image: /images/cover.jpg      # optional; falls back to cover.default — `false` hides the card thumbnail for this post
 cover_caption: "Photo by Jane Doe"  # optional; wraps cover in <figure><figcaption>
 excerpt: "Override the auto-excerpt shown on post cards."
 updated: 2026-06-01                 # optional; shows "↻ Updated YYYY-MM-DD"
