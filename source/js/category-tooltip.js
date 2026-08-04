@@ -43,11 +43,17 @@
       }
     }
 
+    // Hover and focus can overlap — losing one must not hide a tooltip the
+    // other is still holding open
+    function hideIfInactive(el) {
+      if (active === el && !el.matches(':hover, :focus')) hide()
+    }
+
     triggers.forEach(function (el) {
       el.addEventListener('mouseenter', function () { show(el) })
-      el.addEventListener('mouseleave', hide)
+      el.addEventListener('mouseleave', function () { hideIfInactive(el) })
       el.addEventListener('focus', function () { show(el) })
-      el.addEventListener('blur', hide)
+      el.addEventListener('blur', function () { hideIfInactive(el) })
     })
 
     // position: fixed — the tooltip would otherwise drift away from its trigger
