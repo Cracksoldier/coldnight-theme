@@ -17,7 +17,7 @@
 
     <div class="post-card__meta">
       <% if (category) { %>
-        <a href="<%- url_for(category.path) %>" class="post-card__category"><%= category.name %></a>
+        <a href="<%- url_for(category.path) %>" class="post-card__category"<%- category_desc_attr(category.name) %>><%= category.name %></a>
       <% } %>
       <% if (readTime) { %>
         <span><%= readTime %></span>

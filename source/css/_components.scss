@@ -2018,9 +2018,9 @@ select.form-input {
   }
 }
 
-// ─── Footnote tooltips ────────────────────────────────────────────────────────
+// ─── Tooltips ─────────────────────────────────────────────────────────────────
 
-.fn-tooltip {
+%tooltip-surface {
   position: fixed;
   z-index: 50;
   max-width: 280px;
@@ -2035,6 +2035,10 @@ select.form-input {
   pointer-events: none;
   opacity: 0;
   transition: opacity $transition-fast;
+}
+
+.fn-tooltip {
+  @extend %tooltip-surface;
 
   &.fn-tooltip--visible {
     opacity: 1;
@@ -2043,6 +2047,14 @@ select.form-input {
 
   p { margin: 0; }
   a { color: $accent-light; }
+}
+
+.category-tooltip {
+  @extend %tooltip-surface;
+
+  &.category-tooltip--visible {
+    opacity: 1;
+  }
 }
 
 // ─── Keyboard shortcuts modal ─────────────────────────────────────────────────

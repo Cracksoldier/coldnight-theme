@@ -42,6 +42,7 @@ word_count: true       # show raw word count ("1,240 words") in the post header
 image_captions: true   # wrap standalone images with non-empty alt text in <figure>/<figcaption>
 external_links: true   # add target="_blank" rel="noopener noreferrer" and ↗ icon to external links in post body
 glossary: true         # wrap first occurrence of terms from source/_data/glossary.yml in <abbr> tooltips
+category_descriptions: {}  # map of category name → hover/focus tooltip text; empty = no category tooltips
 permalink_button: true # copy-to-clipboard link icon in post metadata row
 difficulty: true       # 1–5 difficulty/effort signal-bar meter (front-matter difficulty:/effort:)
 epub_export: true      # "Export as ePub" download button in the post metadata row

@@ -95,6 +95,7 @@ All options live in `themes/coldnight/_config.yml` (submodule) or `node_modules/
 | `word_count` | `true` | Word count in post header |
 | `image_captions` | `true` | Wrap `<p><img alt="..."></p>` in `<figure><figcaption>` |
 | `external_links` | `true` | `target="_blank"` + ↗ icon on external links in post body |
+| `category_descriptions` | `{}` | Map of category name → hover/focus tooltip text on post pills and cards; empty = no tooltips |
 | `permalink_button` | `true` | Copy-permalink icon in post metadata |
 | `difficulty` | `true` | 1–5 signal-bar meter on posts, cards, and showroom projects (front-matter `difficulty:`/`effort:`) |
 | `epub_export` | `true` | ePub download button in post metadata |

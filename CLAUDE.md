@@ -110,6 +110,16 @@ Two-phase design in `scripts/helpers.js` (`link_check.enabled`, default on; `lin
 - **Protected-region split**: the content is split on `<pre>`/`<code>`/`<a>`/`<abbr>`/`<h1-6>`/`<figure>` blocks and bare tags; only inter-tag text chunks are matched — guarantees no wraps inside attributes, code, existing links, or headings.
 - Known limitation: ASCII `\b` boundaries — symbol-edged terms like `C++` won't match.
 
+## Category tooltips
+
+`category_descriptions` (theme config, a map of category name → text) shows a themed floating tooltip when a category link is hovered or focused. There is **no on/off boolean** — an empty or absent map disables the feature completely: no `data-category-desc` attribute is emitted and the templates skip the `<script>` tag.
+
+- `getCategoryDescriptions()` in `scripts/helpers.js` builds the lookup once per generation (`_categoryDescCache`, reset in `before_generate` next to `_glossaryCache`). Keys are **lowercased and trimmed** so front-matter `Dev` matches a config key of `dev`. Non-string values (bare YAML booleans/numbers) are ignored, not stringified — same posture as `cfgStr` in `header.ejs`.
+- Two helpers: `category_desc_attr(name)` returns the whole ` data-category-desc="…"` attribute (already `escHtml`-escaped, so call sites use `<%- %>`) or `''`; `has_category_descriptions()` gates the script tag only.
+- Call sites (3): `post.ejs` category pills, `_partial/post-card.ejs`, `_partial/pinned-post.ejs`. The script is loaded from `index.ejs` and `post.ejs` only — those are the two templates that render tooltip-bearing categories (post-card is included by both). Deliberately **not** on the archive filter chips or the category archive page header.
+- `.category-tooltip` and `.fn-tooltip` share the `%tooltip-surface` placeholder in `_components.scss` — restyle the surface there, not per-component. The category variant keeps `pointer-events: none` at all times (plain text, nothing to hover into), so it needs none of the footnote tooltip's hide-timer grace period.
+- `category-tooltip.js` sets content with `textContent`, toggles `aria-describedby` on the active trigger only while visible, and hides on `scroll` — the tooltip is `position: fixed` and would otherwise drift away from its trigger. No hover affordance is added to the link itself; these are real navigable links and keep the pointer cursor.
+
 ## Stats page
 
 `stats.enabled` is **opt-in** (default `false`). When enabled, a generator in `scripts/helpers.js` emits `stats/index.html` via `layout/stats.ejs` (top-level `layout: ['stats']` key — same rule as the showroom generator). Zero client JS; year-bar widths are server-computed integer percentages in inline `style=` (same posture as `--compare-pos`).

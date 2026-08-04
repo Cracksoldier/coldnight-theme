@@ -50,6 +50,9 @@
 
 <script src="<%- url_for('/js/nav.js') %>" defer></script>
 <script src="<%- url_for('/js/copy-code.js') %>" defer></script>
+<% if (has_category_descriptions()) { %>
+<script src="<%- url_for('/js/category-tooltip.js') %>" defer></script>
+<% } %>
 
 </body>
 </html>

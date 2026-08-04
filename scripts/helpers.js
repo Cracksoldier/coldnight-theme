@@ -413,6 +413,7 @@ hexo.extend.filter.register('before_generate', function () {
   _pinnedPostCache = undefined
   _heatmapCache = null
   _glossaryCache = undefined
+  _categoryDescCache = undefined
   _linkCheckPages = []
   hexo.theme.config.version = themeVersion
 
@@ -683,6 +684,40 @@ hexo.extend.filter.register('after_post_render', function (data) {
   }
   data.content = out + processText(data.content.slice(last))
   return data
+})
+
+// ─── Category tooltips ────────────────────────────────────────────────────────
+// Optional hover/focus descriptions for categories, from the theme config map
+// category_descriptions. An empty/absent map disables the feature entirely —
+// no attribute is emitted and the templates skip the script tag.
+
+let _categoryDescCache
+
+function getCategoryDescriptions() {
+  if (_categoryDescCache !== undefined) return _categoryDescCache
+  const cfg = hexo.theme.config.category_descriptions
+  const map = new Map()
+  if (cfg && typeof cfg === 'object' && !Array.isArray(cfg)) {
+    Object.keys(cfg).forEach(name => {
+      // Bare YAML booleans/numbers are ignored rather than stringified
+      if (typeof cfg[name] === 'string' && cfg[name].trim() && name.trim()) {
+        map.set(name.trim().toLowerCase(), cfg[name].trim())
+      }
+    })
+  }
+  _categoryDescCache = map.size ? map : null
+  return _categoryDescCache
+}
+
+hexo.extend.helper.register('category_desc_attr', function (name) {
+  const descs = getCategoryDescriptions()
+  if (!descs || typeof name !== 'string') return ''
+  const desc = descs.get(name.trim().toLowerCase())
+  return desc ? ' data-category-desc="' + escHtml(desc) + '"' : ''
+})
+
+hexo.extend.helper.register('has_category_descriptions', function () {
+  return getCategoryDescriptions() !== null
 })
 
 // ─── Download tag ─────────────────────────────────────────────────────────────

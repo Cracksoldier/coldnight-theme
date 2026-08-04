@@ -83,7 +83,7 @@
 
           <% if (page.categories && page.categories.length) { %>
             <% page.categories.each(cat => { %>
-              <a href="<%- url_for(cat.path) %>" class="tag-pill"><%= cat.name %></a>
+              <a href="<%- url_for(cat.path) %>" class="tag-pill"<%- category_desc_attr(cat.name) %>><%= cat.name %></a>
             <% }) %>
           <% } %>
 
@@ -250,6 +250,9 @@
 
 <script src="<%- url_for('/js/nav.js') %>" defer></script>
 <script src="<%- url_for('/js/copy-code.js') %>"<% if (!(theme.code && theme.code.collapse === false)) { %> data-collapse-lines="<%= parseInt(theme.code && theme.code.collapse_lines, 10) > 0 ? parseInt(theme.code.collapse_lines, 10) : 25 %>"<% } %> defer></script>
+<% if (has_category_descriptions()) { %>
+<script src="<%- url_for('/js/category-tooltip.js') %>" defer></script>
+<% } %>
 <% if (theme.toc && theme.toc.enabled) { %>
 <script src="<%- url_for('/js/toc.js') %>" defer></script>
 <script src="<%- url_for('/js/toc-drawer.js') %>" defer></script>
