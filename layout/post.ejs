@@ -307,6 +307,9 @@
 <% if (theme.compare_slider !== false && page.content && page.content.includes('class="compare-slider"')) { %>
 <script src="<%- url_for('/js/compare-slider.js') %>" defer></script>
 <% } %>
+<% if (theme.video_facade !== false && page.content && page.content.includes('class="video-facade"')) { %>
+<script src="<%- url_for('/js/video-facade.js') %>" defer></script>
+<% } %>
 
 </body>
 </html>

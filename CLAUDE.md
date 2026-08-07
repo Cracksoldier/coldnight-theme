@@ -201,7 +201,7 @@ Uses the `hidden` attribute (not `display:none`) for accessible show/hide. JS is
 | `{% spoiler %}` | `{% spoiler Label %}...{% endspoiler %}` |
 | `{% download %}` | `{% download /path/to/file Label %}` |
 | `{% pdf %}` | `{% pdf /path/to/file.pdf Optional Title %}` |
-| `{% video %}` | `{% video <url> Optional Caption %}` |
+| `{% video %}` | `{% video <url> Optional Caption %}` — YouTube/Vimeo render a click-to-load facade by default (see "Video facade") |
 | `{% model %}` | `{% model src="/models/foo.glb" [height="400px"] [bg="#111"] [view="iso"] [autorotate="true"] [thumbnail="/images/thumb.png"] [caption="…"] %}` |
 | `{% audio %}` | `{% audio src="/audio/file.mp3" [title="…"] [caption="…"] %}` |
 | `{% compare %}` | `{% compare before="/a.png" after="/b.png" [label_before="…"] [label_after="…"] [caption="…"] %}` |
@@ -234,6 +234,18 @@ The viewer JS is an IIFE at `source/js/model-viewer.js`. It reads `window.__THRE
 
 - **Content is serialized with `XMLSerializer`**, never `innerHTML` — `innerHTML` emits named entities (`&nbsp;`) and unclosed voids that strict ePub readers reject as invalid XML.
 - **Images are fetched and bundled** into `OEBPS/images/` with manifest entries so the file works offline. Unfetchable images (CORS-blocked hotlinks) fall back to their absolute URL, keeping the XHTML valid.
+
+## Video facade
+
+The `{% video %}` tag emits a click-to-load facade for YouTube/Vimeo instead of an eager iframe (`video_facade`, default on). Key invariants:
+
+- **`video_facade: false` reverts to the eager-iframe output — it does NOT return `''`** (unlike the `audio`/`compare` config gates). The tag itself has no disable switch.
+- The facade is an `<a href="provider watch URL">`: without JS a click opens the video on YouTube/Vimeo. `video-facade.js` intercepts the click and swaps in the iframe.
+- **`video-facade.js` reconstructs the embed URL from `data-provider` + `data-video-id` against a provider allowlist** (youtube → `youtube-nocookie.com/embed`, vimeo → `player.vimeo.com/video`; ids re-validated with per-provider regexes). Never read a raw URL from a data attribute. Unknown provider or invalid id → no `preventDefault()`, the anchor just navigates (safe fallback).
+- YouTube thumbnail comes from cookie-free `i.ytimg.com` (`hqdefault.jpg`, 480×360, `object-fit: cover` into the 16:9 box); its explicit `loading="lazy"` also exempts it from the blanket lazy-load pass in helpers.js. Vimeo gets a pure-CSS placeholder — zero third-party requests before click.
+- After injection the script calls `iframe.focus()` so keyboard focus doesn't drop to `<body>` when the focused anchor is replaced.
+- The script loads conditionally in `post.ejs` via `page.content.includes('class="video-facade"')` — same pattern as audio/compare/model.
+- **Toggling `video_facade` requires `hexo clean`** — tag output is cached in db.json, so an incremental `hexo generate` keeps the old markup (the heatmap doesn't have this problem since it's rendered directly by `archive.ejs`, not tag output).
 
 ## Code block collapse
 

@@ -17,6 +17,7 @@ A dark navy Hexo blog theme. Minimal, readable, and opinionated.
 - In-page PDF preview via PDF.js (lazy-loaded modal)
 - LightGallery image viewer with zoom and thumbnails
 - ePub export button
+- Privacy-friendly click-to-load video embeds (YouTube nocookie / Vimeo)
 - Showroom page — paginated project portfolio with optional AI-assisted badge
 - Difficulty/effort indicator — 1–5 signal-bar meter from `difficulty:`/`effort:` front-matter on posts and projects
 - Accessible: skip nav, ARIA labels, keyboard navigation
@@ -124,6 +125,7 @@ All options live in `themes/coldnight/_config.yml` (submodule) or `node_modules/
 | `math.enabled` | `true` | KaTeX math rendering |
 | `pdf_viewer` | `true` | Load PDF.js viewer on post pages |
 | `audio_player` | `true` | Load audio player on post pages that use `{% audio %}` |
+| `video_facade` | `true` | Click-to-load facade for `{% video %}` embeds; `false` = eager iframes |
 | `model_viewer.enabled` | `true` | Enable the `{% model %}` Three.js viewer tag |
 | `model_viewer.background` | `"#1a1a2e"` | Default canvas background colour for `{% model %}` |
 | `llms_txt.enabled` | `false` | Opt-in — emit `/llms.txt` (LLM-friendly site index per [llmstxt.org](https://llmstxt.org)) |
@@ -245,7 +247,7 @@ Opens in a PDF.js modal on click. Lazy-loads PDF.js from jsDelivr on first use.
 {% video https://www.youtube.com/watch?v=... Optional Caption %}
 ```
 
-Supports YouTube, Vimeo, and direct video URLs.
+Supports YouTube, Vimeo, and direct video URLs. YouTube and Vimeo render as a **click-to-load facade** by default: no third-party iframe until the visitor clicks play (YouTube shows its cookie-free `i.ytimg.com` thumbnail; Vimeo gets a themed placeholder — zero external requests). The injected YouTube player uses the `youtube-nocookie.com` domain. Without JavaScript the facade is a plain link to the provider watch page. Set `video_facade: false` to restore eager iframes.
 
 ### `{% model %}`
 

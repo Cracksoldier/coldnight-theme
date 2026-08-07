@@ -1131,6 +1131,75 @@ details.spoiler[open] .spoiler__summary::before {
   }
 }
 
+// Click-to-load facade (emitted by the {% video %} tag when video_facade is on;
+// video-facade.js swaps the anchor for the real iframe on click)
+.video-facade {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: $sp-2;
+  overflow: hidden;
+  border-radius: $radius;
+  background: $bg-elevated;
+  border: 1px solid $border-subtle;
+
+  &:focus-visible {
+    outline: 2px solid $accent;
+    outline-offset: 2px;
+  }
+
+  &:hover .video-facade__button,
+  &:focus-visible .video-facade__button {
+    background: $accent-hover;
+    transform: scale(1.08);
+  }
+}
+
+.video-facade__thumb {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video-facade__button {
+  position: relative; // paints above the absolutely-positioned thumbnail
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: $accent;
+  color: #fff; // white-on-accent precedent: .archive-filter-chip--active
+  box-shadow: 0 2px 12px $accent-glow;
+  transition: background $transition-fast, transform $transition-fast;
+
+  svg {
+    margin-left: 3px; // optically center the triangle
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    transition: background $transition-fast;
+
+    .video-facade:hover &,
+    .video-facade:focus-visible & {
+      transform: none;
+    }
+  }
+}
+
+.video-facade__label {
+  position: relative;
+  font-family: #{$font-mono};
+  font-size: 13px;
+  color: $text-secondary;
+}
+
 // ─── Pagination ──────────────────────────────────────────────────────────────
 
 .pagination {

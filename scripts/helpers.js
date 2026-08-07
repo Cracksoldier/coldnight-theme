@@ -769,11 +769,19 @@ hexo.extend.tag.register('pdf', function (args) {
 // ─── Video embed tag ──────────────────────────────────────────────────────────
 // Usage: {% video url [caption words] %}
 // Supports: YouTube, Vimeo, direct .mp4/.webm/.ogv files
+// YouTube/Vimeo default to a click-to-load facade (no third-party request except
+// the cookie-free YouTube thumbnail until the user clicks; without JS the facade
+// is a plain link to the provider watch page). video_facade: false restores the
+// previous eager iframes — it does NOT disable the tag.
+
+const PLAY_BUTTON_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><polygon points="6 3 21 12 6 21 6 3"/></svg>'
 
 hexo.extend.tag.register('video', function (args) {
   const url     = (args[0] || '').trim()
   const caption = args.length > 1 ? escHtml(args.slice(1).join(' ')) : ''
   if (!url) return ''
+
+  const facade = hexo.theme.config.video_facade !== false
 
   let embedHtml
   const ytMatch = url.match(/(?:youtube\.com\/watch\?(?:.*&)?v=|youtu\.be\/)([\w-]+)/)
@@ -782,16 +790,39 @@ hexo.extend.tag.register('video', function (args) {
 
   if (ytMatch) {
     const id = escHtml(ytMatch[1])
-    embedHtml = `<iframe src="https://www.youtube.com/embed/${id}"` +
-      ` title="${caption || 'YouTube video'}"` +
-      ` allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"` +
-      ` allowfullscreen loading="lazy"></iframe>`
+    const title = caption || 'YouTube video'
+    if (facade) {
+      embedHtml = `<a class="video-facade video-facade--youtube"` +
+        ` href="https://www.youtube.com/watch?v=${id}"` +
+        ` data-provider="youtube" data-video-id="${id}" data-video-title="${title}"` +
+        ` aria-label="Play video: ${title}">` +
+        `<img class="video-facade__thumb" src="https://i.ytimg.com/vi/${id}/hqdefault.jpg"` +
+        ` alt="" loading="lazy" width="480" height="360">` +
+        `<span class="video-facade__button" aria-hidden="true">${PLAY_BUTTON_SVG}</span>` +
+        `</a>`
+    } else {
+      embedHtml = `<iframe src="https://www.youtube.com/embed/${id}"` +
+        ` title="${title}"` +
+        ` allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"` +
+        ` allowfullscreen loading="lazy"></iframe>`
+    }
   } else if (vmMatch) {
     const id = escHtml(vmMatch[1])
-    embedHtml = `<iframe src="https://player.vimeo.com/video/${id}"` +
-      ` title="${caption || 'Vimeo video'}"` +
-      ` allow="autoplay; fullscreen; picture-in-picture"` +
-      ` allowfullscreen loading="lazy"></iframe>`
+    const title = caption || 'Vimeo video'
+    if (facade) {
+      embedHtml = `<a class="video-facade video-facade--vimeo"` +
+        ` href="https://vimeo.com/${id}"` +
+        ` data-provider="vimeo" data-video-id="${id}" data-video-title="${title}"` +
+        ` aria-label="Play video: ${title}">` +
+        `<span class="video-facade__button" aria-hidden="true">${PLAY_BUTTON_SVG}</span>` +
+        `<span class="video-facade__label" aria-hidden="true">Vimeo</span>` +
+        `</a>`
+    } else {
+      embedHtml = `<iframe src="https://player.vimeo.com/video/${id}"` +
+        ` title="${title}"` +
+        ` allow="autoplay; fullscreen; picture-in-picture"` +
+        ` allowfullscreen loading="lazy"></iframe>`
+    }
   } else if (isFile) {
     embedHtml = `<video controls preload="metadata"><source src="${escHtml(url)}"></video>`
   } else {
