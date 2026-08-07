@@ -42,12 +42,28 @@
   flex-shrink: 0;
 }
 
-.navbar__logo--text {
+// Text brand icons + the title are one run of text: aligned on a shared
+// baseline, not box-centred. Centring each slot separately puts a larger
+// icon's baseline below the title's ((ascent - descent) / 2 scales with
+// font-size), which reads as a vertical offset.
+.navbar__brand-text {
   display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  align-items: baseline;
+  gap: $sp-2;
+  min-width: 0;
+
+  // Below tablet only a text before-icon survives; an emptied wrapper would
+  // still contribute a flex gap inside .navbar__brand.
+  @media (max-width: $bp-tablet) {
+    &:not(.navbar__brand-text--icon) {
+      display: none;
+    }
+  }
+}
+
+.navbar__logo--text {
   width: auto;
-  min-width: 28px;
+  height: auto;
   font-size: 20px;
   line-height: 1;
   white-space: nowrap;
