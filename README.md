@@ -86,6 +86,7 @@ All options live in `themes/coldnight/_config.yml` (submodule) or `node_modules/
 | `navbar.links` | Home, Archive, Links, Showroom, About | Navbar link list |
 | `favicon` | `""` | Favicon image path (`/favicon.png`, `/icon.svg`); empty or not an image path = theme default `favicon.svg`/`.ico` |
 | `sidebar.position` | `right` | `left` \| `right` \| `hidden` |
+| `sidebar.about` | `true` | `false` hides the About widget; it also hides itself when author, description, avatar and social links are all empty |
 | `sidebar.widgets` | toc, recent\_posts, tags, archives, about | Widget order |
 | `sponsor.enabled` | `false` | Show a sponsor/donate button |
 | `social.github` | `""` | GitHub profile URL |

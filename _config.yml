@@ -19,6 +19,7 @@ favicon: ""            # image path ("/favicon.png", "/icon.svg"); anything else
 
 sidebar:
   position: right      # left | right | hidden
+  about: true          # false = hide the About widget (also auto-hides when author/bio/avatar/social are all empty)
   widgets:
     - toc
     - recent_posts

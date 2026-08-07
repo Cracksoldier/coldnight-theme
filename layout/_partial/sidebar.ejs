@@ -1,4 +1,5 @@
 <% const widgets = theme.sidebar && theme.sidebar.widgets ? theme.sidebar.widgets : [] %>
+<% const aboutEnabled = !theme.sidebar || (theme.sidebar.about !== false && theme.sidebar.about !== 'false') %>
 
 <aside class="sidebar" role="complementary" aria-label="Sidebar">
   <% widgets.forEach(widget => { %>
@@ -9,7 +10,9 @@
     <% } else if (widget === 'archives') { %>
       <%- partial('widgets/archive') %>
     <% } else if (widget === 'about') { %>
-      <%- partial('widgets/about') %>
+      <% if (aboutEnabled) { %>
+        <%- partial('widgets/about') %>
+      <% } %>
     <% } else if (widget === 'toc') { %>
       <% if (page.layout === 'post' && theme.toc && theme.toc.enabled) { %>
         <%- partial('widgets/toc') %>

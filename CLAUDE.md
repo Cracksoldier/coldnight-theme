@@ -182,6 +182,13 @@ Never add Links/Showroom back to the theme's own `_config.yml` — it's consumed
 - Both brand slots are `aria-hidden` / empty-`alt` so the brand link's accessible name stays the `aria-label`. `.navbar__icon-after` hides below `$bp-tablet` together with `.navbar__title`; the before-icon stays visible on mobile.
 - `navbar.icon_color` / `navbar.icon_after_color` set the text-icon font colour via an inline `style="color: …"` on the span (config-driven colours can't live in compiled SCSS — same reason as the view-transitions inline style). The value is **allowlist-validated** (`ICON_COLOR_RE`: hex, keyword, and `rgb()/rgba()/hsl()/hsla()/hwb()/lab()/lch()/oklab()/oklch()/color()/var()` with `[\w\s.,%/#-]` args — covers modern space/slash syntax) before being interpolated raw — quotes, semicolons, and nested parens never pass, preventing CSS/attribute injection (same posture as the model-viewer `height` allowlist). Invalid values are silently dropped (inherit). Image icons ignore these keys. Note: colour only affects glyphs rendered as text — colour-emoji glyphs ignore CSS `color`.
 
+## Sidebar About widget
+
+Two independent suppressions, split the same way as the `toc` widget:
+
+- **Config gate** — `sidebar.about` (default `true`) is read in `_partial/sidebar.ejs` (hoisted `aboutEnabled` next to `widgets`), not inside the widget. Both the boolean `false` and the string `"false"` disable it — same posture as `cover.fallback`, since a quoted YAML value must not silently invert the user's intent. Keeping the gate in `sidebar.ejs` means the `about` entry can stay in `sidebar.widgets` (a site overriding `theme_config: sidebar: about: false` doesn't have to re-declare the whole widget array — Hexo deep-merges `theme_config`).
+- **Emptiness check** — `_partial/widgets/about.ejs` renders nothing when `config.author`, `config.description`, `config.avatar` and both `theme.social` handles are all empty, so a barebones site gets no empty "About" box. Values are counted only when `typeof === 'string'` and non-blank — a bare YAML `false`/`0` is not content (same posture as `cfgStr` in `header.ejs`).
+
 ## Archive filter chips
 
 Uses the `hidden` attribute (not `display:none`) for accessible show/hide. JS is in `source/js/archive-filter.js` (IIFE pattern). The archive/tag/category pages require `per_page: 0` in the site config — guaranteed by the site repo, not the theme.

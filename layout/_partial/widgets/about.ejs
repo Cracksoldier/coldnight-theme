@@ -1,3 +1,9 @@
+<%
+  const social = theme.social || {}
+  const hasContent = [config.author, config.description, config.avatar, social.github, social.twitter]
+    .some(v => typeof v === 'string' && v.trim() !== '')
+%>
+<% if (hasContent) { %>
 <div class="sidebar-widget widget-about">
   <p class="sidebar-widget__title">About</p>
   <% if (config.avatar) { %>
@@ -16,3 +22,4 @@
     <% } %>
   </div>
 </div>
+<% } %>
