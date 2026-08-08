@@ -75,6 +75,12 @@
     margin-top: $sp-2;
   }
 
+  &__subtitle {
+    font-size: 0.9rem;
+    color: $text-secondary;
+    margin-top: $sp-2;
+  }
+
   &__accent {
     color: $accent-light;
   }
@@ -123,6 +129,11 @@
   padding: $sp-2 0;
   border-bottom: 1px solid rgba($border-subtle, 0.5);
 
+  // Required: the author `display: grid` above beats the UA `[hidden]` rule
+  // (cascade origin wins before specificity), so the filter chips could not
+  // hide anything without this. Same workaround as .toc-drawer.
+  &[hidden] { display: none; }
+
   &:last-child {
     border-bottom: none;
   }
@@ -160,16 +171,18 @@
   }
 }
 
-// ─── Archive filter chips ─────────────────────────────────────────────────────
+// ─── Filter chips (archive + links) ──────────────────────────────────────────
 
-.archive-filters {
+.archive-filters,
+.filter-bar {
   display: flex;
   flex-wrap: wrap;
   gap: $sp-2;
   margin-bottom: $sp-6;
 }
 
-.archive-filter-chip {
+.archive-filter-chip,
+.filter-chip {
   padding: 3px $sp-3;
   border-radius: 999px;
   font-size: 12px;

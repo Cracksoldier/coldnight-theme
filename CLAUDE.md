@@ -191,9 +191,25 @@ Two independent suppressions, split the same way as the `toc` widget:
 - **Config gate** — `sidebar.about` (default `true`) is read in `_partial/sidebar.ejs` (hoisted `aboutEnabled` next to `widgets`), not inside the widget. Both the boolean `false` and the string `"false"` disable it — same posture as `cover.fallback`, since a quoted YAML value must not silently invert the user's intent. Keeping the gate in `sidebar.ejs` means the `about` entry can stay in `sidebar.widgets` (a site overriding `theme_config: sidebar: about: false` doesn't have to re-declare the whole widget array — Hexo deep-merges `theme_config`).
 - **Emptiness check** — `_partial/widgets/about.ejs` renders nothing when `config.author`, `config.description`, `config.avatar` and both `theme.social` handles are all empty, so a barebones site gets no empty "About" box. Values are counted only when `typeof === 'string'` and non-blank — a bare YAML `false`/`0` is not content (same posture as `cfgStr` in `header.ejs`).
 
-## Archive filter chips
+## Filter chips (archive + links)
 
-Uses the `hidden` attribute (not `display:none`) for accessible show/hide. JS is in `source/js/archive-filter.js` (IIFE pattern). The archive/tag/category pages require `per_page: 0` in the site config — guaranteed by the site repo, not the theme.
+Two consumers share one visual definition: the archive page (`archive-filter.js`, filters by category **or** tag) and the links page (`links-filter.js`, filters by tag only). Both are single-select with a leading `All` chip and use the `hidden` attribute — never `display: none` — for accessible show/hide. JS is the usual standalone IIFE.
+
+- **The chip CSS lives once** in `_layout.scss` under `// ─── Filter chips (archive + links) ───`, as a selector list: `.archive-filters, .filter-bar` and `.archive-filter-chip, .filter-chip`. Sass distributes `&--active` / `&:hover` / `&:focus-visible` across the list. New pages use the unprefixed `.filter-bar` / `.filter-chip` names; the `archive-*` aliases stay only because `archive.ejs` and `archive-filter.js` already emit them. Do not fork a third copy of the rules.
+- **`[hidden]` needs an explicit guard on every filterable item.** Setting `el.hidden = true` relies on the UA `[hidden] { display: none }` rule, which **any** author `display:` declaration overrides — cascade origin is resolved before specificity. `.archive-item` (`display: grid`) and `.link-card` (`display: inline-block`) both therefore carry `&[hidden] { display: none; }`, same as `.toc-drawer`. Omitting it makes the filter silently inert: `aria-pressed` flips, nothing disappears. Any future filterable element that sets `display` must add the guard too.
+- The archive/tag/category pages require `per_page: 0` in the site config — guaranteed by the site repo, not the theme. This does **not** apply to links: `site.data.links` is a data file and is always complete.
+
+### links-filter.js
+
+`apply(value)` is the **single entry point** for both the chip bar and the per-card `.link-card__tag` pills (the latter wired through one delegated document listener), so the two activation paths cannot drift. An empty `data-filter-value` means "all" — there is no `data-filter-type` here, unlike the archive's two-dimensional filter. It also rewrites `.page-header__meta` to `N of M links` while a tag is active, reading `M` from the `data-links-total` attribute the template stamps on that element.
+
+Tag pills are real `<button type="button">` elements rather than styled spans — same rationale as `.code-filename-label`: free keyboard focus and activation instead of hand-rolled `role`/`tabindex`/keydown. Like the archive chips they are inert without JS, which is this pattern's existing posture.
+
+## Links page config
+
+`links.title` and `links.subtitle` (theme config, both `""` by default) drive the page header. Title precedence is `theme.links.title` → `page.title` (front-matter) → `'Links'`; before this existed the `h1` was hardcoded and front-matter `title:` only fed `<title>`/OG. Both values pass through the `cfgStr` guard copied from `header.ejs`, so a bare YAML `false`/number is ignored rather than stringified.
+
+Per-entry `tags:` in `source/_data/links.yml` accepts a list **or** a single bare scalar; `linkTags()` in `links.ejs` normalises both (and drops non-string members) before the chip bar is collected and `data-tags` is pipe-joined — same encoding as `archive.ejs`. The chip bar is not rendered at all when no entry has tags, so there is deliberately no on/off config key.
 
 ## PDF viewer tag
 

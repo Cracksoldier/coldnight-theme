@@ -482,6 +482,11 @@ button.navbar__hamburger {
   overflow: hidden;
   transition: border-color $transition-fast, box-shadow $transition-fast;
 
+  // Required: the author `display: inline-block` above beats the UA `[hidden]`
+  // rule (cascade origin wins before specificity), so the tag filter could not
+  // hide anything without this. Same workaround as .toc-drawer.
+  &[hidden] { display: none; }
+
   &:hover {
     border-color: $border-focus;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
@@ -526,6 +531,37 @@ button.navbar__hamburger {
   color: $text-secondary;
   line-height: 1.55;
   margin: 0;
+}
+
+.link-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $sp-1;
+  margin-top: $sp-1;
+}
+
+// Muted outline variant of .filter-chip — the card already carries an accent
+// coloured URL, so a filled pill row would compete with it.
+.link-card__tag {
+  padding: 1px $sp-2;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid $border-subtle;
+  background: transparent;
+  color: $text-muted;
+  cursor: pointer;
+  transition: color $transition-fast, border-color $transition-fast;
+
+  &:hover {
+    color: $text-primary;
+    border-color: $text-muted;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $accent;
+    outline-offset: 2px;
+  }
 }
 
 .link-card__url {

@@ -18,6 +18,7 @@ A dark navy Hexo blog theme. Minimal, readable, and opinionated.
 - LightGallery image viewer with zoom and thumbnails
 - ePub export button
 - Privacy-friendly click-to-load video embeds (YouTube nocookie / Vimeo)
+- Links page — masonry bookmark board with a configurable heading and optional tag filtering
 - Showroom page — paginated project portfolio with optional AI-assisted badge
 - Difficulty/effort indicator — 1–5 signal-bar meter from `difficulty:`/`effort:` front-matter on posts and projects
 - Accessible: skip nav, ARIA labels, keyboard navigation
@@ -112,6 +113,8 @@ All options live in `themes/coldnight/_config.yml` (submodule) or `node_modules/
 | `code.language_label` | `true` | Language tag on code blocks |
 | `code.collapse` | `true` | Auto-collapse long code blocks behind a "Show N more lines" button |
 | `code.collapse_lines` | `25` | Visible lines when collapsed; blocks collapse only when longer by 5+ lines |
+| `links.title` | `""` | `h1` on the links page; empty = the page's front-matter `title:`, then `"Links"` |
+| `links.subtitle` | `""` | Optional line under the links-page `h1`; empty = nothing |
 | `grid.columns` | `1` | Index page columns (1 = list, 2–6 = grid) |
 | `grid.rows` | `3` | Rows per page; `per_page` is set to `columns × rows` |
 | `cover.default` | `""` | Fallback cover image path |
@@ -160,6 +163,25 @@ series: My Series Name              # optional; numbered series navigation strip
 ```
 
 `<!-- more -->` in the post body also sets the excerpt boundary.
+
+## Links page
+
+A masonry board of external bookmarks at `/links/`. Create `source/links/index.md` with `layout: links`, then list the entries in `source/_data/links.yml`:
+
+```yaml
+- title: "Hexo Documentation"
+  url: "https://hexo.io/docs/"
+  abstract: "The official reference for Hexo."
+  subtitle: "Static site generator"      # optional
+  thumbnail: "/images/links/hexo.png"    # optional; local path or absolute URL
+  tags: [docs, tools]                    # optional; list, single bare value, or omitted
+```
+
+`title`, `url`, and `abstract` are required; the rest are optional.
+
+Tags are opt-in per entry. As soon as **any** entry has them, a single-select filter chip bar appears above the grid and each tagged card grows a row of clickable tag pills — clicking either narrows the board to that tag, and the count line switches to `N of M links`. Entries without tags stay visible only under the `All` chip. With no tags anywhere, the bar is not rendered at all.
+
+Set the heading and an optional standfirst with `links.title` / `links.subtitle` (see [Configuration](#configuration)); by default the `h1` falls back to the page's own front-matter `title:`, then to `"Links"`.
 
 ## Showroom
 

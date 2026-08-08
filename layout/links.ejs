@@ -11,21 +11,51 @@
 
 <%
   const links = site.data.links || []
+
+  // Non-string config values (bare YAML booleans/numbers) are ignored, not
+  // stringified — same posture as cfgStr in _partial/header.ejs.
+  const cfgStr = v => (typeof v === 'string' ? v.trim() : '')
+  const linksCfg = theme.links || {}
+
+  const pageTitle    = cfgStr(linksCfg.title) || cfgStr(page.title) || 'Links'
+  const pageSubtitle = cfgStr(linksCfg.subtitle)
+
+  // `tags:` may be a list, a bare scalar, or absent — normalise to string[]
+  const linkTags = l => (Array.isArray(l.tags) ? l.tags : [l.tags]).map(cfgStr).filter(Boolean)
+
+  const _tags = [], _tagSeen = new Set()
+  links.forEach(l => linkTags(l).forEach(t => {
+    if (!_tagSeen.has(t)) { _tagSeen.add(t); _tags.push(t) }
+  }))
+  _tags.sort()
 %>
 
 <div class="archive-wrapper">
   <main id="main-content" role="main">
 
     <header class="page-header">
-      <h1>Links</h1>
-      <p class="page-header__meta"><%= links.length %> links</p>
+      <h1><%= pageTitle %></h1>
+      <% if (pageSubtitle) { %>
+        <p class="page-header__subtitle"><%= pageSubtitle %></p>
+      <% } %>
+      <p class="page-header__meta" data-links-total="<%= links.length %>"><%= links.length %> links</p>
     </header>
+
+    <% if (_tags.length) { %>
+    <div class="links-filters filter-bar" role="group" aria-label="Filter links by tag">
+      <button type="button" class="filter-chip filter-chip--active" data-filter-value="" aria-pressed="true">All</button>
+      <% _tags.forEach(t => { %>
+        <button type="button" class="filter-chip" data-filter-value="<%= t %>" aria-pressed="false">#<%= t %></button>
+      <% }) %>
+    </div>
+    <% } %>
 
     <div class="links-grid">
       <% links.forEach(function(link) {
            const host = link.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0]
+           const tags = linkTags(link)
       %>
-        <article class="link-card">
+        <article class="link-card" data-tags="<%= tags.join('|') %>">
           <% if (link.thumbnail) { %>
           <div class="link-card__thumb">
             <img src="<%- url_for(link.thumbnail) %>" alt="" loading="lazy">
@@ -37,6 +67,13 @@
               <p class="link-card__subtitle"><%= link.subtitle %></p>
             <% } %>
             <p class="link-card__abstract"><%= link.abstract %></p>
+            <% if (tags.length) { %>
+              <div class="link-card__tags">
+                <% tags.forEach(t => { %>
+                  <button type="button" class="link-card__tag" data-filter-value="<%= t %>">#<%= t %></button>
+                <% }) %>
+              </div>
+            <% } %>
             <a class="link-card__url"
                href="<%= link.url %>"
                target="_blank"
@@ -53,6 +90,7 @@
 <%- partial('_partial/toast') %>
 
 <script src="<%- url_for('/js/nav.js') %>" defer></script>
+<script src="<%- url_for('/js/links-filter.js') %>" defer></script>
 
 </body>
 </html>
