@@ -3,9 +3,10 @@
   const coverImg = resolve_cover(post)
   const category = post.categories && post.categories.length ? post.categories.first() : null
   const readTime = theme.reading_time ? reading_time(post.content) : ''
+  const isLargeCover = coverImg ? large_cover(post) : false
 %>
 
-<article class="post-card fade-in">
+<article class="post-card fade-in<%= isLargeCover ? ' post-card--large' : '' %>">
 
   <% if (coverImg) { %>
     <a class="post-card__cover" href="<%- url_for(post.path) %>" tabindex="-1" aria-hidden="true">

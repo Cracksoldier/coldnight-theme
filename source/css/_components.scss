@@ -461,6 +461,26 @@ button.navbar__hamburger {
   }
 }
 
+// ─── Large thumbnail (opt-in: cover_large / cover.large) ─────────────────────
+// Neutralises the list-view side-by-side layout for one card. Written as
+// `.post-card.post-card--large` so the cover rule outranks the (0,3,0)
+// `.post-grid--list .post-card__cover` above without depending on source order.
+// In grid mode (columns >= 2) cards already stack, so the modifier is inert.
+
+.post-grid--list .post-card.post-card--large {
+  flex-direction: column;
+
+  .post-card__cover {
+    width: 100%;
+    min-width: 0;
+    aspect-ratio: 16 / 9;
+  }
+
+  .post-card__body {
+    padding: $sp-6;
+  }
+}
+
 // ─── Links page ───────────────────────────────────────────────────────────────
 
 .links-grid {
@@ -830,6 +850,17 @@ button.navbar__hamburger {
   display: flex;
   flex-direction: column;
   flex: 1;
+}
+
+// Large thumbnail (opt-in) — hero cover above the body instead of beside it.
+
+.pinned-post--large {
+  flex-direction: column;
+
+  .pinned-post__cover {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+  }
 }
 
 .pinned-post__meta {

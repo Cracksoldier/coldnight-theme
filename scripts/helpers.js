@@ -129,6 +129,21 @@ hexo.extend.helper.register('resolve_cover', function (post) {
   return cover.default || ''
 })
 
+// ─── Large card/hero thumbnail (opt-in) ──────────────────────────────────────
+// Cover above the body at full width instead of beside it. Per-post
+// cover_large: (bare boolean, strict identity — same convention as
+// cover_image: false / ai_assisted) wins over the site-wide cover.large config
+// in both directions. The string "true" is tolerated on the config key for the
+// same reason as cover.fallback: "false" — silently ignoring a quoted value
+// would invert the user's intent.
+
+hexo.extend.helper.register('large_cover', function (post) {
+  if (post.cover_large === true) return true
+  if (post.cover_large === false) return false
+  const cover = this.theme && this.theme.cover
+  return !!(cover && (cover.large === true || cover.large === 'true'))
+})
+
 // ─── TOC helper ───────────────────────────────────────────────────────────────
 // Usage in EJS: <%- render_toc(page.content) %>
 

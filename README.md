@@ -119,6 +119,7 @@ All options live in `themes/coldnight/_config.yml` (submodule) or `node_modules/
 | `grid.rows` | `3` | Rows per page; `per_page` is set to `columns × rows` |
 | `cover.default` | `""` | Fallback cover image path |
 | `cover.fallback` | `true` | `false` = posts without `cover_image` render no card/hero thumbnail (og:image still uses `cover.default`) |
+| `cover.large` | `false` | `true` = card/hero thumbnails span the full card width above the text instead of sitting beside it (list view); per-post `cover_large:` overrides it |
 | `cover.aspect_ratio` | `"16/9"` | Cover image aspect ratio |
 | `lightgallery.enabled` | `true` | LightGallery CDN assets |
 | `lightgallery.auto_mount` | `true` | Auto-wrap post images as gallery items |
@@ -155,6 +156,7 @@ categories: [Dev]
 tags: [javascript, hexo]
 cover_image: /images/cover.jpg      # optional; falls back to cover.default — `false` hides the card thumbnail for this post
 cover_caption: "Photo by Jane Doe"  # optional; wraps cover in <figure><figcaption>
+cover_large: true                   # optional; full-width thumbnail above the card body (overrides cover.large)
 excerpt: "Override the auto-excerpt shown on post cards."
 updated: 2026-06-01                 # optional; shows "↻ Updated YYYY-MM-DD"
 pinned: true                        # optional; featured hero on index page 1
