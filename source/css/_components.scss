@@ -462,10 +462,13 @@ button.navbar__hamburger {
 }
 
 // ─── Large thumbnail (opt-in: cover_large / cover.large) ─────────────────────
-// Neutralises the list-view side-by-side layout for one card. Written as
-// `.post-card.post-card--large` so the cover rule outranks the (0,3,0)
-// `.post-grid--list .post-card__cover` above without depending on source order.
-// In grid mode (columns >= 2) cards already stack, so the modifier is inert.
+// Neutralises the list-view side-by-side layout for one card. The compound
+// `.post-card.post-card--large` is (0,3,0), which beats the (0,2,0)
+// `.post-grid--list .post-card` above outright — a single class would tie it
+// and win on source order alone. The nested cover rule outranks
+// `.post-grid--list .post-card__cover` either way. Cards in grid mode
+// (columns >= 2) already stack, so the modifier is inert there; the hero
+// equivalent below is not scoped to the grid and applies at any column count.
 
 .post-grid--list .post-card.post-card--large {
   flex-direction: column;
