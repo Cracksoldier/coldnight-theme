@@ -24,6 +24,7 @@ themes/coldnight/
 - Never hardcode color values — always reference a variable from `_variables.scss`.
 - `$font-sans` and `$font-mono` are **unquoted** SCSS lists. Wrapping them in quotes causes the browser to treat the entire comma-separated value as one unrecognised font name.
 - All spacing uses `$sp-*` tokens from `_variables.scss`. Do not use raw `px` or `rem` values for spacing.
+- **Any positioned `<img>` inside the post body needs a compound selector.** `.post-body img, .prose img` (`_typography.scss`) sets `height: auto` at (0,1,1) and beats a lone BEM class at (0,1,0). Losing `height: 100%` on an absolutely-positioned *replaced* element is doubly bad: it falls back to the intrinsic height (not the space between `top`/`bottom`), and `bottom` is then dropped as over-constrained — so it anchors to the top and overflows, and `object-fit: cover` has nothing left to crop. Write `.parent .parent__img` / `& &__img` (0,2,0). Current call sites: `.video-facade__thumb`, `.model-viewer__poster-img`, `.compare-slider__img--before`. Same cascade-before-specificity trap as the `[hidden]` guards on filterable items.
 
 ## Fonts (self-hosted)
 

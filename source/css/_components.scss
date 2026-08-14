@@ -1245,7 +1245,14 @@ details.spoiler[open] .spoiler__summary::before {
   }
 }
 
-.video-facade__thumb {
+// Compound selector (0,2,0) is deliberate: `.post-body img, .prose img` sets
+// `height: auto` at (0,1,1) and beats a lone `.video-facade__thumb` (0,1,0).
+// Losing `height: 100%` leaves this abspos replaced element at its intrinsic
+// 4:3 height — anchored to `top` (bottom is dropped as over-constrained),
+// overflowing the 16:9 box, and with nothing left for `cover` to crop, so
+// hqdefault's baked-in letterbox bars show as a black band. Same trap as the
+// `[hidden]` guards: any positioned image inside the post body needs this.
+.video-facade .video-facade__thumb {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -2479,7 +2486,9 @@ select.form-input {
     }
   }
 
-  &__poster-img {
+  // `& &__poster-img` → (0,2,0), to beat `.post-body img`'s `height: auto`
+  // (0,1,1) — see the note on .video-facade__thumb
+  & &__poster-img {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -2728,16 +2737,21 @@ select.form-input {
   &__img {
     display: block;
     width: 100%;
-    height: auto;
+    height: auto;   // the after image is in flow and sets the frame height
     margin: 0;
+  }
 
-    &--before {
-      position: absolute;
-      inset: 0;
-      height: 100%;
-      object-fit: cover;
-      clip-path: inset(0 calc(100% - var(--compare-pos)) 0 0);
-    }
+  // Hoisted out of `&__img` and written as `& &__img--before` → (0,2,0), so it
+  // beats `.post-body img`'s `height: auto` (0,1,1) — see the note on
+  // .video-facade__thumb. Nesting it as `&--before` compiled to (0,1,0) and
+  // lost, leaving the before image at its intrinsic height: it only lined up
+  // with the after image while both source files happened to share dimensions.
+  & &__img--before {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    object-fit: cover;
+    clip-path: inset(0 calc(100% - var(--compare-pos)) 0 0);
   }
 
   &__divider {
