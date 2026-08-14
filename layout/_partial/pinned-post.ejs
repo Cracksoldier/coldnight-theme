@@ -4,7 +4,7 @@
   const readTime = theme.reading_time ? reading_time(post.content) : ''
   const isLargeCover = coverImg ? large_cover(post) : false
 %>
-<article class="pinned-post fade-in<%= isLargeCover ? ' pinned-post--large' : '' %>">
+<article class="pinned-post fade-in<%= isLargeCover ? ' pinned-post--large' : '' %>"<%- card_color_style(post) %>>
 
   <span class="pinned-post__marker">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 17v5"/><path d="M9 3h6l1 7 2.5 3h-13L8 10z"/></svg>

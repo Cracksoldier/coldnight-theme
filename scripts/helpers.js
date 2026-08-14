@@ -144,6 +144,32 @@ hexo.extend.helper.register('large_cover', function (post) {
   return !!(cover && (cover.large === true || cover.large === 'true'))
 })
 
+// ─── Per-post card colors (opt-in) ───────────────────────────────────────────
+// card_border: / card_bg: front-matter override the card + hero surface for one
+// post. Hex only (#rgb, #rgba, #rrggbb, #rrggbbaa) — a deliberately tighter
+// allowlist than ICON_COLOR_RE in header.ejs: quotes, semicolons and parens can
+// never pass, so the value is safe to interpolate raw into style=". Invalid or
+// non-string values are dropped per key, never stringified. Returns the whole
+// attribute (like category_desc_attr) so call sites emit it with <%- %>.
+
+const CARD_HEX_RE = /^#([0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i
+
+function cardHex (v) {
+  if (typeof v !== 'string') return ''
+  const s = v.trim()
+  return CARD_HEX_RE.test(s) ? s : ''
+}
+
+hexo.extend.helper.register('card_color_style', function (post) {
+  if (!post) return ''
+  const decls = []
+  const border = cardHex(post.card_border)
+  const bg = cardHex(post.card_bg)
+  if (border) decls.push('--card-border: ' + border)
+  if (bg) decls.push('--card-bg: ' + bg)
+  return decls.length ? ' style="' + decls.join('; ') + '"' : ''
+})
+
 // ─── TOC helper ───────────────────────────────────────────────────────────────
 // Usage in EJS: <%- render_toc(page.content) %>
 

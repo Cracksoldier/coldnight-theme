@@ -157,6 +157,8 @@ tags: [javascript, hexo]
 cover_image: /images/cover.jpg      # optional; falls back to cover.default — `false` hides the card thumbnail for this post
 cover_caption: "Photo by Jane Doe"  # optional; wraps cover in <figure><figcaption>
 cover_large: true                   # optional; full-width thumbnail above the card body (overrides cover.large)
+card_border: "#f5c518"              # optional; hex only — recolours this post's card/hero border
+card_bg: "#1c1608"                  # optional; hex only — recolours this post's card/hero background
 excerpt: "Override the auto-excerpt shown on post cards."
 updated: 2026-06-01                 # optional; shows "↻ Updated YYYY-MM-DD"
 pinned: true                        # optional; featured hero on index page 1

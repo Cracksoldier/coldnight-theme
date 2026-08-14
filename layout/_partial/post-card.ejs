@@ -6,7 +6,7 @@
   const isLargeCover = coverImg ? large_cover(post) : false
 %>
 
-<article class="post-card fade-in<%= isLargeCover ? ' post-card--large' : '' %>">
+<article class="post-card fade-in<%= isLargeCover ? ' post-card--large' : '' %>"<%- card_color_style(post) %>>
 
   <% if (coverImg) { %>
     <a class="post-card__cover" href="<%- url_for(post.path) %>" tabindex="-1" aria-hidden="true">

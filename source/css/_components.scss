@@ -318,8 +318,8 @@ button.navbar__hamburger {
 // ─── Post Card ───────────────────────────────────────────────────────────────
 
 .post-card {
-  background: $bg-elevated;
-  border: 1px solid $border-subtle;
+  background: var(--card-bg, #{$bg-elevated});
+  border: 1px solid var(--card-border, #{$border-subtle});
   border-radius: $radius-lg;
   overflow: hidden;
   display: flex;
@@ -327,7 +327,8 @@ button.navbar__hamburger {
   transition: border-color $transition-fast, box-shadow $transition-fast;
 
   &:hover {
-    border-color: $border-focus;
+    // a per-post card_border survives hover — the shadow lift is the cue
+    border-color: var(--card-border, #{$border-focus});
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   }
 }
@@ -802,8 +803,8 @@ button.navbar__hamburger {
 
 .pinned-post {
   position: relative;
-  background: $bg-elevated;
-  border: 1px solid $border-focus;
+  background: var(--card-bg, #{$bg-elevated});
+  border: 1px solid var(--card-border, #{$border-focus});
   border-radius: $radius-lg;
   overflow: hidden;
   display: flex;
