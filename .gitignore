@@ -1,0 +1,5 @@
+*.tgz
+node_modules/
+
+# Vendored bundles ship without their source maps — see .npmignore.
+source/vendor/**/*.map
