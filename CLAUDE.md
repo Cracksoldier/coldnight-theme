@@ -245,6 +245,7 @@ Per-entry `tags:` in `source/_data/links.yml` accepts a list **or** a single bar
 | `{% model %}` | `{% model src="/models/foo.glb" [height="400px"] [bg="#111"] [view="iso"] [autorotate="true"] [thumbnail="/images/thumb.png"] [caption="…"] %}` |
 | `{% audio %}` | `{% audio src="/audio/file.mp3" [title="…"] [caption="…"] %}` |
 | `{% compare %}` | `{% compare before="/a.png" after="/b.png" [label_before="…"] [label_after="…"] [caption="…"] %}` |
+| `{% chart %}` | `{% chart bar\|line\|pie [x="A, B, C"] [data="file"] [title="…"] [caption="…"] [unit="ms"] [max="100"] %}Label: 1, 2, 3{% endchart %}` — build-time SVG, see "Charts" below |
 
 ## Abstract block
 
@@ -340,6 +341,19 @@ Set `audio_player: false` in the theme config to disable the tag globally.
 ## Compare slider
 
 `{% compare before="..." after="..." %}` renders a before/after image slider (`<figure class="compare-slider">`). The interactive control is a transparent full-size native `<input type="range">` — pointer, touch, and keyboard handling come free; do not replace it with custom drag handlers. The *before* image is clipped via `clip-path: inset(0 calc(100% - var(--compare-pos)) 0 0)`; `compare-slider.js` (IIFE, conditionally loaded like audio/model) only updates the `--compare-pos` custom property. Without JS the slider is a static 50/50 split. Both images carry explicit `loading="lazy"` so the blanket lazy pass skips them. Disable globally with `compare_slider: false`.
+
+## Charts (build-time SVG)
+
+`{% chart %}` emits a finished `<svg>` from `scripts/helpers.js` — no client JS, no vendor payload, no conditional `<script>` in `post.ejs`. It follows the theme's build-time-visualisation idiom (`stats.ejs` bars, `heatmap_data()`), not the client-side idiom of `{% model %}`/`{% audio %}`. Mermaid stays the answer for flowcharts, sequence diagrams, and its own chart types.
+
+- **The `<figure>` wrapper is load-bearing.** `stripHtml` drops `<figure>` wholesale, so SVG `<text>` labels are automatically excluded from word count, reading time, `og:description`, excerpts and llms.txt. Never change the root element to a `<div>`.
+- **No colour literals in `helpers.js`.** The SVG carries only `chart__series--1..N` classes; `_components.scss` cycles `$chart-palette` (`_variables.scss`) into a `--chart-color` custom property per class. `CHART_PALETTE_SIZE` in `helpers.js` must equal the palette length — a 7th series would otherwise inherit an unset colour. Same "config/JS can't reach compiled SCSS" bridge as `--card-border` and `--compare-pos`.
+- **No config key**, deliberately. The keys that exist elsewhere (`audio_player`, `compare_slider`, `model_viewer`, `pdf_viewer`) all suppress a JS payload; there is none here. `{% note %}`, `{% tabs %}`, `{% download %}` set the same precedent.
+- **`hexo.locals.get('data')` is populated at tag-render time** — verified, not assumed; `data=` resolves inline with no filter round-trip and no cache. An inline body always wins over `data=`.
+- **Print reveals the table, hides the legend** (`_print.scss`). The universal `background: #fff !important` reset blanks the legend swatches, which are background-driven; SVG `fill` survives it, so the plot itself prints fine.
+- `.chart__data` is a visually-hidden `<table>` carrying the raw numbers for screen readers, print, and the ePub export. It is the only visually-hidden utility in the theme — `.skip-nav` is a different (focusable) pattern.
+- Bounds: 50 categories, 8 series. `niceMax()` rounds the y-axis ceiling to a 1/2/2.5/5/10 step unless `max=` overrides it. A pie with a single positive slice emits a `<circle>` — the arc path degenerates at 360°.
+- `_chartCounter` (module-level, for unique `aria-labelledby` ids) resets in `before_generate` alongside `_tabCounter`.
 
 ## Stale-post warning
 

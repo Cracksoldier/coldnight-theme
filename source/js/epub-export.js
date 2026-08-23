@@ -149,7 +149,29 @@
         'table{border-collapse:collapse;width:100%}' +
         'td,th{border:1px solid #ddd;padding:.5em}' +
         'figure{margin:1.5em 0}figcaption{font-size:.875em;color:#666;text-align:center;margin-top:.25em}' +
-        'details summary{cursor:pointer;font-weight:600}')
+        'details summary{cursor:pointer;font-weight:600}' +
+        // Charts. The theme palette is tuned for the dark site background and
+        // washes out on ePub white, so this is a darkened parallel set — and it
+        // avoids var(), which older reader engines don't resolve. Each rule
+        // covers SVG fill/stroke and the legend swatch's background at once.
+        '.chart__series--1{fill:#2563eb;stroke:#2563eb;background:#2563eb}' +
+        '.chart__series--2{fill:#d97706;stroke:#d97706;background:#d97706}' +
+        '.chart__series--3{fill:#059669;stroke:#059669;background:#059669}' +
+        '.chart__series--4{fill:#0891b2;stroke:#0891b2;background:#0891b2}' +
+        '.chart__series--5{fill:#dc2626;stroke:#dc2626;background:#dc2626}' +
+        '.chart__series--6{fill:#64748b;stroke:#64748b;background:#64748b}' +
+        '.chart__series polyline{fill:none;stroke-width:2.5}' +
+        '.chart--pie .chart__series path,.chart--pie .chart__series circle{stroke:#fff;stroke-width:2}' +
+        '.chart__svg{width:100%;height:auto}' +
+        '.chart__gridline{stroke:#ddd}.chart__axisline{stroke:#999}' +
+        // SVG <text> would otherwise inherit the serif body font and render as
+        // hairlines at these sizes.
+        '.chart__svg text{font-family:sans-serif}' +
+        '.chart__tick{fill:#555;font-size:11px}' +
+        '.chart__slice-label{fill:#fff;font-size:13px;font-weight:600}' +
+        '.chart__legend{list-style:none;padding:0;font-size:.85em}' +
+        '.chart__legend-item{display:inline-block;margin-right:1em}' +
+        '.chart__swatch{display:inline-block;width:.7em;height:.7em;margin-right:.35em}')
 
       return zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' })
     })

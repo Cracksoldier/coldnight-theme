@@ -11,9 +11,10 @@ A dark navy Hexo blog theme. Minimal, readable, and opinionated.
 - Full-text search (client-side JSON index)
 - Series navigation strip for multi-part posts
 - Sidebar widgets: TOC, recent posts, tag cloud, archives, about
-- Tag plugin ecosystem: `{% gallery %}`, `{% note %}`, `{% tabs %}`, `{% timeline %}`, `{% spoiler %}`, `{% download %}`, `{% video %}`, `{% pdf %}`, `{% audio %}`
+- Tag plugin ecosystem: `{% gallery %}`, `{% note %}`, `{% tabs %}`, `{% timeline %}`, `{% spoiler %}`, `{% download %}`, `{% video %}`, `{% pdf %}`, `{% audio %}`, `{% compare %}`, `{% model %}`, `{% chart %}`
+- Build-time SVG charts (`{% chart %}`) — bar, line, and pie, with no client-side library
 - KaTeX math rendering (`$...$` inline, `$$...$$` block)
-- Mermaid diagram support
+- Mermaid diagram support, including its chart types (`xychart-beta`, `pie`, `radar`, `sankey-beta`, `treemap`, `quadrantChart`)
 - In-page PDF preview via PDF.js (lazy-loaded modal)
 - LightGallery image viewer with zoom and thumbnails
 - ePub export button
@@ -125,7 +126,7 @@ All options live in `themes/coldnight/_config.yml` (submodule) or `node_modules/
 | `lightgallery.auto_mount` | `true` | Auto-wrap post images as gallery items |
 | `lightgallery.zoom` | `true` | Zoom plugin |
 | `lightgallery.thumbnail` | `true` | Thumbnail strip plugin |
-| `mermaid.enabled` | `true` | Render ` ```mermaid ` blocks as SVG |
+| `mermaid.enabled` | `true` | Render ` ```mermaid ` blocks as SVG (client-side; includes Mermaid's own `xychart-beta`/`pie`/`radar`/`sankey-beta`/`treemap`/`quadrantChart` types) |
 | `mermaid.theme` | `dark` | `default` \| `dark` \| `neutral` \| `forest` |
 | `math.enabled` | `true` | KaTeX math rendering |
 | `pdf_viewer` | `true` | Load PDF.js viewer on post pages |
@@ -314,6 +315,58 @@ Embeds a custom HTML5 audio player with dark-themed controls: play/pause, scruba
 **Keyboard:** focus the seek bar and use ← / → to jump ±5 seconds.
 
 Set `audio_player: false` in the theme config to disable the tag globally.
+
+### `{% chart %}`
+
+```
+{% chart bar title="Lines of code by language" %}
+Rust: 4200
+Go: 3100
+Python: 2700
+{% endchart %}
+
+{% chart line x="Jan, Feb, Mar, Apr" unit="ms" %}
+API: 182, 174, 158, 141
+Worker: 96, 103, 88, 84
+{% endchart %}
+
+{% chart pie title="Traffic sources" %}
+Direct: 55
+Search: 128
+Social: 34
+{% endchart %}
+```
+
+Renders a finished `<svg>` **at build time** — no charting library, no runtime, nothing to download. Charts survive printing, the ePub export, and readers with JavaScript disabled.
+
+Each body line is `Label: value`, or `Label: v1, v2, v3` for multi-point series. Blank lines and lines starting with `#` are skipped. Bar and line charts read a single value per row as one series across categories; several values per row make each row its own series. Pie always treats one line as one slice.
+
+| Parameter | Required | Notes |
+|-----------|----------|-------|
+| type | no | First bare word: `bar`, `line`, or `pie`. Anything else falls back to `bar` |
+| `x` | no | Comma-separated category labels; switches rows to multi-point series |
+| `data` | no | Key into `source/_data/<name>.yml`; ignored when the body is non-empty |
+| `title` | no | Heading above the chart, also the SVG accessible name |
+| `caption` | no | Muted text below the chart |
+| `unit` | no | Suffix appended to axis and table values, e.g. `ms` or `%` |
+| `max` | no | Y-axis ceiling; defaults to a rounded value above the largest data point |
+
+Data can live in a YAML file instead, so figures can be shared across posts. `x` is the category axis and every other key is a series:
+
+```yaml
+# source/_data/benchmarks.yml
+x: [1 KB, 10 KB, 100 KB, 1 MB]
+Rust: [0.8, 1.9, 12.4, 108]
+Go: [1.1, 2.6, 17.8, 154]
+```
+
+```
+{% chart line data="benchmarks" unit="ms" %}{% endchart %}
+```
+
+Series colours come from the theme palette and cycle after six. Every chart carries `role="img"` with a generated description of each value, plus a visually hidden data table — screen readers get the real numbers, and that table is what appears in print instead of the colourless legend.
+
+For anything beyond bar/line/pie — flowcharts, sequence diagrams, radar, sankey, treemap — use a ` ```mermaid ` block, which renders client-side.
 
 ## llms.txt
 

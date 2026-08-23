@@ -43,6 +43,10 @@ $amber-border:   rgba(251, 191, 36, 0.30);
 $amber-border-h: rgba(251, 191, 36, 0.55);
 $amber-bg-h:     rgba(251, 191, 36, 0.18);
 
+// Chart series colours, cycled by index (see CHART_PALETTE_SIZE in helpers.js —
+// the two must stay in sync or a 7th series would fall back to an unset colour)
+$chart-palette: $accent-hover, $amber, $success, $accent-light, $danger, $text-secondary;
+
 // ─── Typography ──────────────────────────────────────────────────────────────
 
 $font-sans: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;

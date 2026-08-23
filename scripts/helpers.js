@@ -4,6 +4,7 @@ const themeVersion = require('../package.json').version
 const moment = require('moment-timezone')
 
 let _tabCounter = 0
+let _chartCounter = 0
 
 const stripHtml = (html) => html
   .replace(/<(pre|figure)\b[^>]*>[\s\S]*?<\/\1>/gi, '')
@@ -450,6 +451,7 @@ hexo.extend.helper.register('has_explicit_updated', function (page) {
 
 hexo.extend.filter.register('before_generate', function () {
   _tabCounter = 0
+  _chartCounter = 0
   _postIndexCache = null
   _pinnedPostCache = undefined
   _heatmapCache = null
@@ -993,6 +995,268 @@ hexo.extend.tag.register('compare', function (args) {
     '</figure>'
   )
 })
+
+// ─── Chart tag ────────────────────────────────────────────────────────────────
+// Usage:
+// {% chart bar title="Lines of code" %}
+// Rust: 4200
+// Go: 3100
+// {% endchart %}
+//
+// {% chart line x="Jan, Feb, Mar, Apr" unit="ms" %}
+// Rust: 12, 19, 23, 31
+// Go: 8, 14, 16, 20
+// {% endchart %}
+//
+// {% chart bar data="benchmarks" %}{% endchart %}   ← source/_data/benchmarks.yml
+//
+// Rendered to finished SVG at build time — no JS, no runtime cost, and it
+// survives print, the ePub export and JS-disabled readers. The <figure> wrapper
+// is load-bearing: stripHtml drops figures wholesale, which keeps the SVG's text
+// labels out of word counts, excerpts and og:description.
+
+const CHART_W = 640
+const CHART_H = 320
+const CHART_PAD = { top: 16, right: 16, bottom: 44, left: 56 }
+const CHART_MAX_CATS = 50
+const CHART_MAX_SERIES = 8
+const CHART_PALETTE_SIZE = 6
+
+// Round an axis ceiling up to a readable 1/2/2.5/5/10 × 10ⁿ step.
+function niceMax(v) {
+  if (!(v > 0)) return 1
+  const pow = Math.pow(10, Math.floor(Math.log10(v)))
+  const step = [1, 2, 2.5, 5, 10].find(s => v / pow <= s + 1e-9) || 10
+  return step * pow
+}
+
+const fmtNum = n => String(Number(n.toFixed(2)))
+const chartSwatch = i => 'chart__series--' + ((i % CHART_PALETTE_SIZE) + 1)
+
+// Body lines are `Label: v1, v2, …`; blank lines and # comments are skipped.
+function parseChartRows(text) {
+  const rows = []
+  String(text || '').split('\n').forEach(line => {
+    const t = line.trim()
+    if (!t || t.charAt(0) === '#') return
+    const m = t.match(/^([^:]+):\s*(.*)$/)
+    if (!m) return
+    const label = m[1].trim()
+    const values = m[2].split(',').map(v => Number(v.trim()))
+      .filter(v => Number.isFinite(v))
+    if (label && values.length) rows.push({ label, values })
+  })
+  return rows
+}
+
+// YAML mirrors the inline form: { x: [...], Series: [...] } or { Label: n }.
+function chartRowsFromData(name) {
+  const d = (hexo.locals.get('data') || {})[name]
+  if (!d || typeof d !== 'object' || Array.isArray(d)) return { rows: [], cats: null }
+  const rows = []
+  let cats = null
+  Object.keys(d).forEach(k => {
+    if (k === 'x') { cats = [].concat(d.x).map(String); return }
+    const values = [].concat(d[k]).map(Number).filter(v => Number.isFinite(v))
+    if (values.length) rows.push({ label: String(k), values })
+  })
+  return { rows, cats }
+}
+
+// One value per row ⇒ row labels are the categories (single series). Several
+// values per row ⇒ each row is a series plotted across `cats`. Pie is always
+// the former.
+function resolveChartSeries(rows, catsAttr, type) {
+  const maxLen = rows.reduce((m, r) => Math.max(m, r.values.length), 0)
+  if (type === 'pie' || maxLen === 1) {
+    const kept = rows.slice(0, CHART_MAX_CATS)
+    return {
+      cats: kept.map(r => r.label),
+      series: [{ label: '', values: kept.map(r => r.values[0]) }]
+    }
+  }
+  const cats = (catsAttr && catsAttr.length
+    ? catsAttr
+    : Array.from({ length: maxLen }, (_, i) => String(i + 1))).slice(0, CHART_MAX_CATS)
+  const series = rows.slice(0, CHART_MAX_SERIES).map(r => ({
+    label: r.label,
+    values: cats.map((_, i) => Number.isFinite(r.values[i]) ? r.values[i] : 0)
+  }))
+  return { cats, series }
+}
+
+function chartAxis(max, cats, unit) {
+  const x0 = CHART_PAD.left, x1 = CHART_W - CHART_PAD.right
+  const y1 = CHART_H - CHART_PAD.bottom
+  const plotH = y1 - CHART_PAD.top
+  let grid = '', labels = ''
+  for (let i = 0; i <= 4; i++) {
+    const y = (y1 - plotH * i / 4).toFixed(1)
+    grid += '<line class="chart__gridline" x1="' + x0 + '" y1="' + y + '" x2="' + x1 + '" y2="' + y + '"/>'
+    labels += '<text class="chart__tick" x="' + (x0 - 8) + '" y="' + y +
+      '" text-anchor="end" dominant-baseline="middle">' + escHtml(fmtNum(max * i / 4) + unit) + '</text>'
+  }
+  // Past ~6 categories horizontal labels collide, so tilt them instead.
+  const band = (x1 - x0) / cats.length
+  const rotate = cats.length > 6
+  cats.forEach((c, i) => {
+    const cx = (x0 + band * i + band / 2).toFixed(1)
+    const ty = y1 + (rotate ? 12 : 18)
+    labels += '<text class="chart__tick chart__tick--cat" x="' + cx + '" y="' + ty + '"' +
+      (rotate ? ' text-anchor="end" transform="rotate(-45 ' + cx + ' ' + ty + ')"' : ' text-anchor="middle"') +
+      '>' + escHtml(c) + '</text>'
+  })
+  return '<g class="chart__grid">' + grid +
+    '<line class="chart__axisline" x1="' + x0 + '" y1="' + y1 + '" x2="' + x1 + '" y2="' + y1 + '"/>' +
+    '</g><g class="chart__labels">' + labels + '</g>'
+}
+
+const chartTip = (s, cat, v, unit) =>
+  '<title>' + escHtml((s.label ? s.label + ' — ' : '') + cat + ': ' + fmtNum(v) + unit) + '</title>'
+
+function chartBars(cats, series, max, unit) {
+  const x0 = CHART_PAD.left, x1 = CHART_W - CHART_PAD.right
+  const y1 = CHART_H - CHART_PAD.bottom
+  const plotH = y1 - CHART_PAD.top
+  const band = (x1 - x0) / cats.length
+  const groupW = band * 0.7
+  const barW = groupW / series.length
+  return series.map((s, si) => {
+    const rects = s.values.map((v, i) => {
+      const h = max > 0 ? Math.max(0, (v / max) * plotH) : 0
+      const x = x0 + band * i + (band - groupW) / 2 + barW * si
+      return '<rect x="' + x.toFixed(1) + '" y="' + (y1 - h).toFixed(1) +
+        '" width="' + Math.max(1, barW - 2).toFixed(1) + '" height="' + h.toFixed(1) + '">' +
+        chartTip(s, cats[i], v, unit) + '</rect>'
+    }).join('')
+    return '<g class="chart__series ' + chartSwatch(si) + '">' + rects + '</g>'
+  }).join('')
+}
+
+function chartLines(cats, series, max, unit) {
+  const x0 = CHART_PAD.left, x1 = CHART_W - CHART_PAD.right
+  const y1 = CHART_H - CHART_PAD.bottom
+  const plotH = y1 - CHART_PAD.top
+  const band = (x1 - x0) / cats.length
+  const px = i => x0 + band * i + band / 2
+  const py = v => y1 - (max > 0 ? (v / max) * plotH : 0)
+  return series.map((s, si) => {
+    const pts = s.values.map((v, i) => px(i).toFixed(1) + ',' + py(v).toFixed(1)).join(' ')
+    const dots = s.values.map((v, i) =>
+      '<circle cx="' + px(i).toFixed(1) + '" cy="' + py(v).toFixed(1) + '" r="3.5">' +
+      chartTip(s, cats[i], v, unit) + '</circle>').join('')
+    return '<g class="chart__series chart__series--line ' + chartSwatch(si) + '">' +
+      '<polyline points="' + pts + '"/>' + dots + '</g>'
+  }).join('')
+}
+
+function chartPie(cats, values, unit) {
+  const total = values.reduce((a, b) => a + (b > 0 ? b : 0), 0)
+  if (!(total > 0)) return ''
+  const cx = CHART_W / 2, cy = CHART_H / 2, r = 132
+  // A lone slice spans a full turn, where the arc's start and end points
+  // coincide and it collapses to nothing — draw a plain circle instead.
+  if (values.filter(v => v > 0).length === 1) {
+    const i = values.findIndex(v => v > 0)
+    return '<g class="chart__series ' + chartSwatch(i) + '">' +
+      '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '"><title>' +
+      escHtml(cats[i] + ': ' + fmtNum(values[i]) + unit + ' (100%)') + '</title></circle></g>'
+  }
+  let a = -Math.PI / 2
+  return values.map((v, i) => {
+    if (!(v > 0)) return ''
+    const frac = v / total
+    const a1 = a + frac * Math.PI * 2
+    const p = (ang) => (cx + r * Math.cos(ang)).toFixed(2) + ' ' + (cy + r * Math.sin(ang)).toFixed(2)
+    const d = 'M ' + cx + ' ' + cy + ' L ' + p(a) + ' A ' + r + ' ' + r + ' 0 ' +
+      (frac > 0.5 ? 1 : 0) + ' 1 ' + p(a1) + ' Z'
+    const pct = Math.round(frac * 100)
+    const mid = a + (a1 - a) / 2
+    const label = frac >= 0.05
+      ? '<text class="chart__slice-label" x="' + (cx + r * 0.65 * Math.cos(mid)).toFixed(1) +
+        '" y="' + (cy + r * 0.65 * Math.sin(mid)).toFixed(1) +
+        '" text-anchor="middle" dominant-baseline="middle">' + pct + '%</text>'
+      : ''
+    a = a1
+    return '<g class="chart__series ' + chartSwatch(i) + '"><path d="' + d + '"><title>' +
+      escHtml(cats[i] + ': ' + fmtNum(v) + unit + ' (' + pct + '%)') + '</title></path>' + label + '</g>'
+  }).join('')
+}
+
+// Screen-reader / print / ePub fallback carrying the same numbers as a table.
+function chartTable(cats, series, unit, title) {
+  return '<table class="chart__data">' +
+    (title ? '<caption>' + escHtml(title) + '</caption>' : '') +
+    '<thead><tr><th scope="col"></th>' +
+    cats.map(c => '<th scope="col">' + escHtml(c) + '</th>').join('') +
+    '</tr></thead><tbody>' +
+    series.map(s => '<tr><th scope="row">' + escHtml(s.label || 'Value') + '</th>' +
+      s.values.map(v => '<td>' + escHtml(fmtNum(v) + unit) + '</td>').join('') + '</tr>').join('') +
+    '</tbody></table>'
+}
+
+hexo.extend.tag.register('chart', function (args, content) {
+  const attrs = {}
+  let type = 'bar'
+  args.forEach((a, i) => {
+    const eq = a.indexOf('=')
+    if (eq === -1) { if (i === 0) type = a.toLowerCase(); return }
+    attrs[a.slice(0, eq)] = a.slice(eq + 1).replace(/^(["'])(.*)\1$/, '$2')
+  })
+  if (type !== 'bar' && type !== 'line' && type !== 'pie') type = 'bar'
+
+  // An inline body always wins over data=, being the more specific source.
+  let rows = parseChartRows(content)
+  let catsAttr = attrs.x ? attrs.x.split(',').map(s => s.trim()).filter(Boolean) : null
+  if (!rows.length && attrs.data) {
+    const fromData = chartRowsFromData(attrs.data)
+    rows = fromData.rows
+    if (!catsAttr && fromData.cats) catsAttr = fromData.cats
+  }
+  if (!rows.length) return ''
+
+  const { cats, series } = resolveChartSeries(rows, catsAttr, type)
+  if (!cats.length || !series.length) return ''
+
+  const unit = attrs.unit || ''
+  const title = attrs.title || ''
+  const uid = 'chart-' + (++_chartCounter)
+  const dataMax = series.reduce((m, s) => Math.max(m, ...s.values), 0)
+  const maxAttr = Number(attrs.max)
+  const max = Number.isFinite(maxAttr) && maxAttr > 0 ? maxAttr : niceMax(dataMax)
+
+  const plot = type === 'pie'
+    ? chartPie(cats, series[0].values, unit)
+    : chartAxis(max, cats, unit) +
+      (type === 'line' ? chartLines(cats, series, max, unit) : chartBars(cats, series, max, unit))
+  if (!plot) return ''
+
+  const desc = (type === 'pie' ? 'Pie' : type === 'line' ? 'Line' : 'Bar') + ' chart. ' +
+    series.map(s => (s.label ? s.label + ': ' : '') +
+      cats.map((c, i) => c + ' ' + fmtNum(s.values[i]) + unit).join(', ')).join('. ') + '.'
+
+  // Pie always needs a key; bar/line only once a series is actually named.
+  const legendItems = type === 'pie'
+    ? cats.map((c, i) => ({ label: c, cls: chartSwatch(i) }))
+    : (series.length > 1 || series[0].label
+        ? series.map((s, i) => ({ label: s.label, cls: chartSwatch(i) })) : [])
+
+  return '<figure class="chart chart--' + type + '">' +
+    (title ? '<figcaption class="chart__title">' + escHtml(title) + '</figcaption>' : '') +
+    '<svg class="chart__svg" viewBox="0 0 ' + CHART_W + ' ' + CHART_H + '" role="img" ' +
+      'preserveAspectRatio="xMidYMid meet" aria-labelledby="' + uid + '-t ' + uid + '-d">' +
+      '<title id="' + uid + '-t">' + escHtml(title || 'Chart') + '</title>' +
+      '<desc id="' + uid + '-d">' + escHtml(desc) + '</desc>' + plot +
+    '</svg>' +
+    (legendItems.length
+      ? '<ul class="chart__legend">' + legendItems.map(it =>
+          '<li class="chart__legend-item"><span class="chart__swatch ' + it.cls + '"></span>' +
+          escHtml(it.label) + '</li>').join('') + '</ul>'
+      : '') +
+    chartTable(cats, series, unit, title) +
+    (attrs.caption ? '<figcaption class="chart__caption">' + escHtml(attrs.caption) + '</figcaption>' : '') +
+    '</figure>'
+}, { ends: true })
 
 // ─── Shared page description ──────────────────────────────────────────────────
 // One line of plain text from a page: tags stripped (code/figure/math blocks

@@ -2824,6 +2824,120 @@ select.form-input {
   }
 }
 
+// ─── Charts (build-time SVG) ─────────────────────────────────────────────────
+
+.chart {
+  margin: $sp-6 0;
+
+  // Each series class carries only the colour; the fill/stroke rules below read
+  // it, so a swatch, a bar and a line all stay in sync from one declaration.
+  @each $c in $chart-palette {
+    &__series--#{index($chart-palette, $c)} { --chart-color: #{$c}; }
+  }
+
+  &__title {
+    margin-bottom: $sp-3;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: $text-secondary;
+    text-align: center;
+  }
+
+  &__svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;   // tilted category labels extend past the viewBox
+  }
+
+  &__gridline {
+    stroke: $border-subtle;
+    stroke-width: 1;
+  }
+
+  &__axisline {
+    stroke: $border-focus;
+    stroke-width: 1;
+  }
+
+  &__tick {
+    fill: $text-muted;
+    font-family: $font-sans;
+    font-size: 11px;
+  }
+
+  &__slice-label {
+    fill: $text-primary;
+    font-family: $font-sans;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  &__series {
+    fill: var(--chart-color);
+
+    &--line polyline {
+      fill: none;
+      stroke: var(--chart-color);
+      stroke-width: 2.5;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+    }
+  }
+
+  &--pie &__series path,
+  &--pie &__series circle {
+    stroke: $bg-base;
+    stroke-width: 2;
+  }
+
+  &__legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: $sp-2 $sp-4;
+    margin: $sp-3 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.8rem;
+    color: $text-secondary;
+  }
+
+  &__legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: $sp-2;
+  }
+
+  &__swatch {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    background: var(--chart-color);
+    flex-shrink: 0;
+  }
+
+  // Kept in the DOM for screen readers, print and the ePub export.
+  &__data {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  &__caption {
+    margin-top: $sp-2;
+    font-size: 0.8rem;
+    color: $text-muted;
+    text-align: center;
+    line-height: 1.5;
+  }
+}
+
 // ─── Giscus comments ─────────────────────────────────────────────────────────
 
 .giscus-wrap {
