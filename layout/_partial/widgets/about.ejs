@@ -1,11 +1,15 @@
 <%
   const social = theme.social || {}
+  // Non-string config values (bare YAML booleans/numbers) are ignored, not
+  // stringified — same posture as cfgStr in _partial/header.ejs.
+  const cfgStr = v => (typeof v === 'string' ? v.trim() : '')
+  const widgetTitle = cfgStr(theme.sidebar && theme.sidebar.about_title) || 'About'
   const hasContent = [config.author, config.description, config.avatar, social.github, social.twitter]
-    .some(v => typeof v === 'string' && v.trim() !== '')
+    .some(v => cfgStr(v) !== '')
 %>
 <% if (hasContent) { %>
 <div class="sidebar-widget widget-about">
-  <p class="sidebar-widget__title">About</p>
+  <p class="sidebar-widget__title"><%= widgetTitle %></p>
   <% if (config.avatar) { %>
     <img class="widget-about__avatar" src="<%= config.avatar %>" alt="<%= config.author %>">
   <% } %>
