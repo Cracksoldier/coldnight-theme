@@ -1046,6 +1046,9 @@ button.navbar__hamburger {
   font-size: 13px;
   color: $text-secondary;
   line-height: 1.5;
+  // Honour newlines from a multi-line `sidebar.about_description`; the value
+  // stays HTML-escaped, so this is the only way to break a line in it.
+  white-space: pre-line;
 }
 
 .widget-about__social {

@@ -91,7 +91,7 @@ All options live in `themes/coldnight/_config.yml` (submodule) or `node_modules/
 | `sidebar.about` | `true` | `false` hides the About widget; it also hides itself when author, description, avatar and social links are all empty |
 | `sidebar.about_title` | `""` | Heading of the About widget; empty (or a non-string value) = `About` |
 | `sidebar.about_name` | `""` | Name line in the About widget; empty = site-level `author:`, `false` = hide the line |
-| `sidebar.about_description` | `""` | Bio line in the About widget; empty = site-level `description:`, `false` = hide the line |
+| `sidebar.about_description` | `""` | Bio line in the About widget; empty = site-level `description:`, `false` = hide the line. Accepts multi-line YAML (`\|`) — newlines render as line breaks |
 | `sidebar.widgets` | toc, recent\_posts, tags, archives, about | Widget order |
 | `sponsor.enabled` | `false` | Show a sponsor/donate button |
 | `social.github` | `""` | GitHub profile URL |
