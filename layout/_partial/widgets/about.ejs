@@ -1,21 +1,32 @@
 <%
   const social = theme.social || {}
+  const sidebar = theme.sidebar || {}
   // Non-string config values (bare YAML booleans/numbers) are ignored, not
   // stringified — same posture as cfgStr in _partial/header.ejs.
   const cfgStr = v => (typeof v === 'string' ? v.trim() : '')
-  const widgetTitle = cfgStr(theme.sidebar && theme.sidebar.about_title) || 'About'
-  const hasContent = [config.author, config.description, config.avatar, social.github, social.twitter]
+  // A bare `false` — or the string a quoted YAML value produces — suppresses
+  // the line outright; same posture as cover.fallback.
+  const off = v => v === false || v === 'false'
+
+  const widgetTitle = cfgStr(sidebar.about_title) || 'About'
+  const name = off(sidebar.about_name) ? '' : (cfgStr(sidebar.about_name) || cfgStr(config.author))
+  const bio = off(sidebar.about_description) ? '' : (cfgStr(sidebar.about_description) || cfgStr(config.description))
+  const avatar = cfgStr(config.avatar)
+
+  const hasContent = [name, bio, avatar, social.github, social.twitter]
     .some(v => cfgStr(v) !== '')
 %>
 <% if (hasContent) { %>
 <div class="sidebar-widget widget-about">
   <p class="sidebar-widget__title"><%= widgetTitle %></p>
-  <% if (config.avatar) { %>
-    <img class="widget-about__avatar" src="<%= config.avatar %>" alt="<%= config.author %>">
+  <% if (avatar) { %>
+    <img class="widget-about__avatar" src="<%= avatar %>" alt="<%= name %>">
   <% } %>
-  <p class="widget-about__name"><%= config.author %></p>
-  <% if (config.description) { %>
-    <p class="widget-about__bio"><%= config.description %></p>
+  <% if (name) { %>
+    <p class="widget-about__name"><%= name %></p>
+  <% } %>
+  <% if (bio) { %>
+    <p class="widget-about__bio"><%= bio %></p>
   <% } %>
   <div class="widget-about__social">
     <% if (theme.social && theme.social.github) { %>

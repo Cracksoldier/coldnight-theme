@@ -21,6 +21,8 @@ sidebar:
   position: right      # left | right | hidden
   about: true          # false = hide the About widget (also auto-hides when author/bio/avatar/social are all empty)
   about_title: ""      # heading of the About widget; empty = "About"
+  about_name: ""       # name line; empty = site `author:`, false = hide it
+  about_description: ""  # bio line; empty = site `description:`, false = hide it
   widgets:
     - toc
     - recent_posts
