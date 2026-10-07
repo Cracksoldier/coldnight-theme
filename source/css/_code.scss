@@ -26,6 +26,10 @@ $code-line: 0.875rem * 1.7;
   }
 
   pre code {
+    // Block, so the code's line boxes are built from the mono font alone.
+    // Inline, each line mixed the pre's body-font strut with the smaller mono
+    // glyphs and came out ~1px taller than $code-line — the gutter drifted.
+    display: block;
     background: none;
     border: none;
     padding: 0;
@@ -277,32 +281,42 @@ figure.highlight {
   font-weight: bold;
 }
 
-// Diff highlighting — full-line colored backgrounds + left border stripe
-.hljs-addition {
-  display: block;
-  background: rgba(16, 185, 129, 0.15);
-  border-left: 3px solid rgba(16, 185, 129, 0.7);
+// Full-row line markers (diff lines, marked lines). Hexo ends every line with
+// a <br>, so a display:block row would add an empty line after itself and push
+// all later code out of step with the gutter. A full-width inline-block fills
+// the row instead and the <br> just ends it. The -1rem margins bleed the tint
+// to the pre's padding edges (box-sizing is border-box).
+%code-row {
+  display: inline-block;
+  min-width: calc(100% + 2rem);
   margin: 0 -1rem;
   padding: 0 1rem 0 calc(1rem - 3px);
+  border-left: 3px solid;
+}
+
+// Diff highlighting — full-line colored backgrounds + left border stripe
+.hljs-addition {
+  @extend %code-row;
+  background: rgba(16, 185, 129, 0.15);
+  border-left-color: rgba(16, 185, 129, 0.7);
   color: #7ee8a2;
 }
 
 .hljs-deletion {
-  display: block;
+  @extend %code-row;
   background: rgba(239, 68, 68, 0.12);
-  border-left: 3px solid rgba(239, 68, 68, 0.6);
-  margin: 0 -1rem;
-  padding: 0 1rem 0 calc(1rem - 3px);
+  border-left-color: rgba(239, 68, 68, 0.6);
   color: #ffa198;
 }
 
-// Marked lines — {% codeblock lang mark:1,3-5 %}
+// Marked lines — {% codeblock lang mark:1,3-5 %}. Hexo emits <mark> when
+// highlight.hljs is true and <span class="line marked"> when it is false.
+figure.highlight mark,
 figure.highlight .marked {
-  display: block;
+  @extend %code-row;
   background: rgba(37, 99, 235, 0.18);
-  border-left: 3px solid $accent;
-  margin: 0 -1rem;
-  padding: 0 1rem 0 calc(1rem - 3px);
+  border-left-color: $accent;
+  color: inherit; // UA <mark> default is black
 }
 
 // ─── Mermaid diagrams ─────────────────────────────────────────────────────────

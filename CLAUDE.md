@@ -302,6 +302,8 @@ Long code blocks auto-collapse behind a "Show N more lines" button (`code.collap
 - **Hysteresis**: `COLLAPSE_MARGIN = 5` in copy-code.js — a block only collapses when it exceeds `collapse_lines + 5`, so the button never hides ≤5 lines.
 - Line counting prefers `td.gutter .line` spans (exact for hljs figures), then `<br>` count + 1, then `textContent` newlines (bare `<pre>`).
 - The collapsed height is a CSS calc from `--code-visible-lines` × `$code-line` (`_code.scss`) — `$code-line` is an **absolute** line-height shared by the gutter and code columns; don't change one without the other or line numbers drift.
+- `pre code` is `display: block` on purpose. As an inline box, every code line mixed the pre's body-font strut with the smaller mono glyphs and came out ~1px taller than `$code-line`, so the gutter drifted by a pixel per line.
+- **Full-row markers must never be `display: block`.** Hexo ends every code line with a `<br>`, so a block row adds an empty line after itself and pushes everything below out of step with the gutter. Diff rows (`.hljs-addition` / `.hljs-deletion`) and marked lines share the `%code-row` placeholder: a full-width `inline-block` that the `<br>` simply ends. Marked lines are `<mark>` when `highlight.hljs: true` and `<span class="line marked">` when false — style both (`figure.highlight mark, figure.highlight .marked`), and reset `<mark>`'s UA black text colour.
 - Print always expands (`_print.scss`). Copy button is unaffected (it clones the code node, not the visible layout).
 - No per-block opt-out yet; the future path is extending the `data-lang`/`data-filename` regex pass in `scripts/helpers.js` (e.g. a `// no-collapse` first-line comment).
 
