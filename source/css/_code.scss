@@ -30,6 +30,10 @@ $code-line: 0.875rem * 1.7;
     // Inline, each line mixed the pre's body-font strut with the smaller mono
     // glyphs and came out ~1px taller than $code-line — the gutter drifted.
     display: block;
+    // As wide as the longest line, so %code-row tints span the full scroll
+    // width rather than ending at the visible edge once scrolled.
+    width: max-content;
+    min-width: 100%;
     background: none;
     border: none;
     padding: 0;
@@ -83,6 +87,11 @@ figure.highlight {
 
   .code {
     width: 100%;
+    // Without this the auto-layout table grows to the longest line and the
+    // figure's overflow:hidden clips it on narrow screens. Capped, the cell
+    // takes the remaining width and its <pre> (overflow-x: auto) scrolls
+    // while the gutter stays put.
+    max-width: 0;
   }
 
   .code {
