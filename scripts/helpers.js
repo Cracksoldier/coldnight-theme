@@ -259,12 +259,19 @@ hexo.extend.filter.register('after_render:html', function (html) {
     (match, lang, body) => {
       let dataFilename = ''
       let cleanBody = body
+      // First code line only — the comment must directly follow <code>
       const fnMatch = body.match(
-        /<span class="hljs-comment">(?:\/\/|#|\/\*)\s*filename:\s*([^<]+?)(?:\s*\*\/)?\s*<\/span><br>/
+        /(<code[^>]*>)<span class="hljs-comment">(?:\/\/|#|\/\*)\s*filename:\s*([^<]+?)(?:\s*\*\/)?\s*<\/span><br>/
       )
       if (fnMatch) {
-        dataFilename = ` data-filename="${fnMatch[1].trim().replace(/"/g, '&quot;')}"`
-        cleanBody = body.slice(0, fnMatch.index) + body.slice(fnMatch.index + fnMatch[0].length)
+        dataFilename = ` data-filename="${fnMatch[2].trim().replace(/"/g, '&quot;')}"`
+        cleanBody = body.slice(0, fnMatch.index) + fnMatch[1] + body.slice(fnMatch.index + fnMatch[0].length)
+        // Hexo numbered the gutter for the full source, comment included.
+        // Drop its last number so the gutter matches the remaining code (and
+        // numbering still starts at the block's first line).
+        cleanBody = cleanBody.replace(
+          /(<td class="gutter"><pre>[\s\S]*?)<span class="line">\d+<\/span><br>(<\/pre>)/, '$1$2'
+        )
       }
       return `<figure class="highlight ${lang}" data-lang="${lang}"${dataFilename}>${cleanBody}</figure>`
     }
