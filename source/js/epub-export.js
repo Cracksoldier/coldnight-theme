@@ -24,12 +24,23 @@
   // Readers style and paginate the cells independently — and Foliate forces
   // pre-wrap — so numbers and code drift apart into two boxes. Rebuild each
   // as a single <pre> with the number inline at the start of every line.
+  // Every highlighted <pre> gets .epub-code, which the stylesheet colours.
+  var LINE_MODS = [
+    ['.hljs-addition', 'epub-code__line--add'],
+    ['.hljs-deletion', 'epub-code__line--del'],
+    ['mark, .marked',  'epub-code__line--mark'] // hljs mode emits <mark>
+  ]
+
   function flattenCodeTables(root) {
     root.querySelectorAll('figure.highlight').forEach(function (fig) {
       var table = fig.querySelector('table')
       var gutter = fig.querySelector('td.gutter')
       var cell = fig.querySelector('td.code')
-      if (!table || !gutter || !cell) return
+      if (!table || !gutter || !cell) {
+        var plain = fig.querySelector('pre')
+        if (plain) plain.classList.add('epub-code')
+        return
+      }
       var src = cell.querySelector('code') || cell.querySelector('pre')
       if (!src) return
 
@@ -53,7 +64,7 @@
       if (!labels.length && lines.length > 1 && !lines[lines.length - 1].textContent) count--
 
       var pre = document.createElement('pre')
-      pre.className = 'epub-code'
+      pre.className = 'epub-code epub-code--numbered'
       var code = document.createElement('code')
       if (src.tagName === 'CODE' && src.className) code.className = src.className
       for (var n = 0; n < count; n++) {
@@ -63,7 +74,13 @@
         ln.className = 'epub-code__ln'
         ln.textContent = labels[n] || String(n + 1)
         line.appendChild(ln)
-        if (lines[n]) line.appendChild(lines[n])
+        if (lines[n]) {
+          // Tint the whole row for diff/marked lines, not just the token span
+          LINE_MODS.forEach(function (m) {
+            if (lines[n].querySelector(m[0])) line.classList.add(m[1])
+          })
+          line.appendChild(lines[n])
+        }
         code.appendChild(line)
       }
       pre.appendChild(code)
@@ -200,13 +217,51 @@
         'h1,h2,h3{line-height:1.3}' +
         'pre,code{font-family:monospace;font-size:.9em}' +
         'pre{background:#f5f5f5;padding:1em;white-space:pre-wrap;overflow-x:auto}' +
-        // Flattened code blocks (see flattenCodeTables): one block per line
-        // with a hanging indent, so a wrapped line continues under the code,
-        // not under its number, and page breaks fall between lines.
+        // Code blocks: a self-contained dark panel in the site's own palette
+        // (copied from _variables.scss / _code.scss — keep in sync), so it
+        // reads the same on white, sepia and dark reader themes. Foliate
+        // injects `body *{color:inherit;background-color:<theme bg>;
+        // border-color:currentColor}` all !important; every rule here is
+        // therefore !important and .epub-code-scoped to outrank that (0,0,2).
         'figure.highlight{margin:1.5em 0}figure.highlight pre{margin:0}' +
-        '.epub-code__line{display:block;padding-left:3.5em;text-indent:-3.5em}' +
-        '.epub-code__ln{display:inline-block;width:2.5em;margin-right:1em;text-indent:0;' +
-          'text-align:right;color:#999;-webkit-user-select:none;user-select:none}' +
+        '.epub-code{background-color:#0f2040 !important;color:#e2e8f0 !important;' +
+          'border:1px solid #1e3a6e !important;border-radius:6px;padding:.75em 1em;line-height:1.5}' +
+        '.epub-code *{background-color:transparent !important}' +
+        '.epub-code mark{color:inherit !important}' + // UA default is black
+        '.epub-code.epub-code--numbered{padding:0}' +
+        // One block per line (see flattenCodeTables). The gutter is each
+        // line's left border, so it runs unbroken past wrapped continuation
+        // lines and across page breaks; the inset shadow is the separator.
+        // The negative indent pulls the number into the border on the first
+        // line only — wrapped lines hang at the code edge.
+        '.epub-code .epub-code__line{display:block;border-left:3.2em solid #0a1628 !important;' +
+          'box-shadow:inset 1px 0 0 #1e3a6e;padding:0 1em 0 .8em;text-indent:-4em}' +
+        '.epub-code .epub-code__line:first-child{padding-top:.75em}' +
+        '.epub-code .epub-code__line:last-child{padding-bottom:.75em}' +
+        '.epub-code .epub-code__ln{display:inline-block;width:3.2em;box-sizing:border-box;' +
+          'padding-right:.6em;margin-right:.8em;text-indent:0;text-align:right;' +
+          'color:#64748b !important;-webkit-user-select:none;user-select:none}' +
+        '.epub-code .epub-code__line--add{background-color:rgba(16,185,129,.15) !important;box-shadow:inset 3px 0 0 #10b981}' +
+        '.epub-code .epub-code__line--del{background-color:rgba(239,68,68,.12) !important;box-shadow:inset 3px 0 0 #ef4444}' +
+        '.epub-code .epub-code__line--mark{background-color:rgba(37,99,235,.18) !important;box-shadow:inset 3px 0 0 #2563eb}' +
+        // highlight.js tokens — same groups and colours as _code.scss
+        '.epub-code .hljs-comment,.epub-code .hljs-quote{color:#8b949e !important;font-style:italic}' +
+        '.epub-code .hljs-keyword,.epub-code .hljs-selector-tag{color:#ff7b72 !important}' +
+        '.epub-code .hljs-number,.epub-code .hljs-string,.epub-code .hljs-meta .hljs-meta-string,' +
+          '.epub-code .hljs-literal,.epub-code .hljs-doctag,.epub-code .hljs-regexp,' +
+          '.epub-code .hljs-formula{color:#a5d6ff !important}' +
+        '.epub-code .hljs-title,.epub-code .hljs-section,.epub-code .hljs-name,' +
+          '.epub-code .hljs-selector-id,.epub-code .hljs-selector-class{color:#d2a8ff !important}' +
+        '.epub-code .hljs-attribute,.epub-code .hljs-attr,.epub-code .hljs-variable,' +
+          '.epub-code .hljs-template-variable,.epub-code .hljs-class .hljs-title,' +
+          '.epub-code .hljs-type{color:#ffa657 !important}' +
+        '.epub-code .hljs-symbol,.epub-code .hljs-bullet,.epub-code .hljs-subst,' +
+          '.epub-code .hljs-meta,.epub-code .hljs-meta .hljs-keyword,.epub-code .hljs-selector-attr,' +
+          '.epub-code .hljs-selector-pseudo,.epub-code .hljs-link{color:#79c0ff !important}' +
+        '.epub-code .hljs-built_in{color:#ffa198 !important}' +
+        '.epub-code .hljs-addition{color:#7ee8a2 !important}' +
+        '.epub-code .hljs-deletion{color:#ffa198 !important}' +
+        '.epub-code .hljs-emphasis{font-style:italic}.epub-code .hljs-strong{font-weight:bold}' +
         'img{max-width:100%}' +
         'a{color:#4080ff}' +
         'blockquote{border-left:3px solid #ccc;margin-left:0;padding-left:1em;color:#555}' +
