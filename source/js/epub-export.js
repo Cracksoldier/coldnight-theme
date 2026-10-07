@@ -20,11 +20,68 @@
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
   }
 
+  // Hexo's line-numbered hljs output is a two-cell table (gutter | code).
+  // Readers style and paginate the cells independently — and Foliate forces
+  // pre-wrap — so numbers and code drift apart into two boxes. Rebuild each
+  // as a single <pre> with the number inline at the start of every line.
+  function flattenCodeTables(root) {
+    root.querySelectorAll('figure.highlight').forEach(function (fig) {
+      var table = fig.querySelector('table')
+      var gutter = fig.querySelector('td.gutter')
+      var cell = fig.querySelector('td.code')
+      if (!table || !gutter || !cell) return
+      var src = cell.querySelector('code') || cell.querySelector('pre')
+      if (!src) return
+
+      var labels = Array.prototype.map.call(gutter.querySelectorAll('.line'), function (el) {
+        return el.textContent
+      })
+      // Range.cloneContents re-creates partly selected ancestors, so an hljs
+      // span crossing a <br> (multi-line comment/string) stays balanced.
+      var brs = Array.prototype.slice.call(src.querySelectorAll('br'))
+      var lines = []
+      var range = document.createRange()
+      for (var i = 0; i <= brs.length; i++) {
+        if (i === 0) range.setStart(src, 0)
+        else range.setStartAfter(brs[i - 1])
+        if (i < brs.length) range.setEndBefore(brs[i])
+        else range.setEnd(src, src.childNodes.length)
+        lines.push(range.cloneContents())
+      }
+      var count = labels.length || lines.length
+      // A trailing <br> leaves an empty final fragment beyond the gutter count
+      if (!labels.length && lines.length > 1 && !lines[lines.length - 1].textContent) count--
+
+      var pre = document.createElement('pre')
+      pre.className = 'epub-code'
+      var code = document.createElement('code')
+      if (src.tagName === 'CODE' && src.className) code.className = src.className
+      for (var n = 0; n < count; n++) {
+        var line = document.createElement('span')
+        line.className = 'epub-code__line'
+        var ln = document.createElement('span')
+        ln.className = 'epub-code__ln'
+        ln.textContent = labels[n] || String(n + 1)
+        line.appendChild(ln)
+        if (lines[n]) line.appendChild(lines[n])
+        code.appendChild(line)
+      }
+      pre.appendChild(code)
+      table.parentNode.replaceChild(pre, table)
+    })
+  }
+
   function getCleanContent() {
     var body = document.querySelector('.post-body')
     if (!body) return null
     var clone = body.cloneNode(true)
-    clone.querySelectorAll('.code-toolbar, .heading-anchor, script').forEach(function (el) { el.remove() })
+    clone.querySelectorAll('.code-toolbar, .code-collapse, .heading-anchor, script').forEach(function (el) { el.remove() })
+    clone.querySelectorAll('.code-collapsible').forEach(function (el) {
+      el.classList.remove('code-collapsible', 'is-collapsed')
+      el.style.removeProperty('--code-visible-lines')
+      if (!el.getAttribute('style')) el.removeAttribute('style')
+    })
+    flattenCodeTables(clone)
     return clone
   }
 
@@ -143,6 +200,13 @@
         'h1,h2,h3{line-height:1.3}' +
         'pre,code{font-family:monospace;font-size:.9em}' +
         'pre{background:#f5f5f5;padding:1em;white-space:pre-wrap;overflow-x:auto}' +
+        // Flattened code blocks (see flattenCodeTables): one block per line
+        // with a hanging indent, so a wrapped line continues under the code,
+        // not under its number, and page breaks fall between lines.
+        'figure.highlight{margin:1.5em 0}figure.highlight pre{margin:0}' +
+        '.epub-code__line{display:block;padding-left:3.5em;text-indent:-3.5em}' +
+        '.epub-code__ln{display:inline-block;width:2.5em;margin-right:1em;text-indent:0;' +
+          'text-align:right;color:#999;-webkit-user-select:none;user-select:none}' +
         'img{max-width:100%}' +
         'a{color:#4080ff}' +
         'blockquote{border-left:3px solid #ccc;margin-left:0;padding-left:1em;color:#555}' +

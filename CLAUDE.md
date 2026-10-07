@@ -274,10 +274,11 @@ The viewer JS is an IIFE at `source/js/model-viewer.js`. It reads `window.__THRE
 
 ## ePub export
 
-`source/js/epub-export.js` builds the ePub client-side with JSZip. Two invariants:
+`source/js/epub-export.js` builds the ePub client-side with JSZip. Three invariants:
 
 - **Content is serialized with `XMLSerializer`**, never `innerHTML` — `innerHTML` emits named entities (`&nbsp;`) and unclosed voids that strict ePub readers reject as invalid XML.
 - **Images are fetched and bundled** into `OEBPS/images/` with manifest entries so the file works offline. Unfetchable images (CORS-blocked hotlinks) fall back to their absolute URL, keeping the XHTML valid.
+- **Line-numbered code tables are flattened** (`flattenCodeTables`) into one `<pre class="epub-code">` with a block-level `.epub-code__line` per line and the number as an inline `.epub-code__ln` prefix. Readers style and paginate the `td.gutter` / `td.code` cells independently, and Foliate forces `pre { white-space: pre-wrap }` — the table version renders as two separate boxes whose numbers drift from wrapped code. Lines are split at the `<br>`s with `Range.cloneContents()`, which re-balances hljs spans that cross a line break. A hanging indent keeps wrapped lines under the code, and per-line blocks let page breaks fall between lines. Live-page code chrome is stripped from the clone (`.code-toolbar`, the `.code-collapse` "Show N more lines" footer, and the collapse classes/inline property).
 
 ## Video facade
 
