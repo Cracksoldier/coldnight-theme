@@ -37,7 +37,7 @@
   // padding to the block's widest number, a » on marked lines, and a │
   // separator. Full CSS engines hide .epub-code__pad/__sep with display:none;
   // FBReader ignores that rule, so it shows them.
-  var NBSP = ' '
+  var NBSP = '\u00A0'
   function lineNumber(label, width, marked) {
     var ln = document.createElement('span')
     ln.className = 'epub-code__ln'
@@ -109,6 +109,41 @@
     })
   }
 
+  // Readers without table layout (FBReader) print every cell on its own line,
+  // losing rows and columns. Give each body cell a "Header: " label and each
+  // row a ▪ marker so it reads as a labelled group there. Full CSS engines
+  // hide both with display:none; FBReader ignores that rule (same trick as
+  // lineNumber). Labels are skipped when merged cells would misalign them.
+  function labelTables(root) {
+    root.querySelectorAll('table').forEach(function (table) {
+      var rows = Array.prototype.slice.call(table.rows)
+      if (!rows.length) return
+      var head = table.tHead && table.tHead.rows[0]
+      if (!head && Array.prototype.every.call(rows[0].cells, function (c) { return c.tagName === 'TH' })) head = rows[0]
+      var merged = rows.some(function (r) {
+        return Array.prototype.some.call(r.cells, function (c) { return c.colSpan > 1 || c.rowSpan > 1 })
+      })
+      var headers = head && !merged
+        ? Array.prototype.map.call(head.cells, function (c) { return c.textContent.trim() })
+        : []
+      rows.forEach(function (row) {
+        if (row === head || !row.cells.length) return
+        Array.prototype.forEach.call(row.cells, function (cell, i) {
+          if (headers[i]) {
+            var label = document.createElement('span')
+            label.className = 'epub-table__label'
+            label.textContent = headers[i] + ':' + NBSP
+            cell.insertBefore(label, cell.firstChild)
+          }
+        })
+        var marker = document.createElement('span')
+        marker.className = 'epub-table__row'
+        marker.textContent = '▪' + NBSP
+        row.cells[0].insertBefore(marker, row.cells[0].firstChild)
+      })
+    })
+  }
+
   function getCleanContent() {
     var body = document.querySelector('.post-body')
     if (!body) return null
@@ -120,6 +155,7 @@
       if (!el.getAttribute('style')) el.removeAttribute('style')
     })
     flattenCodeTables(clone)
+    labelTables(clone)
     replaceMedia(clone)
     replaceCompare(clone)
     return clone
@@ -736,6 +772,8 @@
         'blockquote{border-left:3px solid #ccc;margin-left:0;padding-left:1em;color:#555}' +
         'table{border-collapse:collapse;width:100%}' +
         'td,th{border:1px solid #ddd;padding:.5em}' +
+        // Text fallback for readers without table layout (see labelTables)
+        '.epub-table__row,.epub-table__label{display:none !important}.epub-table__label{font-weight:600}' +
         'figure{margin:1.5em 0}figcaption{font-size:.875em;color:#666;text-align:center;margin-top:.25em}' +
         'details summary{cursor:pointer;font-weight:600}' +
         '.epub-media a{font-weight:600}' +
