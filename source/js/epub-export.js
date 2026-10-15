@@ -201,7 +201,7 @@
     var body = document.querySelector('.post-body')
     if (!body) return null
     var clone = body.cloneNode(true)
-    clone.querySelectorAll('.code-toolbar, .code-collapse, .heading-anchor, script').forEach(function (el) { el.remove() })
+    clone.querySelectorAll('.code-toolbar, .code-collapse, .heading-anchor, a.headerlink, script').forEach(function (el) { el.remove() })
     clone.querySelectorAll('.code-collapsible').forEach(function (el) {
       el.classList.remove('code-collapsible', 'is-collapsed')
       el.style.removeProperty('--code-visible-lines')
@@ -752,6 +752,64 @@
     })
   }
 
+  // Table of contents from the post's h1–h3 (h4+ is too fine), nested under
+  // the post title. Levels are relative — a post that starts at h2 nests the
+  // same as one starting at h1. Headings without an id get one so they can
+  // be linked; empty headings are skipped.
+  function collectHeadings(root) {
+    var tree = []
+    if (!root) return tree
+    var stack = []
+    var n = 0
+    root.querySelectorAll('h1, h2, h3').forEach(function (h) {
+      var text = h.textContent.trim()
+      if (!text) return
+      if (!h.id) h.id = 'epub-h-' + (++n)
+      var node = { level: parseInt(h.tagName.charAt(1), 10), id: h.id, text: text, children: [] }
+      while (stack.length && stack[stack.length - 1].level >= node.level) stack.pop()
+      ;(stack.length ? stack[stack.length - 1].children : tree).push(node)
+      stack.push(node)
+    })
+    return tree
+  }
+
+  function navList(nodes) {
+    if (!nodes.length) return ''
+    return '<ol>' + nodes.map(function (node) {
+      return '<li><a href="content.xhtml#' + esc(node.id) + '">' + esc(node.text) + '</a>' +
+        navList(node.children) + '</li>'
+    }).join('') + '</ol>'
+  }
+
+  // EPUB 2 NCX alongside the EPUB 3 nav, for older readers and converters.
+  function buildNcx(data, tree) {
+    var order = 0
+    var depth = 1
+    function points(nodes, level) {
+      depth = Math.max(depth, level)
+      return nodes.map(function (node) {
+        order++
+        return '<navPoint id="np-' + order + '" playOrder="' + order + '">' +
+          '<navLabel><text>' + esc(node.text) + '</text></navLabel>' +
+          '<content src="' + (node.id ? 'content.xhtml#' + esc(node.id) : 'content.xhtml') + '"/>' +
+          points(node.children, level + 1) +
+          '</navPoint>'
+      }).join('')
+    }
+    var map = points([{ text: data.title, id: '', children: tree }], 1)
+    return '<?xml version="1.0" encoding="UTF-8"?>' +
+      '<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">' +
+        '<head>' +
+          '<meta name="dtb:uid" content="' + esc(data.url) + '"/>' +
+          '<meta name="dtb:depth" content="' + depth + '"/>' +
+          '<meta name="dtb:totalPageCount" content="0"/>' +
+          '<meta name="dtb:maxPageNumber" content="0"/>' +
+        '</head>' +
+        '<docTitle><text>' + esc(data.title) + '</text></docTitle>' +
+        '<navMap>' + map + '</navMap>' +
+      '</ncx>'
+  }
+
   function buildEpub(data) {
     var zip = new JSZip() // eslint-disable-line no-undef
     var now = new Date().toISOString().replace(/\.\d+Z$/, 'Z')
@@ -764,6 +822,8 @@
         return imageItems + figureItems
       })
     }).then(function (imageItems) {
+      // Collect before serialising: it may assign ids to headings
+      var toc = collectHeadings(data.content)
       // XMLSerializer emits well-formed XML (self-closed voids, no named
       // entities like &nbsp;) — required by strict ePub readers.
       var contentXhtml = data.content
@@ -772,6 +832,7 @@
       // EPUB 3 requires the svg property on documents with inline SVG (icons
       // etc. — charts and diagrams have been moved out to image files).
       var contentProps = contentXhtml.indexOf('<svg') !== -1 ? ' properties="svg"' : ''
+      zip.file('OEBPS/toc.ncx', buildNcx(data, toc))
 
       zip.file('META-INF/container.xml',
         '<?xml version="1.0"?>' +
@@ -795,9 +856,10 @@
             '<item id="nav"     href="nav.xhtml"     media-type="application/xhtml+xml" properties="nav"/>' +
             '<item id="content" href="content.xhtml" media-type="application/xhtml+xml"' + contentProps + '/>' +
             '<item id="css"     href="style.css"     media-type="text/css"/>' +
+            '<item id="ncx"     href="toc.ncx"       media-type="application/x-dtbncx+xml"/>' +
             imageItems +
           '</manifest>' +
-          '<spine><itemref idref="content"/></spine>' +
+          '<spine toc="ncx"><itemref idref="content"/></spine>' +
         '</package>')
 
       zip.file('OEBPS/nav.xhtml',
@@ -806,7 +868,7 @@
           '<head><title>' + esc(data.title) + '</title></head>' +
           '<body>' +
             '<nav epub:type="toc">' +
-              '<ol><li><a href="content.xhtml">' + esc(data.title) + '</a></li></ol>' +
+              '<ol><li><a href="content.xhtml">' + esc(data.title) + '</a>' + navList(toc) + '</li></ol>' +
             '</nav>' +
           '</body>' +
         '</html>')
@@ -828,6 +890,8 @@
       zip.file('OEBPS/style.css',
         'body{font-family:Georgia,"Times New Roman",serif;line-height:1.7;max-width:42em;margin:0 auto;padding:1em}' +
         'h1,h2,h3{line-height:1.3}' +
+        'h1,h2,h3,h4,h5,h6{page-break-after:avoid;break-after:avoid}' +
+        'del,s{text-decoration:line-through}' +
         // Named fonts first: FBReader ignores the generic `monospace` alone and
         // falls back to a proportional face.
         'pre,code{font-family:Consolas,"DejaVu Sans Mono","Droid Sans Mono","Courier New",monospace;font-size:.9em}' +
