@@ -158,7 +158,65 @@
     labelTables(clone)
     replaceMedia(clone)
     replaceCompare(clone)
+    replaceImageFigures(clone)
     return clone
+  }
+
+  // FBReader lays out an <img> sitting directly in a <figure> as an inline
+  // glyph, so the caption flows beside its corner, justified. Give every such
+  // image its own block. Gallery items (<a href=original><img><span caption>)
+  // become the same captioned figure, minus the link — the image is bundled.
+  // Direct children only: charts, code, video and compare figures keep their
+  // own structure. Also strips lightGallery's runtime leftovers.
+  function replaceImageFigures(root) {
+    function imageBlock(img) {
+      var wrap = document.createElement('div')
+      wrap.className = 'epub-figure-img'
+      if (img.parentNode) img.parentNode.insertBefore(wrap, img)
+      wrap.appendChild(img)
+      return wrap
+    }
+
+    root.querySelectorAll('figure').forEach(function (fig) {
+      Array.prototype.slice.call(fig.children).forEach(function (child) {
+        if (child.tagName === 'IMG') imageBlock(child)
+      })
+    })
+
+    root.querySelectorAll('div.lg-gallery').forEach(function (gallery) {
+      var out = document.createElement('div')
+      out.className = 'epub-gallery'
+      gallery.querySelectorAll('a').forEach(function (a) {
+        var src = a.querySelector('img')
+        if (!src) return
+        var img = document.createElement('img')
+        img.setAttribute('src', src.getAttribute('src'))
+        img.setAttribute('alt', src.getAttribute('alt') || '')
+        var capEl = a.querySelector('.lg-gallery-caption')
+        var caption = (capEl && capEl.textContent.trim()) || a.getAttribute('data-sub-html') || src.getAttribute('alt') || ''
+        var fig = document.createElement('figure')
+        fig.className = 'epub-gallery__item'
+        fig.appendChild(imageBlock(img))
+        if (caption) {
+          var fc = document.createElement('figcaption')
+          fc.textContent = caption
+          fig.appendChild(fc)
+        }
+        out.appendChild(fig)
+      })
+      gallery.replaceWith(out)
+    })
+
+    root.querySelectorAll('img').forEach(function (img) {
+      img.removeAttribute('loading')
+      img.style.removeProperty('cursor')
+      if (!img.getAttribute('style')) img.removeAttribute('style')
+    })
+    root.querySelectorAll('*').forEach(function (el) {
+      Array.prototype.slice.call(el.attributes).forEach(function (attr) {
+        if (attr.name.indexOf('data-lg-') === 0) el.removeAttribute(attr.name)
+      })
+    })
   }
 
   // The compare slider stacks "before" over "after" and clips it with CSS;
@@ -778,6 +836,8 @@
         'details summary{cursor:pointer;font-weight:600}' +
         '.epub-media a{font-weight:600}' +
         '.epub-media__caption{font-size:.875em;color:#666;margin-top:-.5em}' +
+        '.epub-figure-img{margin:0;text-align:center}.epub-figure-img img{max-width:100%;height:auto}' +
+        '.epub-gallery__item{margin:1em 0}' +
         '.epub-compare__item{margin:1em 0;text-align:center}.epub-compare__item img{width:100%;height:auto}' +
         '.epub-compare__label{font-size:.875em;font-weight:600;margin:.25em 0 0}' +
         '.epub-figure{margin:1em 0;text-align:center}.epub-figure img{width:100%;height:auto}' +
