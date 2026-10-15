@@ -178,6 +178,25 @@
     })
   }
 
+  // FBReader ignores <ol start>, so a list Markdown split around a code block
+  // ("1. … ```…``` 2. …" → <ol start="2">) restarts at 1. It does honour
+  // <li value>, but only for that one item — numbering doesn't continue from
+  // it — so every item gets its explicit number. An author's own value
+  // resets the count, as in HTML. Reversed lists are left alone.
+  function fixListStarts(root) {
+    root.querySelectorAll('ol[start]').forEach(function (ol) {
+      var n = parseInt(ol.getAttribute('start'), 10)
+      if (isNaN(n) || n === 1 || ol.hasAttribute('reversed')) return
+      Array.prototype.forEach.call(ol.children, function (li) {
+        if (li.tagName !== 'LI') return
+        var own = parseInt(li.getAttribute('value'), 10)
+        if (!isNaN(own)) n = own
+        else li.setAttribute('value', String(n))
+        n++
+      })
+    })
+  }
+
   function getCleanContent() {
     var body = document.querySelector('.post-body')
     if (!body) return null
@@ -191,6 +210,7 @@
     flattenCodeTables(clone)
     labelTables(clone)
     markQuotesAndRules(clone)
+    fixListStarts(clone)
     replaceMedia(clone)
     replaceCompare(clone)
     replaceImageFigures(clone)
@@ -865,6 +885,8 @@
         'blockquote{border-left:3px solid #ccc;margin-left:0;padding-left:1em;color:#555;font-style:italic}' +
         // Text fallbacks for FBReader (see markQuotesAndRules); it ignores this rule.
         '.epub-quote__bar,.epub-hr{display:none !important}.epub-hr{text-align:center}' +
+        // Bold terms: the one dl cue FBReader honours (it ignores dd margins)
+        'dt{font-weight:600;margin-top:.5em}dd{margin:0 0 .5em 1.5em}' +
         'table{border-collapse:collapse;width:100%}' +
         'td,th{border:1px solid #ddd;padding:.5em}' +
         // Text fallback for readers without table layout (see labelTables)
