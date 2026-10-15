@@ -287,7 +287,12 @@
 <% if (theme.mermaid && theme.mermaid.enabled) { %>
 <script type="module">
   import mermaid from '<%- url_for('/vendor/mermaid/mermaid.esm.min.mjs') %>';
-  mermaid.initialize({ startOnLoad: true, theme: '<%= /^[a-z]+$/.test(theme.mermaid.theme) ? theme.mermaid.theme : "dark" %>' });
+  const cfg = { startOnLoad: true, theme: '<%= /^[a-z]+$/.test(theme.mermaid.theme) ? theme.mermaid.theme : "dark" %>' };
+  // Keep the diagram source before startOnLoad replaces it with SVG — the
+  // ePub export re-renders it with a light theme and SVG-text labels.
+  document.querySelectorAll('.mermaid').forEach((el) => { el.dataset.source = el.textContent });
+  mermaid.initialize(cfg);
+  window.coldnightMermaid = { mermaid, config: cfg };
 </script>
 <% } %>
 <% if (theme.model_viewer && theme.model_viewer.enabled !== false && page.content && page.content.includes('class="model-viewer"')) { %>

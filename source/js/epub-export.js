@@ -236,6 +236,319 @@
     return Promise.all(jobs).then(function () { return manifest.join('') })
   }
 
+  // Chart colours for the ePub. The theme palette is tuned for the dark site
+  // background and washes out on ePub white, so this is a darkened parallel
+  // set — and it avoids var(), which older reader engines don't resolve.
+  // Series index → colour; feeds both the SVG rules and the legend swatches.
+  var SERIES_COLORS = ['#2563eb', '#d97706', '#059669', '#0891b2', '#dc2626', '#64748b']
+
+  // Embedded inside each chart SVG file, which as an <img> can't see the
+  // book's stylesheet.
+  var CHART_CSS =
+    SERIES_COLORS.map(function (c, i) {
+      return '.chart__series--' + (i + 1) + '{fill:' + c + ';stroke:' + c + '}'
+    }).join('') +
+    '.chart__series polyline{fill:none;stroke-width:2.5}' +
+    '.chart--pie .chart__series path,.chart--pie .chart__series circle{stroke:#fff;stroke-width:2}' +
+    '.chart__gridline{stroke:#ddd}.chart__axisline{stroke:#999}' +
+    // SVG <text> would otherwise inherit a serif font and render as hairlines
+    // at these sizes; ticks are larger than on the site because the chart is
+    // scaled down to the reader's column width.
+    'text{font-family:sans-serif}' +
+    '.chart__tick{fill:#555;font-size:13px}' +
+    '.chart__slice-label{fill:#fff;font-size:14px;font-weight:600}'
+
+  var SVG_NS = 'http://www.w3.org/2000/svg'
+
+  // Many readers (FBReader among them) ignore inline <svg> and print its text
+  // content instead, but do render SVG referenced by <img>. Writes the SVG as a
+  // standalone file with an intrinsic size and a white backing (legible in a
+  // reader's dark mode) and returns the <img> wrapper plus its manifest item.
+  function svgToFile(svg, zip, name, label, css) {
+    var vb = (svg.getAttribute('viewBox') || '').trim().split(/[\s,]+/).map(Number)
+    if (vb.length !== 4 || !(vb[2] > 0 && vb[3] > 0)) {
+      vb = [0, 0, parseFloat(svg.getAttribute('width')) || 800, parseFloat(svg.getAttribute('height')) || 600]
+      svg.setAttribute('viewBox', vb.join(' '))
+    }
+    svg.setAttribute('width', String(Math.round(vb[2])))
+    svg.setAttribute('height', String(Math.round(vb[3])))
+    svg.style.removeProperty('max-width')
+    if (!svg.getAttribute('style')) svg.removeAttribute('style')
+
+    var bg = document.createElementNS(SVG_NS, 'rect')
+    bg.setAttribute('x', String(vb[0]))
+    bg.setAttribute('y', String(vb[1]))
+    bg.setAttribute('width', String(vb[2]))
+    bg.setAttribute('height', String(vb[3]))
+    bg.setAttribute('fill', '#fff')
+    svg.insertBefore(bg, svg.firstChild)
+    if (css) {
+      var style = document.createElementNS(SVG_NS, 'style')
+      style.textContent = css
+      svg.insertBefore(style, svg.firstChild)
+    }
+
+    var href = 'images/' + name + '.svg'
+    zip.file('OEBPS/' + href, '<?xml version="1.0" encoding="UTF-8"?>' + new XMLSerializer().serializeToString(svg))
+
+    var wrap = document.createElement('div')
+    wrap.className = 'epub-figure'
+    var img = document.createElement('img')
+    img.setAttribute('src', href)
+    img.setAttribute('alt', label)
+    wrap.appendChild(img)
+    return { node: wrap, item: '<item id="' + name + '" href="' + href + '" media-type="image/svg+xml"/>' }
+  }
+
+  var FLAT_PROPS = ['fill', 'fill-opacity', 'stroke', 'stroke-width', 'stroke-opacity', 'stroke-dasharray',
+    'opacity', 'display', 'visibility', 'font-family', 'font-size', 'font-weight', 'font-style', 'text-anchor']
+
+  // rgba() → rgb() + *-opacity; simple SVG renderers don't parse alpha colours.
+  function setPaint(el, prop, value) {
+    var m = value.match(/^rgba\(\s*([\d.]+),\s*([\d.]+),\s*([\d.]+),\s*([\d.]+)\s*\)$/)
+    if (!m) { el.setAttribute(prop, value); return }
+    el.setAttribute(prop, 'rgb(' + m[1] + ',' + m[2] + ',' + m[3] + ')')
+    var op = prop + '-opacity'
+    var prev = parseFloat(el.getAttribute(op))
+    el.setAttribute(op, String(parseFloat(m[4]) * (isNaN(prev) ? 1 : prev)))
+  }
+
+  // Mermaid styles its SVG through #id-scoped <style> rules and positions
+  // label lines with em offsets and tspans; reader SVG engines (e.g. FBReader)
+  // handle none of that, leaving unfilled black boxes and misplaced text. Bake
+  // the computed styles into presentation attributes, resolve positions to
+  // plain px on <text> and drop the stylesheet so the file renders the same
+  // everywhere.
+  function flattenSvgStyles(svg) {
+    var host = document.createElement('div')
+    host.setAttribute('aria-hidden', 'true')
+    // Off-screen, not visibility:hidden — that would be inherited and baked
+    // into every element as visibility="hidden".
+    host.style.cssText = 'position:absolute;left:-99999px;top:0'
+    host.appendChild(svg)
+    document.body.appendChild(host)
+    try {
+      // Read everything before writing anything: stripping a parent's class
+      // would change what its descendants' #id .class rules resolve to.
+      var els = Array.prototype.slice.call(svg.querySelectorAll('*')).filter(function (el) {
+        return !el.closest('style, title, desc')
+      })
+      var computed = els.map(function (el) {
+        var cs = window.getComputedStyle(el)
+        var vals = {}
+        FLAT_PROPS.forEach(function (prop) { vals[prop] = cs.getPropertyValue(prop) })
+        vals.fontSize = parseFloat(cs.fontSize) || 16
+        vals.baseline = cs.getPropertyValue('dominant-baseline')
+        return vals
+      })
+      els.forEach(function (el, i) {
+        var vals = computed[i]
+        var fontSize = vals.fontSize
+        FLAT_PROPS.forEach(function (prop) {
+          var v = vals[prop]
+          if (!v) return
+          if (prop === 'display') { if (v === 'none') el.setAttribute('display', 'none'); return }
+          if (prop === 'visibility') { if (v === 'hidden') el.setAttribute('visibility', 'hidden'); return }
+          if (prop === 'fill' || prop === 'stroke') setPaint(el, prop, v)
+          else if (prop.indexOf('-opacity') === -1 || !el.hasAttribute(prop)) el.setAttribute(prop, v)
+        })
+        ;['x', 'y', 'dx', 'dy'].forEach(function (a) {
+          var v = el.getAttribute(a)
+          if (v && /em$/.test(v)) el.setAttribute(a, String(parseFloat(v) * fontSize))
+        })
+        // Fold dy and dominant-baseline into y: fewer constructs for a reader
+        // engine to get wrong, same rendering in a full one.
+        var NUM = /^-?\d+(\.\d+)?$/
+        var y = el.getAttribute('y')
+        var dy = el.getAttribute('dy')
+        if (y && dy && NUM.test(y) && NUM.test(dy)) {
+          y = String(parseFloat(y) + parseFloat(dy))
+          el.setAttribute('y', y)
+          el.removeAttribute('dy')
+        }
+        if (y && NUM.test(y) && /^(middle|central)$/.test(vals.baseline)) {
+          el.setAttribute('y', String(parseFloat(y) + 0.35 * fontSize))
+        }
+        el.removeAttribute('dominant-baseline')
+        el.removeAttribute('alignment-baseline')
+        el.removeAttribute('style')
+        el.removeAttribute('class')
+      })
+      svg.querySelectorAll('style').forEach(function (s) { s.remove() })
+      splitTextRows(svg)
+    } finally {
+      host.remove()
+    }
+    return svg
+  }
+
+  // Mermaid places each label line in a <tspan> with its own x/y. Reader SVG
+  // engines (FBReader) position only the <text> element and ignore tspan
+  // coordinates, so every label ends up a line too high and multi-line labels
+  // collapse onto one line. Give each positioned row its own <text>.
+  function splitTextRows(svg) {
+    var NUM = /^-?\d+(\.\d+)?$/
+    Array.prototype.slice.call(svg.querySelectorAll('text')).forEach(function (text) {
+      var kids = Array.prototype.slice.call(text.childNodes)
+      var hasLooseText = kids.some(function (n) { return n.nodeType === 3 && n.textContent.trim() })
+      var rows = kids.filter(function (n) { return n.nodeType === 1 })
+      if (hasLooseText || !rows.length) return
+      if (!rows.every(function (r) {
+        return r.tagName === 'tspan' && (NUM.test(r.getAttribute('y') || '') || NUM.test(r.getAttribute('dy') || ''))
+      })) return
+      // Track the current y the way SVG does: absolute y resets it, dy adds.
+      var curY = parseFloat(text.getAttribute('y')) || 0
+      rows.forEach(function (row) {
+        var ry = row.getAttribute('y')
+        var rdy = row.getAttribute('dy')
+        if (NUM.test(ry || '')) curY = parseFloat(ry)
+        if (NUM.test(rdy || '')) curY += parseFloat(rdy)
+        var t = text.cloneNode(false)
+        Array.prototype.forEach.call(row.attributes, function (a) {
+          if (a.name !== 'dx' && a.name !== 'dy') t.setAttribute(a.name, a.value)
+        })
+        t.setAttribute('y', String(curY))
+        while (row.firstChild) t.appendChild(row.firstChild)
+        text.parentNode.insertBefore(t, text)
+      })
+      text.remove()
+    })
+    // Words come as one tspan each with a leading space (" submits"), which
+    // such engines trim — merge same-styled, unpositioned runs into one.
+    function attrKey(el) {
+      return Array.prototype.map.call(el.attributes, function (a) { return a.name + '=' + a.value }).sort().join('|')
+    }
+    Array.prototype.slice.call(svg.querySelectorAll('text')).forEach(function (text) {
+      var prev = null
+      Array.prototype.slice.call(text.childNodes).forEach(function (n) {
+        var mergeable = n.nodeType === 1 && n.tagName === 'tspan' && !n.children.length &&
+          !['x', 'y', 'dx', 'dy'].some(function (a) { return n.hasAttribute(a) })
+        if (mergeable && prev && attrKey(prev) === attrKey(n)) {
+          prev.textContent += n.textContent
+          n.remove()
+        } else {
+          prev = mergeable ? n : null
+        }
+      })
+    })
+  }
+
+  function sourceBlock(text) {
+    var pre = document.createElement('pre')
+    pre.textContent = text
+    return pre
+  }
+
+  // The live diagrams use the site's dark theme and HTML labels in
+  // <foreignObject>, which SVG-as-image renderers drop. Re-render each one from
+  // the source stashed by post.ejs with a light theme and SVG <text> labels,
+  // then restore the page's own config.
+  function embedDiagrams(root, zip) {
+    var nodes = root ? Array.prototype.slice.call(root.querySelectorAll('.mermaid')) : []
+    if (!nodes.length) return Promise.resolve([])
+    var cm = window.coldnightMermaid
+    var items = []
+    if (cm) {
+      cm.mermaid.initialize(Object.assign({}, cm.config, {
+        startOnLoad: false, theme: 'default', htmlLabels: false, flowchart: { htmlLabels: false }
+      }))
+    }
+    function restore() {
+      if (cm) cm.mermaid.initialize(Object.assign({}, cm.config, { startOnLoad: false }))
+    }
+
+    var chain = Promise.resolve()
+    nodes.forEach(function (node, i) {
+      chain = chain.then(function () {
+        var src = node.getAttribute('data-source')
+        if (!src) { node.remove(); return }
+        if (!cm) { node.replaceWith(sourceBlock(src)); return }
+        return cm.mermaid.render('epub-mermaid-' + i, src).then(function (res) {
+          var tpl = document.createElement('template')
+          tpl.innerHTML = res.svg
+          var svg = tpl.content.querySelector('svg')
+          if (!svg) throw new Error('no svg')
+          var f = svgToFile(flattenSvgStyles(svg), zip, 'diagram' + i, 'Diagram ' + (i + 1))
+          items.push(f.item)
+          node.replaceWith(f.node)
+        }).catch(function () {
+          node.replaceWith(sourceBlock(src))
+        })
+      })
+    })
+    return chain.then(
+      function () { restore(); return items },
+      function (e) { restore(); throw e }
+    )
+  }
+
+  // Readers drop empty inline-block swatches, ignore list-style:none and
+  // override text colours in dark mode, so the legend becomes a colourless
+  // bullet list. Rebuild it as a paragraph with a tiny SVG colour square per
+  // series — images are the one thing those readers render faithfully.
+  function flattenLegends(root, zip) {
+    var written = {}
+    var items = []
+    root.querySelectorAll('ul.chart__legend').forEach(function (ul) {
+      var p = document.createElement('p')
+      p.className = 'chart__legend'
+      ul.querySelectorAll('.chart__legend-item').forEach(function (li) {
+        var item = document.createElement('span')
+        item.className = 'chart__legend-item'
+        var sw = li.querySelector('.chart__swatch')
+        var m = sw && sw.className.match(/chart__series--(\d+)/)
+        var color = m && SERIES_COLORS[(parseInt(m[1], 10) - 1) % SERIES_COLORS.length]
+        if (color) {
+          var name = 'swatch' + m[1]
+          var href = 'images/' + name + '.svg'
+          if (!written[name]) {
+            written[name] = true
+            zip.file('OEBPS/' + href,
+              '<?xml version="1.0" encoding="UTF-8"?>' +
+              '<svg xmlns="' + SVG_NS + '" width="12" height="12" viewBox="0 0 12 12">' +
+              '<rect width="12" height="12" fill="' + color + '"/></svg>')
+            items.push('<item id="' + name + '" href="' + href + '" media-type="image/svg+xml"/>')
+          }
+          var img = document.createElement('img')
+          img.className = 'chart__swatch'
+          img.setAttribute('src', href)
+          img.setAttribute('alt', '')
+          img.setAttribute('width', '12')
+          img.setAttribute('height', '12')
+          item.appendChild(img)
+          item.appendChild(document.createTextNode('\u00A0'))
+        }
+        if (sw) sw.remove()
+        item.appendChild(document.createTextNode(li.textContent.trim()))
+        if (p.firstChild) p.appendChild(document.createTextNode('\u2003'))
+        p.appendChild(item)
+      })
+      ul.replaceWith(p)
+    })
+    return items
+  }
+
+  function embedCharts(root, zip) {
+    if (!root) return []
+    var items = flattenLegends(root, zip)
+    Array.prototype.slice.call(root.querySelectorAll('svg.chart__svg')).forEach(function (svg, i) {
+      var title = svg.querySelector('title')
+      var f = svgToFile(svg.cloneNode(true), zip, 'chart' + i, (title && title.textContent.trim()) || 'Chart', CHART_CSS)
+      svg.replaceWith(f.node)
+      items.push(f.item)
+    })
+    return items
+  }
+
+  // Runs after embedImages, which would otherwise try to fetch the new
+  // images/*.svg paths from the site and rewrite them to broken absolute URLs.
+  function embedFigures(root, zip) {
+    var chartItems = embedCharts(root, zip)
+    return embedDiagrams(root, zip).then(function (diagramItems) {
+      return chartItems.concat(diagramItems).join('')
+    })
+  }
+
   function buildEpub(data) {
     var zip = new JSZip() // eslint-disable-line no-undef
     var now = new Date().toISOString().replace(/\.\d+Z$/, 'Z')
@@ -244,11 +557,18 @@
     zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' })
 
     return embedImages(data.content, zip).then(function (imageItems) {
+      return embedFigures(data.content, zip).then(function (figureItems) {
+        return imageItems + figureItems
+      })
+    }).then(function (imageItems) {
       // XMLSerializer emits well-formed XML (self-closed voids, no named
       // entities like &nbsp;) — required by strict ePub readers.
       var contentXhtml = data.content
         ? new XMLSerializer().serializeToString(data.content)
         : ''
+      // EPUB 3 requires the svg property on documents with inline SVG (icons
+      // etc. — charts and diagrams have been moved out to image files).
+      var contentProps = contentXhtml.indexOf('<svg') !== -1 ? ' properties="svg"' : ''
 
       zip.file('META-INF/container.xml',
         '<?xml version="1.0"?>' +
@@ -270,7 +590,7 @@
           '</metadata>' +
           '<manifest>' +
             '<item id="nav"     href="nav.xhtml"     media-type="application/xhtml+xml" properties="nav"/>' +
-            '<item id="content" href="content.xhtml" media-type="application/xhtml+xml"/>' +
+            '<item id="content" href="content.xhtml" media-type="application/xhtml+xml"' + contentProps + '/>' +
             '<item id="css"     href="style.css"     media-type="text/css"/>' +
             imageItems +
           '</manifest>' +
@@ -361,28 +681,8 @@
         'details summary{cursor:pointer;font-weight:600}' +
         '.epub-media a{font-weight:600}' +
         '.epub-media__caption{font-size:.875em;color:#666;margin-top:-.5em}' +
-        // Charts. The theme palette is tuned for the dark site background and
-        // washes out on ePub white, so this is a darkened parallel set — and it
-        // avoids var(), which older reader engines don't resolve. Each rule
-        // covers SVG fill/stroke and the legend swatch's background at once.
-        '.chart__series--1{fill:#2563eb;stroke:#2563eb;background:#2563eb}' +
-        '.chart__series--2{fill:#d97706;stroke:#d97706;background:#d97706}' +
-        '.chart__series--3{fill:#059669;stroke:#059669;background:#059669}' +
-        '.chart__series--4{fill:#0891b2;stroke:#0891b2;background:#0891b2}' +
-        '.chart__series--5{fill:#dc2626;stroke:#dc2626;background:#dc2626}' +
-        '.chart__series--6{fill:#64748b;stroke:#64748b;background:#64748b}' +
-        '.chart__series polyline{fill:none;stroke-width:2.5}' +
-        '.chart--pie .chart__series path,.chart--pie .chart__series circle{stroke:#fff;stroke-width:2}' +
-        '.chart__svg{width:100%;height:auto}' +
-        '.chart__gridline{stroke:#ddd}.chart__axisline{stroke:#999}' +
-        // SVG <text> would otherwise inherit the serif body font and render as
-        // hairlines at these sizes.
-        '.chart__svg text{font-family:sans-serif}' +
-        '.chart__tick{fill:#555;font-size:11px}' +
-        '.chart__slice-label{fill:#fff;font-size:13px;font-weight:600}' +
-        '.chart__legend{list-style:none;padding:0;font-size:.85em}' +
-        '.chart__legend-item{display:inline-block;margin-right:1em}' +
-        '.chart__swatch{display:inline-block;width:.7em;height:.7em;margin-right:.35em}')
+        '.epub-figure{margin:1em 0;text-align:center}.epub-figure img{width:100%;height:auto}' +
+        '.chart__legend{font-size:.85em;text-align:center}.chart__swatch{width:.8em;height:.8em;vertical-align:middle}')
 
       return zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' })
     })
