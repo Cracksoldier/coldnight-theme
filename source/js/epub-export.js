@@ -99,7 +99,97 @@
       if (!el.getAttribute('style')) el.removeAttribute('style')
     })
     flattenCodeTables(clone)
+    replaceMedia(clone)
     return clone
+  }
+
+  function absUrl(u) {
+    try { return new URL(u || '', window.location.href).href } catch (e) { return '' }
+  }
+
+  function fileName(u) {
+    return decodeURIComponent((u.split('?')[0].split('/').pop()) || u)
+  }
+
+  function mediaLink(href, label) {
+    var p = document.createElement('p')
+    p.className = 'epub-media'
+    var a = document.createElement('a')
+    a.setAttribute('href', href)
+    a.textContent = '▶ ' + label
+    p.appendChild(a)
+    return p
+  }
+
+  var PROVIDER_NAMES = { youtube: 'YouTube', vimeo: 'Vimeo' }
+
+  // Embedded iframes are mapped back to the provider's watch page via an
+  // allowlist; anything else just links to its own src.
+  function watchUrl(src) {
+    var m = src.match(/^https:\/\/www\.youtube(?:-nocookie)?\.com\/embed\/([\w-]+)/)
+    if (m) return { href: 'https://www.youtube.com/watch?v=' + m[1], provider: 'YouTube' }
+    m = src.match(/^https:\/\/player\.vimeo\.com\/video\/(\d+)/)
+    if (m) return { href: 'https://vimeo.com/' + m[1], provider: 'Vimeo' }
+    return { href: src, provider: '' }
+  }
+
+  // Players, facades and iframes need JS or network access that ePub readers
+  // don't offer, so every audio/video embed becomes a plain link. Media files
+  // are never bundled; only a YouTube facade thumbnail is kept (embedImages
+  // bundles it afterwards).
+  function replaceMedia(root) {
+    root.querySelectorAll('.audio-player').forEach(function (player) {
+      var src = absUrl(player.getAttribute('data-src'))
+      if (!src) { player.remove(); return }
+      var titleEl = player.querySelector('.audio-player__title')
+      var captionEl = player.querySelector('.audio-player__caption')
+      var frag = document.createDocumentFragment()
+      frag.appendChild(mediaLink(src, (titleEl && titleEl.textContent.trim()) || fileName(src)))
+      if (captionEl && captionEl.textContent.trim()) {
+        var cap = document.createElement('p')
+        cap.className = 'epub-media__caption'
+        cap.textContent = captionEl.textContent.trim()
+        frag.appendChild(cap)
+      }
+      player.replaceWith(frag)
+    })
+
+    root.querySelectorAll('.video-embed__wrapper').forEach(function (wrap) {
+      var out = document.createDocumentFragment()
+      var facade = wrap.querySelector('a.video-facade')
+      var iframe = wrap.querySelector('iframe')
+      var video = wrap.querySelector('video')
+
+      if (facade) {
+        var href = facade.getAttribute('href') || ''
+        var title = facade.getAttribute('data-video-title') || 'Video'
+        var provider = PROVIDER_NAMES[facade.getAttribute('data-provider')] || ''
+        var thumb = facade.querySelector('.video-facade__thumb')
+        if (thumb) {
+          var p = document.createElement('p')
+          var a = document.createElement('a')
+          a.setAttribute('href', href)
+          var img = document.createElement('img')
+          img.setAttribute('src', thumb.getAttribute('src'))
+          img.setAttribute('alt', title)
+          a.appendChild(img)
+          p.appendChild(a)
+          out.appendChild(p)
+        }
+        out.appendChild(mediaLink(href, (provider ? 'Watch on ' + provider + ': ' : 'Watch: ') + title))
+      } else if (iframe) {
+        var w = watchUrl(absUrl(iframe.getAttribute('src')))
+        var t = iframe.getAttribute('title') || 'Video'
+        out.appendChild(mediaLink(w.href, (w.provider ? 'Watch on ' + w.provider + ': ' : 'Watch: ') + t))
+      } else if (video) {
+        var source = video.querySelector('source')
+        var vsrc = absUrl((source && source.getAttribute('src')) || video.getAttribute('src'))
+        if (vsrc) out.appendChild(mediaLink(vsrc, 'Video: ' + fileName(vsrc)))
+      } else {
+        return
+      }
+      wrap.replaceWith(out)
+    })
   }
 
   function getPostData(btn) {
@@ -269,6 +359,8 @@
         'td,th{border:1px solid #ddd;padding:.5em}' +
         'figure{margin:1.5em 0}figcaption{font-size:.875em;color:#666;text-align:center;margin-top:.25em}' +
         'details summary{cursor:pointer;font-weight:600}' +
+        '.epub-media a{font-weight:600}' +
+        '.epub-media__caption{font-size:.875em;color:#666;margin-top:-.5em}' +
         // Charts. The theme palette is tuned for the dark site background and
         // washes out on ePub white, so this is a darkened parallel set — and it
         // avoids var(), which older reader engines don't resolve. Each rule
