@@ -100,7 +100,40 @@
     })
     flattenCodeTables(clone)
     replaceMedia(clone)
+    replaceCompare(clone)
     return clone
+  }
+
+  // The compare slider stacks "before" over "after" and clips it with CSS;
+  // in an ePub that CSS and the range input are gone, leaving the two images
+  // side by side in after/before order with the labels run together. Rebuild
+  // each slider as before-then-after stacked images, each with its label.
+  // Runs before embedImages, which then bundles the images as usual.
+  function replaceCompare(root) {
+    root.querySelectorAll('figure.compare-slider').forEach(function (fig) {
+      var frame = fig.querySelector('.compare-slider__frame')
+      if (!frame) return
+      var items = document.createDocumentFragment()
+      ;[['before', 'Before'], ['after', 'After']].forEach(function (side) {
+        var img = frame.querySelector('.compare-slider__img--' + side[0])
+        if (!img) return
+        var labelEl = frame.querySelector('.compare-slider__label--' + side[0])
+        var label = (labelEl && labelEl.textContent.trim()) || img.getAttribute('alt') || side[1]
+        var item = document.createElement('div')
+        item.className = 'epub-compare__item'
+        var copy = document.createElement('img')
+        copy.setAttribute('src', img.getAttribute('src'))
+        copy.setAttribute('alt', label === side[1] ? label : side[1] + ': ' + label)
+        item.appendChild(copy)
+        var p = document.createElement('p')
+        p.className = 'epub-compare__label'
+        p.textContent = label
+        item.appendChild(p)
+        items.appendChild(item)
+      })
+      frame.replaceWith(items)
+      fig.className = 'epub-compare'
+    })
   }
 
   function absUrl(u) {
@@ -681,6 +714,8 @@
         'details summary{cursor:pointer;font-weight:600}' +
         '.epub-media a{font-weight:600}' +
         '.epub-media__caption{font-size:.875em;color:#666;margin-top:-.5em}' +
+        '.epub-compare__item{margin:1em 0;text-align:center}.epub-compare__item img{width:100%;height:auto}' +
+        '.epub-compare__label{font-size:.875em;font-weight:600;margin:.25em 0 0}' +
         '.epub-figure{margin:1em 0;text-align:center}.epub-figure img{width:100%;height:auto}' +
         '.chart__legend{font-size:.85em;text-align:center}.chart__swatch{width:.8em;height:.8em;vertical-align:middle}')
 
