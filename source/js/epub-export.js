@@ -144,6 +144,40 @@
     })
   }
 
+  // FBReader ignores the blockquote border, colour and margin (quotes read as
+  // body text) and doesn't draw <hr>. Prefix each quoted block with a │ per
+  // nesting level and follow each <hr> with a "* * *" paragraph; full CSS
+  // engines hide both with display:none, FBReader ignores that rule (same
+  // trick as lineNumber/labelTables). Quotes are also italic via the CSS.
+  function markQuotesAndRules(root) {
+    function bar(el, depth) {
+      var span = document.createElement('span')
+      span.className = 'epub-quote__bar'
+      span.textContent = new Array(depth + 1).join('│') + NBSP
+      el.insertBefore(span, el.firstChild)
+    }
+    root.querySelectorAll('blockquote').forEach(function (quote) {
+      var depth = 0
+      for (var el = quote; el && el !== root; el = el.parentElement) {
+        if (el.tagName === 'BLOCKQUOTE') depth++
+      }
+      Array.prototype.forEach.call(quote.children, function (child) {
+        if (/^(P|H[1-6])$/.test(child.tagName)) bar(child, depth)
+        else if (child.tagName === 'UL' || child.tagName === 'OL') {
+          Array.prototype.forEach.call(child.children, function (li) {
+            if (li.tagName === 'LI') bar(li, depth)
+          })
+        }
+      })
+    })
+    root.querySelectorAll('hr').forEach(function (hr) {
+      var p = document.createElement('p')
+      p.className = 'epub-hr'
+      p.textContent = '* * *'
+      hr.parentNode.insertBefore(p, hr.nextSibling)
+    })
+  }
+
   function getCleanContent() {
     var body = document.querySelector('.post-body')
     if (!body) return null
@@ -156,6 +190,7 @@
     })
     flattenCodeTables(clone)
     labelTables(clone)
+    markQuotesAndRules(clone)
     replaceMedia(clone)
     replaceCompare(clone)
     replaceImageFigures(clone)
@@ -827,7 +862,9 @@
         '.epub-code .hljs-emphasis{font-style:italic}.epub-code .hljs-strong{font-weight:bold}' +
         'img{max-width:100%}' +
         'a{color:#4080ff}' +
-        'blockquote{border-left:3px solid #ccc;margin-left:0;padding-left:1em;color:#555}' +
+        'blockquote{border-left:3px solid #ccc;margin-left:0;padding-left:1em;color:#555;font-style:italic}' +
+        // Text fallbacks for FBReader (see markQuotesAndRules); it ignores this rule.
+        '.epub-quote__bar,.epub-hr{display:none !important}.epub-hr{text-align:center}' +
         'table{border-collapse:collapse;width:100%}' +
         'td,th{border:1px solid #ddd;padding:.5em}' +
         // Text fallback for readers without table layout (see labelTables)
