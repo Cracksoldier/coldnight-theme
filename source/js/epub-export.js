@@ -31,6 +31,28 @@
     ['mark, .marked',  'epub-code__line--mark'] // hljs mode emits <mark>
   ]
 
+  // The number is wrapped in a text-only gutter for readers that ignore the
+  // CSS one (FBReader drops the inline-block width, borders and backgrounds,
+  // so numbers ran into the code and marked lines were invisible): NBSP
+  // padding to the block's widest number, a » on marked lines, and a │
+  // separator. Full CSS engines hide .epub-code__pad/__sep with display:none;
+  // FBReader ignores that rule, so it shows them.
+  var NBSP = ' '
+  function lineNumber(label, width, marked) {
+    var ln = document.createElement('span')
+    ln.className = 'epub-code__ln'
+    var pad = document.createElement('span')
+    pad.className = 'epub-code__pad'
+    pad.textContent = (marked ? '»' : NBSP) + new Array(Math.max(0, width - label.length) + 1).join(NBSP)
+    var sep = document.createElement('span')
+    sep.className = 'epub-code__sep'
+    sep.textContent = NBSP + '│' + NBSP
+    ln.appendChild(pad)
+    ln.appendChild(document.createTextNode(label))
+    ln.appendChild(sep)
+    return ln
+  }
+
   function flattenCodeTables(root) {
     root.querySelectorAll('figure.highlight').forEach(function (fig) {
       var table = fig.querySelector('table')
@@ -67,20 +89,19 @@
       pre.className = 'epub-code epub-code--numbered'
       var code = document.createElement('code')
       if (src.tagName === 'CODE' && src.className) code.className = src.className
+      var width = 0
+      for (var k = 0; k < count; k++) width = Math.max(width, (labels[k] || String(k + 1)).length)
       for (var n = 0; n < count; n++) {
         var line = document.createElement('span')
         line.className = 'epub-code__line'
-        var ln = document.createElement('span')
-        ln.className = 'epub-code__ln'
-        ln.textContent = labels[n] || String(n + 1)
-        line.appendChild(ln)
         if (lines[n]) {
           // Tint the whole row for diff/marked lines, not just the token span
           LINE_MODS.forEach(function (m) {
             if (lines[n].querySelector(m[0])) line.classList.add(m[1])
           })
-          line.appendChild(lines[n])
         }
+        line.appendChild(lineNumber(labels[n] || String(n + 1), width, line.classList.contains('epub-code__line--mark')))
+        if (lines[n]) line.appendChild(lines[n])
         code.appendChild(line)
       }
       pre.appendChild(code)
@@ -658,8 +679,11 @@
       zip.file('OEBPS/style.css',
         'body{font-family:Georgia,"Times New Roman",serif;line-height:1.7;max-width:42em;margin:0 auto;padding:1em}' +
         'h1,h2,h3{line-height:1.3}' +
-        'pre,code{font-family:monospace;font-size:.9em}' +
-        'pre{background:#f5f5f5;padding:1em;white-space:pre-wrap;overflow-x:auto}' +
+        // Named fonts first: FBReader ignores the generic `monospace` alone and
+        // falls back to a proportional face.
+        'pre,code{font-family:Consolas,"DejaVu Sans Mono","Droid Sans Mono","Courier New",monospace;font-size:.9em}' +
+        // text-align:left — a justified body would stretch the NBSP gutter.
+        'pre{background:#f5f5f5;padding:1em;white-space:pre-wrap;overflow-x:auto;text-align:left}' +
         // Code blocks: a self-contained dark panel in the site's own palette
         // (copied from _variables.scss / _code.scss — keep in sync), so it
         // reads the same on white, sepia and dark reader themes. Foliate
@@ -684,6 +708,8 @@
         '.epub-code .epub-code__ln{display:inline-block;width:3.2em;box-sizing:border-box;' +
           'padding-right:.6em;margin-right:.8em;text-indent:0;text-align:right;' +
           'color:#64748b !important;-webkit-user-select:none;user-select:none}' +
+        // Text-gutter fallback (see lineNumber); FBReader ignores this rule.
+        '.epub-code .epub-code__pad,.epub-code .epub-code__sep{display:none !important}' +
         '.epub-code .epub-code__line--add{background-color:rgba(16,185,129,.15) !important;box-shadow:inset 3px 0 0 #10b981}' +
         '.epub-code .epub-code__line--del{background-color:rgba(239,68,68,.12) !important;box-shadow:inset 3px 0 0 #ef4444}' +
         '.epub-code .epub-code__line--mark{background-color:rgba(37,99,235,.18) !important;box-shadow:inset 3px 0 0 #2563eb}' +
