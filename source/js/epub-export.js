@@ -809,9 +809,15 @@
 
   // MathJax sizes its SVG in ex (= 0.5em by its own metrics) with a 1000
   // units/em viewBox, so svgToFile's viewBox-as-px sizing doesn't fit. The
-  // file gets an intrinsic px size (16px/em, unrounded so the aspect ratio
-  // holds) for readers that ignore the <img> style; the style sets only the
-  // width in em so it scales with the reader font and max-width can't squash it.
+  // <img> style sets only the width in em, so the formula scales with the
+  // reader font and max-width can't squash it. FBReader honours that width
+  // but rasterises the SVG at its intrinsic px size and scales that bitmap
+  // without smoothing: 16px/em came out blocky, 48-64px/em dropped thin
+  // strokes (= and ± lost a bar). 32px/em kept both (FBReader, tested); the
+  // size stays unrounded to keep the aspect ratio. An SVG without
+  // width/height, or with em units, was sized wrongly by FBReader.
+  var MATH_PX_PER_EM = 32
+
   function mathToFile(svg, zip, name) {
     function em(v) { var m = /^(-?[\d.]+)ex$/.exec(String(v || '').trim()); return m ? parseFloat(m[1]) / 2 : NaN }
     var vb = (svg.getAttribute('viewBox') || '').trim().split(/[\s,]+/).map(Number)
@@ -830,8 +836,8 @@
       })
     })
     svg.removeAttribute('style')
-    svg.setAttribute('width', String(Math.round(w * 1600) / 100))
-    svg.setAttribute('height', String(Math.round(h * 1600) / 100))
+    svg.setAttribute('width', String(Math.round(w * MATH_PX_PER_EM * 100) / 100))
+    svg.setAttribute('height', String(Math.round(h * MATH_PX_PER_EM * 100) / 100))
     if (vb.length === 4) {
       var bg = document.createElementNS(SVG_NS, 'rect')
       bg.setAttribute('x', String(vb[0]))
@@ -851,7 +857,8 @@
     var r = function (n) { return Math.round(n * 1000) / 1000 }
     return {
       href: href,
-      style: 'width:' + r(w) + 'em;vertical-align:' + r(v) + 'em',
+      width: 'width:' + r(w) + 'em',
+      align: 'vertical-align:' + r(v) + 'em',
       item: '<item id="' + name + '" href="' + href + '" media-type="image/svg+xml"/>'
     }
   }
@@ -873,7 +880,21 @@
           var tex = math && math.getAttribute('alttext')
           if (!tex) return
           var display = wrap.classList.contains('epub-math--display')
-          var key = (display ? 'D' : 'I') + '\n' + tex
+          // A lone inline variable or number ($a$, $\mu$, $0$) is clearer as
+          // text: as a ~9px image FBReader's unsmoothed scaling garbles it.
+          var tok = math.children.length === 1 && math.firstElementChild
+          if (tok && tok.localName === 'mrow' && tok.children.length === 1) tok = tok.firstElementChild
+          if (!display && tok && !tok.children.length && /^(mi|mn)$/.test(tok.localName)) {
+            var italic = tok.localName === 'mi' && tok.getAttribute('mathvariant') !== 'normal' &&
+              tok.textContent.trim().length === 1
+            var text = document.createElement(italic ? 'i' : 'span')
+            text.className = 'epub-math__text'
+            text.textContent = tok.textContent.trim()
+            wrap.textContent = ''
+            wrap.appendChild(text)
+            return
+          }
+          var key =(display ? 'D' : 'I') + '\n' + tex
           var file = files[key]
           var job = file ? Promise.resolve(file) : MJ.tex2svgPromise(tex, { display: display }).then(function (node) {
             var svg = node.querySelector('svg')
@@ -889,7 +910,9 @@
             img.className = 'epub-math__img'
             img.setAttribute('src', f.href)
             img.setAttribute('alt', tex)
-            img.setAttribute('style', f.style)
+            // Baseline offset for inline math only: FBReader honours it on a
+            // display image too and pushes tall formulas into the next line.
+            img.setAttribute('style', display ? f.width : f.width + ';' + f.align)
             wrap.textContent = ''
             wrap.appendChild(img)
           }, function () {})
