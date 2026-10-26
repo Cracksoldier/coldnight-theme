@@ -111,6 +111,7 @@ mermaid:
 
 math:
   enabled: true        # render $...$ and $$...$$ as KaTeX math
+  epub: svg            # ePub export: svg = formulas as SVG images (MathJax, works in FBReader); mathml = MathML + hidden TeX fallback
 
 pdf_viewer: true       # load pdf-viewer.js on post pages; set false to disable
 audio_player: true     # load audio-player.js on post pages that use {% audio %}; set false to disable

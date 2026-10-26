@@ -132,6 +132,7 @@ All options live in `themes/coldnight/_config.yml` (submodule) or `node_modules/
 | `mermaid.enabled` | `true` | Render ` ```mermaid ` blocks as SVG (client-side; includes Mermaid's own `xychart-beta`/`pie`/`radar`/`sankey-beta`/`treemap`/`quadrantChart` types) |
 | `mermaid.theme` | `dark` | `default` \| `dark` \| `neutral` \| `forest` |
 | `math.enabled` | `true` | KaTeX math rendering |
+| `math.epub` | `svg` | ePub export: formulas as MathJax SVG images (`svg`, works in FBReader) or MathML (`mathml`) |
 | `pdf_viewer` | `true` | Load PDF.js viewer on post pages |
 | `audio_player` | `true` | Load audio player on post pages that use `{% audio %}` |
 | `video_facade` | `true` | Click-to-load facade for `{% video %}` embeds; `false` = eager iframes |

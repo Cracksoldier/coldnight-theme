@@ -440,6 +440,8 @@
       url:      btn.dataset.url      || window.location.href,
       slug:     btn.dataset.slug     || 'post',
       language: btn.dataset.language || 'en',
+      math:     btn.dataset.math === 'mathml' ? 'mathml' : 'svg',
+      mathjax:  btn.dataset.mathjaxSrc || '',
       content:  getCleanContent()
     }
   }
@@ -783,10 +785,126 @@
 
   // Runs after embedImages, which would otherwise try to fetch the new
   // images/*.svg paths from the site and rewrite them to broken absolute URLs.
-  function embedFigures(root, zip) {
+  var mathJaxReady = null
+
+  // MathJax 3 (vendored -full bundle: every TeX extension and the SVG font
+  // data in one file, no on-demand loads) is fetched on the first export of
+  // a post with math only. fontCache 'none' draws each glyph as its own
+  // <path> — no <use>/<defs> for simple SVG renderers to miss. A failed load
+  // is not cached, so the next export retries.
+  function loadMathJax(src) {
+    if (window.MathJax && window.MathJax.tex2svgPromise) return Promise.resolve(window.MathJax)
+    if (mathJaxReady) return mathJaxReady
+    if (!src) return Promise.reject(new Error('no MathJax src'))
+    window.MathJax = { startup: { typeset: false }, svg: { fontCache: 'none' } }
+    mathJaxReady = new Promise(function (resolve, reject) {
+      var s = document.createElement('script')
+      s.src = src
+      s.onload = function () { window.MathJax.startup.promise.then(function () { resolve(window.MathJax) }, reject) }
+      s.onerror = reject
+      document.head.appendChild(s)
+    }).catch(function (e) { mathJaxReady = null; throw e })
+    return mathJaxReady
+  }
+
+  // MathJax sizes its SVG in ex (= 0.5em by its own metrics) with a 1000
+  // units/em viewBox, so svgToFile's viewBox-as-px sizing doesn't fit. The
+  // file gets an intrinsic px size (16px/em, unrounded so the aspect ratio
+  // holds) for readers that ignore the <img> style; the style sets only the
+  // width in em so it scales with the reader font and max-width can't squash it.
+  function mathToFile(svg, zip, name) {
+    function em(v) { var m = /^(-?[\d.]+)ex$/.exec(String(v || '').trim()); return m ? parseFloat(m[1]) / 2 : NaN }
+    var vb = (svg.getAttribute('viewBox') || '').trim().split(/[\s,]+/).map(Number)
+    var w = em(svg.getAttribute('width'))
+    var h = em(svg.getAttribute('height'))
+    // Tagged display equations get width="100%"; fall back to the viewBox
+    if (isNaN(w)) w = vb.length === 4 ? vb[2] / 1000 : 1
+    if (isNaN(h)) h = vb.length === 4 ? vb[3] / 1000 : 1
+    var va = /vertical-align:\s*(-?[\d.]+)ex/.exec(svg.getAttribute('style') || '')
+    var v = va ? parseFloat(va[1]) / 2 : 0
+
+    Array.prototype.slice.call(svg.querySelectorAll('*')).concat(svg).forEach(function (el) {
+      Array.prototype.slice.call(el.attributes).forEach(function (a) {
+        if (/^(data-|aria-|role$|focusable$)/.test(a.name)) el.removeAttribute(a.name)
+        else if (a.value === 'currentColor') el.setAttribute(a.name, '#000')
+      })
+    })
+    svg.removeAttribute('style')
+    svg.setAttribute('width', String(Math.round(w * 1600) / 100))
+    svg.setAttribute('height', String(Math.round(h * 1600) / 100))
+    if (vb.length === 4) {
+      var bg = document.createElementNS(SVG_NS, 'rect')
+      bg.setAttribute('x', String(vb[0]))
+      bg.setAttribute('y', String(vb[1]))
+      bg.setAttribute('width', String(vb[2]))
+      bg.setAttribute('height', String(vb[3]))
+      bg.setAttribute('fill', '#fff')
+      svg.insertBefore(bg, svg.firstChild)
+    }
+    // MathJax sets xmlns as a plain attribute; XMLSerializer adds its own for
+    // the element's namespace, and two xmlns attributes are invalid XML.
+    svg.removeAttribute('xmlns')
+    var xml = new XMLSerializer().serializeToString(svg)
+    if (xml.indexOf('xmlns="' + SVG_NS + '"') === -1) xml = xml.replace('<svg', '<svg xmlns="' + SVG_NS + '"')
+    var href = 'images/' + name + '.svg'
+    zip.file('OEBPS/' + href, '<?xml version="1.0" encoding="UTF-8"?>' + xml)
+    var r = function (n) { return Math.round(n * 1000) / 1000 }
+    return {
+      href: href,
+      style: 'width:' + r(w) + 'em;vertical-align:' + r(v) + 'em',
+      item: '<item id="' + name + '" href="' + href + '" media-type="image/svg+xml"/>'
+    }
+  }
+
+  // math: svg (default) — FBReader has no MathML, so each .epub-math from
+  // flattenMath is re-rendered from its TeX (alttext) to an SVG image file,
+  // like the Mermaid re-render. Identical formulas share one file. A MathJax
+  // load failure keeps every formula as MathML; a TeX error keeps that one.
+  function embedMath(root, zip, data) {
+    var wraps = root ? Array.prototype.slice.call(root.querySelectorAll('.epub-math')) : []
+    if (!wraps.length || data.math === 'mathml') return Promise.resolve([])
+    return loadMathJax(data.mathjax).then(function (MJ) {
+      var items = []
+      var files = {}
+      var chain = Promise.resolve()
+      wraps.forEach(function (wrap) {
+        chain = chain.then(function () {
+          var math = wrap.querySelector('math')
+          var tex = math && math.getAttribute('alttext')
+          if (!tex) return
+          var display = wrap.classList.contains('epub-math--display')
+          var key = (display ? 'D' : 'I') + '\n' + tex
+          var file = files[key]
+          var job = file ? Promise.resolve(file) : MJ.tex2svgPromise(tex, { display: display }).then(function (node) {
+            var svg = node.querySelector('svg')
+            if (!svg || svg.querySelector('[data-mml-node="merror"], [data-mjx-error]')) return null
+            file = mathToFile(svg, zip, 'math' + items.length)
+            items.push(file.item)
+            files[key] = file
+            return file
+          })
+          return job.then(function (f) {
+            if (!f) return
+            var img = document.createElement('img')
+            img.className = 'epub-math__img'
+            img.setAttribute('src', f.href)
+            img.setAttribute('alt', tex)
+            img.setAttribute('style', f.style)
+            wrap.textContent = ''
+            wrap.appendChild(img)
+          }, function () {})
+        })
+      })
+      return chain.then(function () { return items })
+    }, function () { return [] })
+  }
+
+  function embedFigures(root, zip, data) {
     var chartItems = embedCharts(root, zip)
     return embedDiagrams(root, zip).then(function (diagramItems) {
-      return chartItems.concat(diagramItems).join('')
+      return embedMath(root, zip, data).then(function (mathItems) {
+        return chartItems.concat(diagramItems, mathItems).join('')
+      })
     })
   }
 
@@ -856,7 +974,7 @@
     zip.file('mimetype', 'application/epub+zip', { compression: 'STORE' })
 
     return embedImages(data.content, zip).then(function (imageItems) {
-      return embedFigures(data.content, zip).then(function (figureItems) {
+      return embedFigures(data.content, zip, data).then(function (figureItems) {
         return imageItems + figureItems
       })
     }).then(function (imageItems) {
@@ -1002,6 +1120,7 @@
         '.epub-math--display{display:block;margin:1em 0;text-align:center}' +
         '.epub-math--display .epub-math__tex{display:block}' +
         '.epub-math__tex,.epub-math--display .epub-math__tex{display:none !important}' +
+        '.epub-math__img{max-width:100%;height:auto}.epub-math--display .epub-math__img{display:block;margin:0 auto}' +
         'figure{margin:1.5em 0}figcaption{font-size:.875em;color:#666;text-align:center;margin-top:.25em}' +
         'details summary{cursor:pointer;font-weight:600}' +
         '.epub-media a{font-weight:600}' +

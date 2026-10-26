@@ -108,6 +108,7 @@
                     data-url="<%= page.permalink %>"
                     data-slug="<%= page.slug %>"
                     data-language="<%= config.language || 'en' %>"
+                    <% if (theme.math && theme.math.epub === 'mathml') { %>data-math="mathml"<% } else { %>data-math="svg" data-mathjax-src="<%- url_for('/vendor/mathjax/tex-svg-full.js') %>"<% } %>
                     aria-label="Export as ePub"
                     title="Download as ePub">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
