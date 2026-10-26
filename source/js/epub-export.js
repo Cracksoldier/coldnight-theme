@@ -197,6 +197,43 @@
     })
   }
 
+  // KaTeX emits each formula three ways — MathML with a TeX <annotation>, plus
+  // positioned HTML spans — and relies on its CSS to show only one. Without
+  // that CSS every reader prints all of them. Keep only the presentation
+  // MathML (TeX moved to alttext) and add the TeX as a code fallback; full
+  // CSS engines hide it with display:none, FBReader (no MathML) ignores that
+  // rule and shows it (same trick as labelTables). Display math becomes a
+  // block, or a span inside a <p>, where a div would be invalid XHTML.
+  function flattenMath(root) {
+    Array.prototype.slice.call(root.querySelectorAll('.katex')).forEach(function (katex) {
+      var math = katex.querySelector('math')
+      if (!math) return
+      var ann = math.querySelector('annotation[encoding="application/x-tex"]')
+      var tex = ann ? ann.textContent.trim() : ''
+      if (ann) ann.remove()
+      var sem = math.querySelector('semantics')
+      if (sem) {
+        while (sem.firstChild) sem.parentNode.insertBefore(sem.firstChild, sem)
+        sem.remove()
+      }
+      if (tex) math.setAttribute('alttext', tex)
+
+      var display = katex.parentElement && katex.parentElement.classList.contains('katex-display')
+        ? katex.parentElement : null
+      var target = display || katex
+      var wrap = document.createElement(display && !target.closest('p') ? 'div' : 'span')
+      wrap.className = 'epub-math' + (display ? ' epub-math--display' : '')
+      wrap.appendChild(math)
+      if (tex) {
+        var code = document.createElement('code')
+        code.className = 'epub-math__tex'
+        code.textContent = display ? '$$' + tex + '$$' : NBSP + '$' + tex + '$'
+        wrap.appendChild(code)
+      }
+      target.replaceWith(wrap)
+    })
+  }
+
   function getCleanContent() {
     var body = document.querySelector('.post-body')
     if (!body) return null
@@ -211,6 +248,7 @@
     labelTables(clone)
     markQuotesAndRules(clone)
     fixListStarts(clone)
+    flattenMath(clone)
     replaceMedia(clone)
     replaceCompare(clone)
     replaceImageFigures(clone)
@@ -830,8 +868,12 @@
         ? new XMLSerializer().serializeToString(data.content)
         : ''
       // EPUB 3 requires the svg property on documents with inline SVG (icons
-      // etc. — charts and diagrams have been moved out to image files).
-      var contentProps = contentXhtml.indexOf('<svg') !== -1 ? ' properties="svg"' : ''
+      // etc. — charts and diagrams have been moved out to image files), and
+      // the mathml property on documents with MathML (see flattenMath).
+      var props = []
+      if (contentXhtml.indexOf('<svg') !== -1) props.push('svg')
+      if (contentXhtml.indexOf('<math') !== -1) props.push('mathml')
+      var contentProps = props.length ? ' properties="' + props.join(' ') + '"' : ''
       zip.file('OEBPS/toc.ncx', buildNcx(data, toc))
 
       zip.file('META-INF/container.xml',
@@ -955,6 +997,11 @@
         'td,th{border:1px solid #ddd;padding:.5em}' +
         // Text fallback for readers without table layout (see labelTables)
         '.epub-table__row,.epub-table__label{display:none !important}.epub-table__label{font-weight:600}' +
+        // TeX fallback for readers without MathML (see flattenMath); FBReader
+        // ignores the hide rule, and the block rule puts display TeX on its own line.
+        '.epub-math--display{display:block;margin:1em 0;text-align:center}' +
+        '.epub-math--display .epub-math__tex{display:block}' +
+        '.epub-math__tex,.epub-math--display .epub-math__tex{display:none !important}' +
         'figure{margin:1.5em 0}figcaption{font-size:.875em;color:#666;text-align:center;margin-top:.25em}' +
         'details summary{cursor:pointer;font-weight:600}' +
         '.epub-media a{font-weight:600}' +
