@@ -412,6 +412,8 @@ All notable changes per release. Versions follow [Semantic Versioning](https://s
 
 ### Unreleased
 
+### 1.10.0 — 2026-10-27
+
 **ePub export**
 - Math is exported as MathJax SVG images by default (the only form FBReader renders); `math.epub: mathml` keeps MathML with a hidden TeX fallback instead
 - Code blocks keep syntax colours, a distinct gutter column and aligned line numbers; line-numbered tables are flattened so numbers no longer drift from wrapped lines in CSS-poor readers
