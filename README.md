@@ -406,6 +406,79 @@ giscus:
 
 The widget appears below the article body on all posts. To suppress it on a single post, add `comments: false` to that post's front-matter.
 
+## Changelog
+
+All notable changes per release. Versions follow [Semantic Versioning](https://semver.org/) — minor for new features or config keys, patch for fixes to existing behaviour.
+
+### Unreleased
+
+**ePub export**
+- Math is exported as MathJax SVG images by default (the only form FBReader renders); `math.epub: mathml` keeps MathML with a hidden TeX fallback instead
+- Code blocks keep syntax colours, a distinct gutter column and aligned line numbers; line-numbered tables are flattened so numbers no longer drift from wrapped lines in CSS-poor readers
+- Charts and Mermaid diagrams are exported as SVG image files; compare sliders become stacked before/after images; audio/video become links
+- Readable tables, blockquotes, horizontal rules, captioned images, galleries, ordered-list numbering and definition-list terms across ePub readers
+- Heading TOC, clean headings and strikethrough in the exported book
+
+**Code blocks**
+- Long lines scroll instead of being clipped on narrow screens
+- hljs `<mark>` lines are styled and rows stay aligned with the gutter
+- The filename chip no longer picks up gutter text when extracting a filename comment
+
+### 1.9.1 — 2026-09-11
+- Fix: newlines in `sidebar.about_description` render as line breaks
+
+### 1.9.0 — 2026-09-11
+- New `sidebar.about_name` and `sidebar.about_description` keys (empty = site-level value, `false` = hide the line)
+
+### 1.8.0 — 2026-09-08
+- Build-time SVG charts via `{% chart %}` (bar, line, pie — no client-side library)
+- New `sidebar.about_title` key
+- Vendored Mermaid source maps dropped from the package
+
+### 1.7.0 — 2026-08-14
+- Per-post `card_border` / `card_bg` front-matter colours for cards and the pinned hero
+- Fix: `.post-body img` no longer overrides heights of positioned images
+
+### 1.6.0 — 2026-08-13
+- Opt-in large thumbnails — `cover.large` config and per-post `cover_large:` front-matter
+
+### 1.5.0 — 2026-08-08
+- Configurable links-page heading (`links.title`, `links.subtitle`)
+- Tag filtering on the links page via `tags:` in `links.yml`
+
+### 1.4.2 — 2026-08-07
+- Fix: text navbar brand icons align with the title
+
+### 1.4.1 — 2026-08-07
+- `sidebar.about: false` hides the About widget; it also self-hides when it has nothing to show
+
+### 1.4.0 — 2026-08-07
+- Click-to-load facade for `{% video %}` (YouTube/Vimeo) — `video_facade: false` restores eager iframes
+- Optional hover/focus tooltips for categories via `category_descriptions`
+
+### 1.3.0 — 2026-07-16
+- Share buttons, JSON Feed (`/feed.json`), glossary tooltips, `/stats/` page and build-time internal link checker
+- Posting-activity heatmap on the archive page
+- Auto-collapse of long code blocks and a click-to-download filename chip
+- Card/hero thumbnails fully optional (`cover.fallback`, `cover_image: false`)
+- Poster image / click-to-load for the 3D model viewer (`thumbnail=`)
+- Pinned posts get a top-right corner marker instead of an inline badge
+
+### 1.2.0 — 2026-07-11
+- Configurable navbar brand icons (`navbar.icon`, `navbar.icon_after`, colours) and `favicon`
+
+### 1.1.1 — 2026-07-10
+- npm package no longer ships tarballs or `.github/`
+
+### 1.1.0 — 2026-07-10
+- Opt-in `/llms.txt` and `/llms-full.txt` generator
+- Difficulty/effort signal-bar meter for posts and projects
+- JSON-LD structured data, stale-post warning banner, `{% compare %}` image slider, reduced-motion support and view transitions
+- Fixes across search, SEO, ePub export and performance
+
+### 1.0.0 — 2026-06-06
+- Initial release
+
 ## License
 
 MIT

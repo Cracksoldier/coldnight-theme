@@ -2,6 +2,15 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working on the **coldnight Hexo theme**.
 
+## Changelog (README.md)
+
+`README.md` ends with a `## Changelog` section — keep it current:
+
+- **Every user-visible `feat:`/`fix:` commit** adds a bullet under `### Unreleased` in the same commit (grouped under bold sub-headings when there are many). Skip pure refactors, docs and chores that don't change behaviour or the published package.
+- **On a version bump** (`chore: bump version to X.Y.Z`), rename `### Unreleased` to `### X.Y.Z — YYYY-MM-DD` (release date), add a fresh empty `### Unreleased` above it, and include that in the bump commit. Newest version first.
+- Bullets describe the change from a theme user's point of view and name the config key / front-matter field / tag involved — not the internal function names.
+- Minor = new feature or config key; patch = fix to existing behaviour with no new config surface.
+
 ## Architecture
 
 ```
